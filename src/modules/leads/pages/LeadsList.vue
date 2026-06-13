@@ -1,0 +1,301 @@
+<template>
+  <div class="space-y-6">
+    <!-- Header Block -->
+    <div class="bg-surface border border-default rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
+      <div>
+        <h2 class="font-heading text-lg font-bold text-slate-800 dark:text-slate-100">Leads Directory</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Manage, allocate, and transition property sales prospects.
+        </p>
+      </div>
+
+      <!-- Action buttons & Views toggle -->
+      <div class="flex items-center gap-3 self-end sm:self-auto shrink-0 flex-wrap">
+        <!-- View Toggle buttons -->
+        <div class="border border-subtle rounded-lg p-0.5 bg-neutral-25 dark:bg-neutral-900 flex space-x-0.5">
+          <button 
+            @click="viewMode = 'table'"
+            class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold uppercase transition-all duration-80"
+            :class="viewMode === 'table' ? 'bg-surface text-neutral-900 dark:text-neutral-50 shadow-sm' : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'"
+            title="Table View"
+          >
+            <PhTable class="w-3.5 h-3.5" />
+            <span>Table</span>
+          </button>
+          <button 
+            @click="viewMode = 'kanban'"
+            class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold uppercase transition-all duration-80"
+            :class="viewMode === 'kanban' ? 'bg-surface text-neutral-900 dark:text-neutral-50 shadow-sm' : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'"
+            title="Kanban View"
+          >
+            <PhColumns class="w-3.5 h-3.5" />
+            <span>Kanban</span>
+          </button>
+        </div>
+
+        <!-- Bulk Assign Action (Shows when items are checked) -->
+        <button 
+          v-if="selectedRows.length > 0"
+          @click="openBulkAssign"
+          class="btn btn-secondary btn-sm h-8 text-xs font-semibold text-accent-600 border-accent-200 bg-accent-50"
+        >
+          Assign ({{ selectedRows.length }})
+        </button>
+
+        <!-- Create Lead button -->
+        <button 
+          @click="isCreateOpen = true"
+          class="btn btn-primary btn-sm h-8 text-xs font-semibold px-3"
+        >
+          <PhPlus class="w-3.5 h-3.5" />
+          <span>Add Lead</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters component panel -->
+    <LeadFilters @change="handleFilterChange" />
+
+    <!-- Grid View Switcher -->
+    <div v-if="isLoading" class="animate-pulse space-y-4">
+      <div class="h-10 bg-slate-200 dark:bg-slate-850 rounded w-full"></div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div v-for="i in 4" :key="i" class="h-64 bg-slate-200 dark:bg-slate-850 rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- Active View Area -->
+    <div v-else class="space-y-4">
+      <!-- 1. TABLE VIEW -->
+      <div v-if="viewMode === 'table'">
+        <!-- Desktop Grid -->
+        <div class="hidden lg:block">
+          <LeadTable 
+            :rows="leadsList"
+            :isLoading="isLoading"
+            :selectedLeads="selectedRows"
+            @selectionChange="handleSelectionChange"
+            @sort="handleSort"
+          />
+        </div>
+
+        <!-- Responsive Mobile List Cards -->
+        <div class="lg:hidden grid grid-cols-1 gap-3">
+          <div 
+            v-for="lead in leadsList" 
+            :key="lead._id || lead.id"
+            class="bg-surface border border-default rounded-xl p-4 shadow-xs flex items-center justify-between text-xs"
+          >
+            <div>
+              <div class="flex items-center space-x-1.5 mb-1">
+                <span 
+                  class="w-2 h-2 rounded-full shrink-0" 
+                  :class="getAgingDotClass(lead.createdAt)"
+                ></span>
+                <router-link :to="`/app/leads/${lead._id || lead.id}`" class="font-bold text-primary hover:underline text-sm block">
+                  {{ lead.firstName }} {{ lead.lastName || '' }}
+                </router-link>
+              </div>
+              <div class="text-neutral-500 space-y-1 text-caption">
+                <span class="flex items-center gap-1">
+                  <PhPhone class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  {{ lead.mobile }}
+                </span>
+                <span class="block">Source: <b class="capitalize">{{ lead.source }}</b></span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end space-y-2">
+              <LeadStageBadge :stage="lead.status" />
+              <span class="flex items-center gap-1 font-bold text-neutral-700 text-caption">
+                <PhStar class="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                {{ lead.score }}
+              </span>
+            </div>
+          </div>
+          
+          <div v-if="leadsList.length === 0" class="text-center py-12 text-slate-400">
+            No prospects found.
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. KANBAN VIEW -->
+      <div v-else-if="viewMode === 'kanban'">
+        <LeadKanbanBoard 
+          :leads="leadsList" 
+          @stageChange="handleKanbanStageChange"
+        />
+      </div>
+    </div>
+
+    <!-- Drawers & Modals Mounts -->
+    <LeadCreateDrawer 
+      :isOpen="isCreateOpen" 
+      @close="isCreateOpen = false"
+      @success="refetch"
+      @merge="handleMergeTrigger"
+    />
+
+    <LeadAssignModal 
+      :isOpen="isAssignOpen" 
+      :leadIds="targetAssignIds"
+      @close="isAssignOpen = false"
+      @success="clearSelection"
+    />
+
+    <LeadLostModal 
+      :isOpen="isLostOpen" 
+      :leadId="activeLeadId"
+      @close="isLostOpen = false"
+      @success="refetch"
+    />
+
+    <LeadConversionDrawer 
+      v-if="activeLead"
+      :isOpen="isWonOpen" 
+      :lead="activeLead"
+      @close="isWonOpen = false"
+      @success="refetch"
+    />
+
+    <LeadMergeModal
+      v-if="isMergeOpen"
+      :isOpen="isMergeOpen"
+      :leadA="mergeLeadA"
+      :leadB="mergeLeadB"
+      @close="isMergeOpen = false"
+      @success="handleMergeSuccess"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+import { useStore } from 'vuex';
+import { PhTable, PhColumns, PhPlus, PhPhone, PhStar } from '@phosphor-icons/vue';
+import apiClient from '@/api/client';
+import LeadFilters from '../components/LeadFilters.vue';
+import LeadTable from '../components/LeadTable.vue';
+import LeadKanbanBoard from '../components/LeadKanbanBoard.vue';
+import LeadStageBadge from '../components/LeadStageBadge.vue';
+import LeadCreateDrawer from '../components/LeadCreateDrawer.vue';
+import LeadAssignModal from '../components/LeadAssignModal.vue';
+import LeadLostModal from '../components/LeadLostModal.vue';
+import LeadConversionDrawer from '../components/LeadConversionDrawer.vue';
+import LeadMergeModal from '../components/LeadMergeModal.vue';
+import { useLeadsQuery, useChangeLeadStageMutation } from '../queries';
+
+const activeFilters = ref({
+  search: '',
+  status: '',
+  source: '',
+  branchId: '',
+  assignedTo: '',
+  sort: 'createdAt',
+  order: -1
+});
+
+// Load Vue Query
+const { data, isLoading, refetch } = useLeadsQuery(activeFilters);
+
+const leadsList = computed(() => {
+  return data.value?.data || [];
+});
+
+const viewMode = ref('table');
+const selectedRows = ref([]);
+const isCreateOpen = ref(false);
+const isAssignOpen = ref(false);
+const isLostOpen = ref(false);
+const isWonOpen = ref(false);
+
+const activeLeadId = ref('');
+const targetAssignIds = ref([]);
+
+const activeLead = computed(() => {
+  return leadsList.value.find(l => (l._id || l.id) === activeLeadId.value) || null;
+});
+
+const handleFilterChange = (filters) => {
+  activeFilters.value = { ...activeFilters.value, ...filters };
+};
+
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection;
+};
+
+const handleSort = ({ field, direction }) => {
+  activeFilters.value.sort = field;
+  activeFilters.value.order = direction === 'asc' ? 1 : -1;
+};
+
+const openBulkAssign = () => {
+  targetAssignIds.value = selectedRows.value.map(row => row._id || row.id);
+  isAssignOpen.value = true;
+};
+
+const clearSelection = () => {
+  selectedRows.value = [];
+  refetch();
+};
+
+const { mutateAsync: changeStage } = useChangeLeadStageMutation();
+
+const handleKanbanStageChange = async ({ id, status }) => {
+  activeLeadId.value = id;
+
+  if (status === 'lost') {
+    isLostOpen.value = true;
+  } else if (status === 'won') {
+    isWonOpen.value = true;
+  } else {
+    try {
+      await changeStage({ id, status });
+    } catch (error) {
+      console.error('Failed to change stage:', error);
+    }
+  }
+};
+
+const store = useStore();
+const isMergeOpen = ref(false);
+const mergeLeadA = ref(null);
+const mergeLeadB = ref(null);
+
+const handleMergeTrigger = async ({ leadA, leadB }) => {
+  // If leadA is a draft from create form (no ID), pre-save it
+  if (!leadA._id && !leadA.id) {
+    try {
+      const res = await apiClient.post('/leads', leadA);
+      const createdLead = res.data?.data || res.data;
+      mergeLeadA.value = createdLead;
+    } catch (error) {
+      store.dispatch('notifications/triggerToast', {
+        message: 'Failed to initialize merge: could not save new lead draft.',
+        type: 'error'
+      });
+      return;
+    }
+  } else {
+    mergeLeadA.value = leadA;
+  }
+  mergeLeadB.value = leadB;
+  
+  isCreateOpen.value = false;
+  isMergeOpen.value = true;
+};
+
+const handleMergeSuccess = () => {
+  refetch();
+};
+
+const getAgingDotClass = (dateStr) => {
+  if (!dateStr) return 'bg-slate-300';
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays <= 3) return 'bg-green-500';
+  if (diffDays <= 7) return 'bg-yellow-400';
+  if (diffDays <= 14) return 'bg-orange-500';
+  return 'bg-red-500';
+};
+</script>
