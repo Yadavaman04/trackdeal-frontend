@@ -33,6 +33,13 @@
           <div class="flex flex-wrap items-center gap-2 mt-1">
             <LeadStageBadge :stage="lead.status" />
             <span class="text-[10px] text-slate-400 font-medium">Score: <b>{{ lead.score }}</b></span>
+            <span
+              v-if="transferredCPsCount > 0"
+              class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent-50 text-accent-700 border border-accent-200 flex items-center gap-1 shrink-0"
+              :title="`Transferred to ${transferredCPsCount} Channel Partner(s)`"
+            >
+              🏢 Transferred to {{ transferredCPsCount }} Channel Partner(s)
+            </span>
           </div>
         </div>
       </div>
@@ -75,6 +82,12 @@
         >
           Edit Profile
         </button>
+        <button 
+          @click="isActivityCenterOpen = true"
+          class="px-3.5 py-1.8 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-lg transition-colors shadow-xs flex items-center gap-1.5"
+        >
+          🏠 Visits & Activities
+        </button>
       </div>
     </div>
 
@@ -101,13 +114,61 @@
           <!-- Requirements details card -->
           <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
             <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-default pb-2">
-              Property Requirements
+              🏡 Buyer Requirement & Financial Profile
             </h4>
-            <div class="space-y-2 text-[11px]" v-if="lead.requirements">
-              <div class="flex justify-between"><span class="text-slate-400">Property Types:</span><span class="font-bold text-slate-750 dark:text-slate-200 capitalize">{{ lead.requirements.propertyType?.join(', ') || '—' }}</span></div>
-              <div class="flex justify-between"><span class="text-slate-400">BHK Sizes:</span><span class="font-bold text-slate-750 dark:text-slate-200">{{ lead.requirements.bhk?.join(', ') || '—' }} BHK</span></div>
-              <div class="flex justify-between"><span class="text-slate-400">Budget Range:</span><span class="font-bold text-slate-750 dark:text-slate-200">{{ formatBudget(lead.requirements.budget) }}</span></div>
-              <div class="flex justify-between"><span class="text-slate-400">Locality:</span><span class="font-semibold text-slate-750 dark:text-slate-250 capitalize">{{ lead.requirements.locations?.join(', ') || '—' }}</span></div>
+            <div class="space-y-2 text-[11px]">
+              <div class="flex justify-between"><span class="text-slate-400">Property Types:</span><span class="font-bold text-slate-750 dark:text-slate-200 capitalize">{{ lead.buyerRequirement?.propertyType?.join(', ') || lead.requirements?.propertyType?.join(', ') || '—' }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">BHK / Config:</span><span class="font-bold text-slate-750 dark:text-slate-200">{{ lead.buyerRequirement?.bhk?.join(', ') || lead.requirements?.bhk?.join(', ') || '—' }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Preferred Location:</span><span class="font-semibold text-slate-750 dark:text-slate-200 capitalize">{{ lead.buyerRequirement?.preferredLocation || lead.buyerRequirement?.locality || lead.requirements?.locations?.join(', ') || '—' }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Possession & Purpose:</span><span class="font-medium text-slate-750 dark:text-slate-200 capitalize">{{ (lead.buyerRequirement?.possessionPreference || '—').replace('_', ' ') }} • {{ (lead.buyerRequirement?.purpose || '—').replace('_', ' ') }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Loan Required:</span><span class="font-bold uppercase" :class="lead.financialRequirement?.loanRequired === 'yes' ? 'text-blue-600' : 'text-slate-600'">{{ lead.financialRequirement?.loanRequired || 'Not Decided' }}</span></div>
+              <div v-if="lead.financialRequirement?.loanRequired === 'yes'" class="flex justify-between"><span class="text-slate-400">Bank & Status:</span><span class="font-medium text-slate-750 dark:text-slate-200">{{ lead.financialRequirement?.preferredBank || 'Bank' }} ({{ (lead.financialRequirement?.loanStatus || 'Pending').replace('_', ' ') }})</span></div>
+              <div v-if="lead.qualification" class="flex justify-between border-t border-default pt-1.5"><span class="text-slate-400">Lead Temperature:</span><span class="font-bold capitalize" :class="lead.qualification.leadTemperature === 'hot' ? 'text-red-500' : 'text-amber-500'">{{ lead.qualification.leadTemperature || 'Warm' }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transferred Channel Partners & Brokers Card -->
+        <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between border-b border-default pb-2">
+            <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <span>🏢 Transferred Channel Partners & Brokers</span>
+              <span v-if="transferredCPsCount > 0" class="px-2 py-0.2 rounded-full text-[10px] bg-accent-100 text-accent-700 font-bold">
+                {{ transferredCPsCount }} Partner(s)
+              </span>
+            </h4>
+            <button @click="isTransferOpen = true" class="text-caption font-semibold text-accent-600 hover:underline">
+              + Transfer Lead
+            </button>
+          </div>
+
+          <div v-if="transferredCPsList.length === 0" class="text-caption text-slate-400 text-center py-3">
+            Not transferred to any Channel Partner or Broker yet. Click "+ Transfer Lead" above.
+          </div>
+
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div
+              v-for="cp in transferredCPsList"
+              :key="cp._id || cp"
+              class="p-3 rounded-lg border border-default bg-slate-50/60 dark:bg-slate-800/40 space-y-1"
+            >
+              <div class="flex justify-between items-start">
+                <router-link
+                  :to="`/app/agents/${cp._id || cp}`"
+                  class="font-bold text-body-sm text-slate-900 dark:text-slate-100 hover:underline truncate block"
+                >
+                  {{ cp.name || 'Channel Partner' }}
+                </router-link>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                  Active
+                </span>
+              </div>
+              <p class="text-caption text-slate-600 dark:text-slate-300 font-medium">
+                🏢 {{ cp.officeName || 'CP' }}
+              </p>
+              <p class="text-micro text-slate-400">
+                📞 {{ cp.phone || 'N/A' }} • 📍 {{ cp.city || 'CP' }}
+              </p>
             </div>
           </div>
         </div>
@@ -345,7 +406,7 @@
       @success="refetch"
     />
 
-    <LeadConversionDrawer 
+    <LeadClosingModal 
       :isOpen="isWonOpen" 
       :lead="lead"
       @close="isWonOpen = false"
@@ -367,6 +428,15 @@
       @close="isMergeOpen = false"
       @success="handleMergeSuccess"
     />
+
+    <!-- 360° Activity Center Drawer -->
+    <LeadActivityCenter
+      v-if="lead"
+      :isOpen="isActivityCenterOpen"
+      :lead="lead"
+      :asDrawer="true"
+      @close="isActivityCenterOpen = false"
+    />
   </div>
 </template>
 
@@ -378,13 +448,14 @@ import { useQuery } from '@tanstack/vue-query';
 import apiClient from '@/api/client';
 import LeadStageBadge from '../components/LeadStageBadge.vue';
 import LeadTimeline from '../components/LeadTimeline.vue';
+import LeadActivityCenter from '../components/LeadActivityCenter.vue';
 import WhatsAppWorkspace from '../components/WhatsAppWorkspace.vue';
 import FollowUpPanel from '../components/FollowUpPanel.vue';
 import LeadCommandCenter from '../components/LeadCommandCenter.vue';
 import LeadEditDrawer from '../components/LeadEditDrawer.vue';
 import LeadTransferDrawer from '../components/LeadTransferDrawer.vue';
 import LeadLostModal from '../components/LeadLostModal.vue';
-import LeadConversionDrawer from '../components/LeadConversionDrawer.vue';
+import LeadClosingModal from '../components/LeadClosingModal.vue';
 import LeadReopenModal from '../components/LeadReopenModal.vue';
 import LeadMergeModal from '../components/LeadMergeModal.vue';
 import { useLeadQuery, useAddLeadNoteMutation, useLogLeadActivityMutation, useAddLeadFollowUpMutation } from '../queries';
@@ -458,6 +529,7 @@ const isTransferOpen = ref(false);
 const isLostOpen = ref(false);
 const isWonOpen = ref(false);
 const isReopenOpen = ref(false);
+const isActivityCenterOpen = ref(false);
 
 const { mutateAsync: addNote } = useAddLeadNoteMutation();
 const { mutateAsync: logActivity } = useLogLeadActivityMutation();
@@ -599,9 +671,9 @@ const handleTaskComplete = async (taskId) => {
 const formatBudget = (budget) => {
   if (!budget) return '—';
   const formatNum = (num) => {
-    if (num >= 10000000) return `${(num / 10000000).toFixed(1)} Cr`;
-    if (num >= 100000) return `${(num / 100000).toFixed(1)} L`;
-    return `$${num.toLocaleString()}`;
+    if (num >= 10000000) return `₹${(num / 10000000).toFixed(1)} Cr`;
+    if (num >= 100000) return `₹${(num / 100000).toFixed(1)} L`;
+    return `₹${num.toLocaleString()}`;
   };
   return `${formatNum(budget.min || 0)} - ${formatNum(budget.max || 0)}`;
 };
@@ -639,4 +711,17 @@ const handleMergeSuccess = () => {
     refetchTasks();
   }
 };
+
+const transferredCPsList = computed(() => {
+  if (!lead.value) return [];
+  if (Array.isArray(lead.value.agentIds) && lead.value.agentIds.length > 0) {
+    return lead.value.agentIds;
+  }
+  if (lead.value.agentId) {
+    return [lead.value.agentId];
+  }
+  return [];
+});
+
+const transferredCPsCount = computed(() => transferredCPsList.value.length);
 </script>

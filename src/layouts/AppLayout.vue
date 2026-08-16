@@ -976,6 +976,12 @@ const menuGroups = [
         permission: "leads:read",
       },
       {
+        name: "Channel Partners",
+        to: "/app/agents",
+        icon: PhUsersThree,
+        permission: "agents:read",
+      },
+      {
         name: "Tasks",
         to: "/app/tasks",
         icon: PhCheckSquare,

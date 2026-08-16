@@ -26,6 +26,13 @@
           >
             {{ row.firstName }} {{ row.lastName || '' }}
           </router-link>
+          <span
+            v-if="(row.agentIds && row.agentIds.length > 0) || row.agentId"
+            class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-accent-50 text-accent-700 border border-accent-200 shrink-0"
+            :title="`Transferred to ${row.agentIds?.length || 1} Channel Partner(s)`"
+          >
+            🏢 {{ row.agentIds?.length || 1 }} CP
+          </span>
         </div>
       </template>
 

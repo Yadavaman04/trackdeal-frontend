@@ -6,7 +6,8 @@ export async function fetchLeads(params) {
 }
 
 export async function fetchLeadById(id) {
-  const response = await apiClient.get(`/leads/${id}`);
+  const cleanId = typeof id === 'object' && id !== null && 'value' in id ? id.value : id;
+  const response = await apiClient.get(`/leads/${cleanId}`);
   return response.data;
 }
 
@@ -70,6 +71,35 @@ export async function markLeadLost({ id, reason }) {
   return response.data;
 }
 
+// ---------------------------------------------------------------------------
+// Activity Center APIs
+// ---------------------------------------------------------------------------
+
+export async function fetchActivityCenter(leadId) {
+  const response = await apiClient.get(`/leads/${leadId}/activity-center`);
+  return response.data;
+}
+
+export async function createVisit(leadId, data) {
+  const response = await apiClient.post(`/leads/${leadId}/visits`, data);
+  return response.data;
+}
+
+export async function fetchVisits(leadId) {
+  const response = await apiClient.get(`/leads/${leadId}/visits`);
+  return response.data;
+}
+
+export async function createQuotation(leadId, data) {
+  const response = await apiClient.post(`/leads/${leadId}/quotations`, data);
+  return response.data;
+}
+
+export async function fetchQuotations(leadId) {
+  const response = await apiClient.get(`/leads/${leadId}/quotations`);
+  return response.data;
+}
+
 export default {
   fetchLeads,
   fetchLeadById,
@@ -84,5 +114,11 @@ export default {
   addLeadFollowUp,
   reopenLead,
   markLeadWon,
-  markLeadLost
+  markLeadLost,
+  fetchActivityCenter,
+  createVisit,
+  fetchVisits,
+  createQuotation,
+  fetchQuotations,
 };
+

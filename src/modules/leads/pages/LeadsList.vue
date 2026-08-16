@@ -110,6 +110,12 @@
                 <PhStar class="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
                 {{ lead.score }}
               </span>
+              <button
+                @click.stop="openActivityCenter(lead)"
+                class="px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 transition"
+              >
+                🏠 Visits
+              </button>
             </div>
           </div>
           
@@ -150,7 +156,7 @@
       @success="refetch"
     />
 
-    <LeadConversionDrawer 
+    <LeadClosingModal 
       v-if="activeLead"
       :isOpen="isWonOpen" 
       :lead="activeLead"
@@ -165,6 +171,15 @@
       :leadB="mergeLeadB"
       @close="isMergeOpen = false"
       @success="handleMergeSuccess"
+    />
+
+    <!-- Lead Activity Center Drawer -->
+    <LeadActivityCenter
+      v-if="activityCenterLead"
+      :isOpen="isActivityCenterOpen"
+      :lead="activityCenterLead"
+      :asDrawer="true"
+      @close="isActivityCenterOpen = false; activityCenterLead = null"
     />
   </div>
 </template>
@@ -181,8 +196,9 @@ import LeadStageBadge from '../components/LeadStageBadge.vue';
 import LeadCreateDrawer from '../components/LeadCreateDrawer.vue';
 import LeadAssignModal from '../components/LeadAssignModal.vue';
 import LeadLostModal from '../components/LeadLostModal.vue';
-import LeadConversionDrawer from '../components/LeadConversionDrawer.vue';
+import LeadClosingModal from '../components/LeadClosingModal.vue';
 import LeadMergeModal from '../components/LeadMergeModal.vue';
+import LeadActivityCenter from '../components/LeadActivityCenter.vue';
 import { useLeadsQuery, useChangeLeadStageMutation } from '../queries';
 
 const activeFilters = ref({
@@ -211,10 +227,17 @@ const isWonOpen = ref(false);
 
 const activeLeadId = ref('');
 const targetAssignIds = ref([]);
+const isActivityCenterOpen = ref(false);
+const activityCenterLead = ref(null);
 
 const activeLead = computed(() => {
   return leadsList.value.find(l => (l._id || l.id) === activeLeadId.value) || null;
 });
+
+const openActivityCenter = (lead) => {
+  activityCenterLead.value = lead;
+  isActivityCenterOpen.value = true;
+};
 
 const handleFilterChange = (filters) => {
   activeFilters.value = { ...activeFilters.value, ...filters };

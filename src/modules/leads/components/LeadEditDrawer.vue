@@ -259,9 +259,12 @@ const { mutateAsync: updateLead, isPending } = useUpdateLeadMutation();
 const onSubmit = handleSubmit(async (values) => {
   const payload = {
     id: props.lead._id || props.lead.id,
-    ...values,
-    lastName: lastName.value,
-    alternativeMobile: alternativeMobile.value,
+    firstName: values.firstName,
+    mobile: values.mobile,
+    source: values.source,
+    ...(values.email?.trim() ? { email: values.email.trim() } : {}),
+    ...(lastName.value?.trim() ? { lastName: lastName.value.trim() } : {}),
+    ...(alternativeMobile.value?.trim() ? { alternativeMobile: alternativeMobile.value.trim() } : {}),
     requirements: {
       propertyType: propertyTypes.value,
       bhk: bhkTypes.value,
@@ -270,7 +273,7 @@ const onSubmit = handleSubmit(async (values) => {
         max: budgetMax.value || 999999999,
         currency: 'INR'
       } : undefined,
-      locations: locations.value ? locations.value.split(',').map(l => l.trim()) : [],
+      locations: locations.value ? locations.value.split(',').map(l => l.trim()).filter(Boolean) : [],
       notes: reqNotes.value
     }
   };

@@ -1,3 +1,4 @@
+import { unref, computed } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import leadsApi from '../api/endpoints';
 
@@ -12,8 +13,8 @@ export function useLeadsQuery(filters) {
 export function useLeadQuery(id) {
   return useQuery({
     queryKey: ['leads', id],
-    queryFn: () => leadsApi.fetchLeadById(id),
-    enabled: !!id
+    queryFn: () => leadsApi.fetchLeadById(unref(id)),
+    enabled: computed(() => !!unref(id))
   });
 }
 
