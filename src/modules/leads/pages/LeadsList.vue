@@ -74,8 +74,11 @@
             :rows="leadsList"
             :isLoading="isLoading"
             :selectedLeads="selectedRows"
+            :pagination="pagination"
             @selectionChange="handleSelectionChange"
             @sort="handleSort"
+            @pageChange="handlePageChange"
+            @pageSizeChange="handlePageSizeChange"
           />
         </div>
 
@@ -114,7 +117,7 @@
                 @click.stop="openActivityCenter(lead)"
                 class="px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 transition"
               >
-                🏠 Visits
+                <AppIcon name="house" :size="12" /> Visits
               </button>
             </div>
           </div>
@@ -122,6 +125,16 @@
           <div v-if="leadsList.length === 0" class="text-center py-12 text-slate-400">
             No prospects found.
           </div>
+
+          <AppPagination
+            class="col-span-full"
+            :page="pagination.page"
+            :page-size="pagination.limit"
+            :total="pagination.total"
+            :total-pages="pagination.totalPages"
+            @page-change="handlePageChange"
+            @page-size-change="handlePageSizeChange"
+          />
         </div>
       </div>
 
@@ -208,7 +221,9 @@ const activeFilters = ref({
   branchId: '',
   assignedTo: '',
   sort: 'createdAt',
-  order: -1
+  order: -1,
+  page: 1,
+  limit: 20
 });
 
 // Load Vue Query
@@ -216,6 +231,13 @@ const { data, isLoading, refetch } = useLeadsQuery(activeFilters);
 
 const leadsList = computed(() => {
   return data.value?.data || [];
+});
+
+const pagination = computed(() => data.value?.pagination || {
+  page: activeFilters.value.page,
+  limit: activeFilters.value.limit,
+  total: leadsList.value.length,
+  totalPages: 1,
 });
 
 const viewMode = ref('table');
@@ -240,7 +262,8 @@ const openActivityCenter = (lead) => {
 };
 
 const handleFilterChange = (filters) => {
-  activeFilters.value = { ...activeFilters.value, ...filters };
+  activeFilters.value = { ...activeFilters.value, ...filters, page: 1 };
+  selectedRows.value = [];
 };
 
 const handleSelectionChange = (selection) => {
@@ -250,6 +273,17 @@ const handleSelectionChange = (selection) => {
 const handleSort = ({ field, direction }) => {
   activeFilters.value.sort = field;
   activeFilters.value.order = direction === 'asc' ? 1 : -1;
+  activeFilters.value.page = 1;
+};
+
+const handlePageChange = (page) => {
+  activeFilters.value.page = page;
+  selectedRows.value = [];
+};
+
+const handlePageSizeChange = (limit) => {
+  activeFilters.value = { ...activeFilters.value, page: 1, limit };
+  selectedRows.value = [];
 };
 
 const openBulkAssign = () => {

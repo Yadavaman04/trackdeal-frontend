@@ -156,8 +156,11 @@
           :rows="filteredProperties"
           :isLoading="isLoading"
           :selectedProperties="selectedRows"
+          :pagination="pagination"
           @selectionChange="handleSelectionChange"
           @sort="handleSort"
+          @pageChange="handlePageChange"
+          @pageSizeChange="handlePageSizeChange"
         />
       </div>
 
@@ -283,7 +286,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useStore } from 'vuex';
 import { usePropertiesQuery } from '../queries';
 import PropertyTable from '../components/PropertyTable.vue';
@@ -309,6 +312,19 @@ const filterType = ref('');
 const filterStatus = ref('');
 const filterMinPrice = ref('');
 const filterMaxPrice = ref('');
+const propertyPaging = ref({ page: 1, limit: 20 });
+const propertyQueryParams = computed(() => ({
+  ...propertyPaging.value,
+  type: filterType.value || undefined,
+  status: filterStatus.value || undefined,
+  minPrice: filterMinPrice.value || undefined,
+  maxPrice: filterMaxPrice.value || undefined,
+}));
+
+watch([filterType, filterStatus, filterMinPrice, filterMaxPrice], () => {
+  propertyPaging.value = { ...propertyPaging.value, page: 1 };
+  selectedRows.value = [];
+});
 
 const isCreateOpen = ref(false);
 const isEditOpen = ref(false);
@@ -316,9 +332,14 @@ const isReserveOpen = ref(false);
 const isReleaseOpen = ref(false);
 const selectedProperty = ref(null);
 
-const { data: propertiesData, isLoading, refetch } = usePropertiesQuery();
+const { data: propertiesData, isLoading, refetch } = usePropertiesQuery(propertyQueryParams);
 
 const propertiesList = computed(() => propertiesData.value?.data || []);
+const pagination = computed(() => propertiesData.value?.pagination || {
+  ...propertyPaging.value,
+  total: propertiesList.value.length,
+  totalPages: 1,
+});
 
 const filteredProperties = computed(() => {
   return propertiesList.value.filter(item => {
@@ -346,6 +367,16 @@ const handleSelectionChange = (selection) => {
 
 const handleSort = (sortOption) => {
   console.log('Sorting table list by:', sortOption);
+};
+
+const handlePageChange = (page) => {
+  propertyPaging.value = { ...propertyPaging.value, page };
+  selectedRows.value = [];
+};
+
+const handlePageSizeChange = (limit) => {
+  propertyPaging.value = { page: 1, limit };
+  selectedRows.value = [];
 };
 
 const handleBoardStatusChange = ({ item, oldStatus, newStatus, isLocked }) => {

@@ -402,7 +402,7 @@
                     @click="updateDocStatus(doc._id, 'verified')"
                     class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[11px] font-bold transition"
                   >
-                    ✓ Verify
+                    <AppIcon name="check" :size="13" weight="bold" /> Verify
                   </button>
                   <button
                     v-if="doc.status === 'pending'"
@@ -738,7 +738,7 @@ const journeySteps = [
   { id: 'docs', label: 'Documents' },
   { id: 'submitted', label: 'Submitted' },
   { id: 'review', label: 'Under Review' },
-  { id: 'sanctioned', label: 'Sanctioned 🎉' },
+  { id: 'sanctioned', label: 'Sanctioned' },
   { id: 'disbursed', label: 'Disbursed' },
   { id: 'commission', label: 'Commission' },
 ];

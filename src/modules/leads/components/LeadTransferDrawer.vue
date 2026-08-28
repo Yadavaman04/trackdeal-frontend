@@ -101,7 +101,7 @@
                   {{ ag.name }}
                 </p>
                 <p class="text-[10px] text-slate-500 truncate">
-                  🏢 {{ ag.officeName }} • {{ ag.city || 'CP' }} ({{ ag.phone }})
+                  <AppIcon name="buildings" :size="11" class="inline" /> {{ ag.officeName }} • {{ ag.city || 'CP' }} ({{ ag.phone }})
                 </p>
               </div>
             </label>
@@ -146,7 +146,7 @@
             class="p-2.5 rounded-lg border border-default bg-slate-50 dark:bg-slate-800/50 text-[11px]"
           >
             <div class="flex justify-between items-start font-semibold text-slate-800 dark:text-slate-200 mb-0.5">
-              <span>{{ hist.fromName }} ➔ {{ hist.toAgentName }}</span>
+              <span class="inline-flex items-center gap-1">{{ hist.fromName }} <AppIcon name="arrowRight" :size="11" /> {{ hist.toAgentName }}</span>
               <span class="text-[9px] text-slate-400 font-normal">{{ formatDate(hist.transferredAt) }}</span>
             </div>
             <p v-if="hist.remarks" class="text-slate-500 italic text-[10px]">"{{ hist.remarks }}"</p>

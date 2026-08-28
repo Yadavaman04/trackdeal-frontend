@@ -65,7 +65,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-default text-slate-655 font-medium">
-            <tr v-for="proj in filteredProjects" :key="proj._id || proj.id" class="hover:bg-slate-50/40">
+            <tr v-for="proj in paginatedProjects" :key="proj._id || proj.id" class="hover:bg-slate-50/40">
               <td class="p-4">
                 <router-link 
                   :to="`/app/projects/${proj._id || proj.id}`" 
@@ -131,6 +131,7 @@
           </tbody>
         </table>
       </div>
+      <AppPagination v-bind="projectPagination" @page-change="setProjectPage" @page-size-change="setProjectPageSize" />
     </div>
 
     <!-- Add / Edit Project Drawer -->
@@ -268,6 +269,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { PhMagnifyingGlass, PhCopy } from '@phosphor-icons/vue';
 import { useProjectsQuery, useUnitsQuery, useCreateProjectMutation, useUpdateProjectMutation } from '../queries';
+import { useClientPagination } from '@/composables/useClientPagination';
 import apiClient from '@/api/client';
 import AppDrawer from '@/components/AppDrawer.vue';
 import BuilderCreateDrawer from '../components/BuilderCreateDrawer.vue';
@@ -312,6 +314,8 @@ const filteredProjects = computed(() => {
     return matchesSearch && matchesStatus;
   });
 });
+
+const { paginatedItems: paginatedProjects, pagination: projectPagination, setPage: setProjectPage, setPageSize: setProjectPageSize } = useClientPagination(filteredProjects);
 
 const projectUnitsStats = computed(() => {
   const stats = {};

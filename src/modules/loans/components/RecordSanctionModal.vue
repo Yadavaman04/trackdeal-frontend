@@ -6,7 +6,7 @@
         <div>
           <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <PhCertificate :size="22" class="text-emerald-600" weight="duotone" />
-            Record Loan Sanction 🎉
+            Record loan sanction
           </h3>
           <p class="text-xs text-slate-500 mt-0.5">Enter bank approval terms, sanctioned amount, and rate</p>
         </div>

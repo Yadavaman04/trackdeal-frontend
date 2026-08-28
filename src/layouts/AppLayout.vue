@@ -1,12 +1,12 @@
 <template>
   <div
-    class="h-screen overflow-hidden flex p-0 lg:p-4 lg:gap-4"
+    class="product-shell h-screen overflow-hidden flex"
     style="background-color: hsl(var(--bg-app))"
   >
     <!-- ── Desktop Sidebar ─────────────────────────────────────────────── -->
     <aside
-      class="hidden lg:flex flex-col flex-shrink-0 border lg:rounded-[12px] transition-all duration-200 ease-enter overflow-hidden shadow-xs"
-      :class="[sidebarCollapsed ? 'w-16' : 'w-[220px]']"
+      class="product-sidebar hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-200 ease-enter overflow-hidden"
+      :class="[sidebarCollapsed ? 'w-[72px]' : 'w-[248px]']"
       style="
         background-color: hsl(var(--bg-surface));
         border-color: hsl(var(--neutral-100));
@@ -14,23 +14,23 @@
     >
       <!-- Logo -->
       <div
-        class="h-14 flex items-center px-3.5 shrink-0 border-b gap-2.5 overflow-hidden"
+        class="h-16 flex items-center px-4 shrink-0 border-b gap-3 overflow-hidden"
         style="border-color: hsl(var(--neutral-100))"
       >
         <div
-          class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0 shadow-xs"
+          class="brand-mark w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
         >
           <PhBuildings weight="bold" :size="16" class="text-white" />
         </div>
         <Transition name="label-fade">
           <div v-if="!sidebarCollapsed" class="flex flex-col min-w-0">
             <span
-              class="font-bold tracking-tight text-xs uppercase"
+              class="font-heading font-extrabold tracking-[-0.04em] text-sm"
               style="color: hsl(var(--neutral-900))"
             >
-              Track<span class="text-indigo-600">Deal</span>
+              Track<span class="text-accent-600">Deal</span>
             </span>
-            <span class="text-[8px] font-medium tracking-widest text-slate-400 uppercase">CRM Platform</span>
+            <span class="text-[8px] font-semibold tracking-[0.2em] text-slate-400 uppercase">Revenue workspace</span>
           </div>
         </Transition>
       </div>
@@ -254,7 +254,7 @@
 
     <!-- ── Main Content Area ──────────────────────────────────────────── -->
     <div
-      class="flex-1 flex flex-col min-w-0 overflow-hidden border lg:rounded-[12px] shadow-xs"
+      class="product-workspace flex-1 flex flex-col min-w-0 overflow-hidden"
       style="
         background-color: hsl(var(--bg-app));
         border-color: hsl(var(--neutral-100));
@@ -262,7 +262,7 @@
     >
       <!-- Topbar -->
       <header
-        class="h-14 flex items-center justify-between px-4 lg:px-5 shrink-0 border-b"
+        class="product-topbar h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b"
         style="
           background-color: hsl(var(--bg-surface));
           border-color: hsl(var(--neutral-100));
@@ -302,7 +302,7 @@
           <!-- + Quick Add Action Button -->
           <button
             @click="quickAddOpen = true"
-            class="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-[6px] bg-indigo-600 hover:bg-indigo-700 text-white text-caption font-semibold transition-colors shadow-xs mr-1"
+            class="btn-primary flex items-center gap-1.5 h-9 px-3 sm:px-4 rounded-[8px] text-caption font-semibold transition-all mr-1"
           >
             <PhPlus :size="14" weight="bold" />
             <span class="hidden sm:inline">Add</span>
@@ -479,15 +479,19 @@
 
       <!-- Page Content -->
       <main
-        class="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 pb-12"
+        class="product-canvas flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-8 lg:py-7 pb-12"
         style="background-color: hsl(var(--bg-app))"
       >
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <Transition name="page" mode="out-in">
+            <component :is="Component" :key="route.fullPath" />
+          </Transition>
+        </router-view>
       </main>
 
       <!-- Footer -->
       <footer
-        class="h-11 flex items-center justify-between shrink-0 border-t text-[11px] px-4 lg:px-6 select-none"
+        class="h-10 hidden sm:flex items-center justify-between shrink-0 border-t text-[10px] px-4 lg:px-8 select-none"
         style="
           background-color: hsl(var(--bg-surface));
           border-color: hsl(var(--neutral-100));
@@ -1299,12 +1303,13 @@ const vClickOutside = {
   color: hsl(var(--neutral-500));
 }
 .nav-item-default:hover {
-  background-color: hsl(var(--neutral-100));
+  background-color: hsl(var(--neutral-50));
   color: hsl(var(--neutral-900));
 }
 .nav-item-active {
-  background-color: hsl(var(--accent-50));
+  background: linear-gradient(90deg, hsl(var(--accent-100) / 0.85), hsl(var(--accent-50) / 0.45));
   color: hsl(var(--accent-600));
+  box-shadow: inset 0 0 0 1px hsl(var(--accent-200) / 0.55);
 }
 .dark .nav-item-active {
   background-color: hsl(var(--accent-100));
@@ -1313,10 +1318,11 @@ const vClickOutside = {
 .nav-item-active::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
+  left: 5px;
+  top: 50%;
+  width: 3px;
+  height: 14px;
+  transform: translateY(-50%);
   border-radius: 999px;
   background-color: hsl(var(--accent-500));
 }

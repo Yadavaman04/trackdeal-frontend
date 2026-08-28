@@ -18,7 +18,7 @@
           <div class="px-6 py-4 border-b flex items-center justify-between shrink-0" style="border-color: hsl(var(--neutral-100)); background-color: hsl(var(--neutral-50));">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-base">
-                👤
+                <AppIcon name="user" :size="22" weight="duotone" />
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -38,7 +38,7 @@
               @click="$emit('close')"
               class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              ✕
+              <AppIcon name="close" :size="15" weight="bold" />
             </button>
           </div>
 
@@ -48,16 +48,16 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-850/40 text-xs" style="border-color: hsl(var(--neutral-100));">
               <div>
                 <span class="text-[10px] text-slate-400 font-semibold block uppercase">Phone Number</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">📞 {{ customer?.mobile || '—' }}</span>
+                <span class="font-bold text-slate-800 dark:text-slate-200 inline-flex items-center gap-1"><AppIcon name="phone" :size="12" /> {{ customer?.mobile || '—' }}</span>
                 <span v-if="customer?.alternativeMobile" class="text-[10px] text-slate-500 block">Alt: {{ customer.alternativeMobile }}</span>
               </div>
               <div>
                 <span class="text-[10px] text-slate-400 font-semibold block uppercase">Email Address</span>
-                <span class="font-medium text-slate-800 dark:text-slate-200 truncate block">✉️ {{ customer?.email || 'Not provided' }}</span>
+                <span class="font-medium text-slate-800 dark:text-slate-200 truncate flex items-center gap-1"><AppIcon name="email" :size="12" /> {{ customer?.email || 'Not provided' }}</span>
               </div>
               <div>
                 <span class="text-[10px] text-slate-400 font-semibold block uppercase">Customer Since</span>
-                <span class="font-medium text-slate-700 dark:text-slate-300">📅 {{ formatDate(customer?.createdAt) }}</span>
+                <span class="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1"><AppIcon name="calendar" :size="12" /> {{ formatDate(customer?.createdAt) }}</span>
               </div>
             </div>
 
@@ -81,7 +81,7 @@
             <div>
               <div class="flex items-center justify-between mb-2.5">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <span>📋 Associated Inquiries & Property Requirements ({{ leadsList.length }})</span>
+                  <span class="inline-flex items-center gap-1"><AppIcon name="clipboard" :size="13" /> Associated inquiries & property requirements ({{ leadsList.length }})</span>
                 </h4>
               </div>
 
@@ -162,7 +162,7 @@
 
                   <!-- Notes/Source if present -->
                   <div v-if="leadItem.qualification?.notesRemarks || leadItem.requirements?.notes" class="text-[10px] text-slate-500 bg-slate-50 dark:bg-slate-900 p-2 rounded border border-slate-100 dark:border-slate-800">
-                    💡 <b>Notes:</b> {{ leadItem.qualification?.notesRemarks || leadItem.requirements?.notes }}
+                    <AppIcon name="lightbulb" :size="12" class="inline mr-1" /> <b>Notes:</b> {{ leadItem.qualification?.notesRemarks || leadItem.requirements?.notes }}
                   </div>
                 </div>
               </div>
@@ -185,7 +185,7 @@
               @click="$emit('confirm', customer)"
               class="px-5 py-2 rounded-lg bg-primary hover:bg-opacity-95 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
             >
-              <span>✓ Yes, Create New Lead for this Customer</span>
+              <span class="inline-flex items-center gap-1"><AppIcon name="check" :size="13" weight="bold" /> Yes, create new lead for this customer</span>
             </button>
           </div>
         </div>

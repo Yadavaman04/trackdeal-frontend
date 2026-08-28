@@ -40,7 +40,7 @@
               @click="$emit('close')"
               class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
             >
-              ✕
+              <AppIcon name="close" :size="15" weight="bold" />
             </button>
           </div>
         </div>
@@ -74,7 +74,7 @@
         <div v-else class="flex-1 overflow-y-auto p-6 space-y-5">
           <!-- Error alert -->
           <div v-if="errorMsg" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3.5 text-xs text-red-700 dark:text-red-300 flex items-start gap-2">
-            <span class="text-base leading-none">⚠️</span>
+            <AppIcon name="warning" :size="16" class="shrink-0" />
             <div class="flex-1">{{ errorMsg }}</div>
           </div>
 
@@ -82,7 +82,7 @@
           <div class="bg-surface rounded-xl border border-default p-4 space-y-4 shadow-2xs">
             <div class="flex items-center justify-between border-b border-default pb-2.5">
               <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <span>📋</span> Activity Details
+                <AppIcon name="clipboard" :size="14" /> Activity details
               </h3>
               <span class="text-[11px] font-medium text-slate-400">Fields marked * are required</span>
             </div>
@@ -106,11 +106,11 @@
               <div class="space-y-1">
                 <label class="form-label">Visit Status</label>
                 <select v-model="form.visitStatus" class="form-input w-full text-xs">
-                  <option value="scheduled">Scheduled 📅</option>
-                  <option value="completed">Completed ✅</option>
-                  <option value="cancelled">Cancelled ❌</option>
-                  <option value="rescheduled">Rescheduled 🔄</option>
-                  <option value="no_show">No Show 🚫</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="rescheduled">Rescheduled</option>
+                  <option value="no_show">No show</option>
                 </select>
               </div>
               <div class="space-y-1">
@@ -141,10 +141,10 @@
                   <label class="form-label">Interest Level</label>
                   <select v-model="form.interestLevel" class="form-input w-full text-xs">
                     <option value="">Not Assessed</option>
-                    <option value="very_interested">Very Interested 🔥</option>
-                    <option value="interested">Interested ✅</option>
-                    <option value="maybe">Maybe 🤔</option>
-                    <option value="not_interested">Not Interested ❌</option>
+                    <option value="very_interested">Very interested</option>
+                    <option value="interested">Interested</option>
+                    <option value="maybe">Maybe</option>
+                    <option value="not_interested">Not interested</option>
                   </select>
                 </div>
               </div>
@@ -184,11 +184,11 @@
                 <div class="space-y-1">
                   <label class="form-label">Visit Status</label>
                   <select v-model="form.visitStatus" class="form-input w-full text-xs">
-                    <option value="scheduled">Scheduled 📅</option>
-                    <option value="completed">Completed ✅</option>
-                    <option value="cancelled">Cancelled ❌</option>
-                    <option value="rescheduled">Rescheduled 🔄</option>
-                    <option value="no_show">No Show 🚫</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="rescheduled">Rescheduled</option>
+                    <option value="no_show">No show</option>
                   </select>
                 </div>
               </div>
@@ -200,20 +200,20 @@
                 <div class="space-y-1">
                   <label class="form-label">Call Direction</label>
                   <select v-model="form.callType" class="form-input w-full text-xs">
-                    <option value="outgoing">Outgoing 📞</option>
-                    <option value="incoming">Incoming 📲</option>
-                    <option value="missed">Missed 📵</option>
+                    <option value="outgoing">Outgoing</option>
+                    <option value="incoming">Incoming</option>
+                    <option value="missed">Missed</option>
                   </select>
                 </div>
                 <div class="space-y-1">
                   <label class="form-label">Call Status</label>
                   <select v-model="form.callStatus" class="form-input w-full text-xs">
-                    <option value="connected">Connected ✅</option>
-                    <option value="no_answer">No Answer ❌</option>
+                    <option value="connected">Connected</option>
+                    <option value="no_answer">No answer</option>
                     <option value="busy">Busy ⏳</option>
-                    <option value="switched_off">Switched Off 📴</option>
-                    <option value="callback_requested">Call Back Requested 🔄</option>
-                    <option value="invalid_number">Invalid Number ⚠️</option>
+                    <option value="switched_off">Switched off</option>
+                    <option value="callback_requested">Call back requested</option>
+                    <option value="invalid_number">Invalid number</option>
                   </select>
                 </div>
                 <div class="space-y-1">
@@ -228,11 +228,11 @@
               <div class="space-y-1">
                 <label class="form-label">Communication Type</label>
                 <select v-model="form.communicationType" class="form-input w-full text-xs">
-                  <option value="message_sent">Message Sent 📤</option>
-                  <option value="message_received">Message Received 📥</option>
-                  <option value="brochure_shared">Brochure Shared 📑</option>
-                  <option value="property_shared">Property Shared 🏠</option>
-                  <option value="followup_message">Follow-up Message 💬</option>
+                  <option value="message_sent">Message sent</option>
+                  <option value="message_received">Message received</option>
+                  <option value="brochure_shared">Brochure shared</option>
+                  <option value="property_shared">Property shared</option>
+                  <option value="followup_message">Follow-up message</option>
                   <option value="other">Other</option>
                 </select>
               </div>
@@ -244,9 +244,9 @@
                 <div class="space-y-1">
                   <label class="form-label">Meeting Type</label>
                   <select v-model="form.meetingType" class="form-input w-full text-xs">
-                    <option value="office">Office Meeting 🏢</option>
-                    <option value="customer_location">Customer Location 📍</option>
-                    <option value="video_meeting">Video Meeting 📹</option>
+                    <option value="office">Office meeting</option>
+                    <option value="customer_location">Customer location</option>
+                    <option value="video_meeting">Video meeting</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
@@ -273,11 +273,11 @@
                 <div class="space-y-1">
                   <label class="form-label">Email Type</label>
                   <select v-model="form.emailType" class="form-input w-full text-xs">
-                    <option value="property_details">Property Details 🏠</option>
-                    <option value="quotation">Quotation 💰</option>
-                    <option value="followup">Follow-up 📅</option>
-                    <option value="documentation">Documentation 📄</option>
-                    <option value="general">General ✉️</option>
+                    <option value="property_details">Property details</option>
+                    <option value="quotation">Quotation</option>
+                    <option value="followup">Follow-up</option>
+                    <option value="documentation">Documentation</option>
+                    <option value="general">General</option>
                   </select>
                 </div>
                 <div class="space-y-1">
@@ -293,11 +293,11 @@
                 <div class="space-y-1">
                   <label class="form-label">Follow-up Type</label>
                   <select v-model="form.followUpType" class="form-input w-full text-xs">
-                    <option value="call">Phone Call 📞</option>
-                    <option value="whatsapp">WhatsApp 💬</option>
-                    <option value="email">Email ✉️</option>
-                    <option value="meeting">Meeting 🤝</option>
-                    <option value="site_visit">Site Visit 🏗️</option>
+                    <option value="call">Phone call</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">Email</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="site_visit">Site visit</option>
                     <option value="general">General</option>
                   </select>
                 </div>
@@ -306,8 +306,8 @@
                   <select v-model="form.priority" class="form-input w-full text-xs">
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
-                    <option value="high">High 🔥</option>
-                    <option value="urgent">Urgent ⚡</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
                 <div class="space-y-1">
@@ -350,11 +350,11 @@
               <div class="space-y-1">
                 <label class="form-label">Sharing Method</label>
                 <select v-model="form.sharingMethod" class="form-input w-full text-xs">
-                  <option value="whatsapp">WhatsApp 💬</option>
-                  <option value="email">Email ✉️</option>
-                  <option value="sms">SMS 📱</option>
-                  <option value="meeting">In-Person Meeting 🤝</option>
-                  <option value="call">Phone Call 📞</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="meeting">In-person meeting</option>
+                  <option value="call">Phone call</option>
                   <option value="other">Other</option>
                 </select>
               </div>
@@ -448,12 +448,12 @@
               <div class="space-y-1">
                 <label class="form-label">Negotiation Status</label>
                 <select v-model="form.negotiationStatus" class="form-input w-full text-xs">
-                  <option value="started">Started 🏁</option>
+                  <option value="started">Started</option>
                   <option value="in_progress">In Progress ⏳</option>
-                  <option value="customer_considering">Customer Considering 🤔</option>
-                  <option value="final_offer_sent">Final Offer Sent 📩</option>
-                  <option value="accepted">Accepted 🎉</option>
-                  <option value="rejected">Rejected ❌</option>
+                  <option value="customer_considering">Customer considering</option>
+                  <option value="final_offer_sent">Final offer sent</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
             </template>
@@ -513,9 +513,9 @@
                 <label class="form-label">Payment Status</label>
                 <select v-model="form.paymentStatus" class="form-input w-full text-xs">
                   <option value="pending">Pending ⏳</option>
-                  <option value="received">Received ✅</option>
-                  <option value="partially_paid">Partially Paid 🟡</option>
-                  <option value="delayed">Delayed ⚠️</option>
+                  <option value="received">Received</option>
+                  <option value="partially_paid">Partially paid</option>
+                  <option value="delayed">Delayed</option>
                 </select>
               </div>
             </template>
@@ -546,9 +546,9 @@
                     <option value="not_started">Not Started</option>
                     <option value="docs_collected">Documents Collected</option>
                     <option value="applied">Applied / In Review</option>
-                    <option value="sanctioned">Sanctioned 🎉</option>
-                    <option value="disbursed">Disbursed 💰</option>
-                    <option value="rejected">Rejected ❌</option>
+                    <option value="sanctioned">Sanctioned</option>
+                    <option value="disbursed">Disbursed</option>
+                    <option value="rejected">Rejected</option>
                   </select>
                 </div>
               </div>
@@ -569,11 +569,11 @@
               <div class="space-y-1">
                 <label class="form-label">Registration Status</label>
                 <select v-model="form.registrationStatus" class="form-input w-full text-xs">
-                  <option value="planned">Planned 🗓️</option>
-                  <option value="docs_pending">Documents Pending 📑</option>
-                  <option value="scheduled">Scheduled 📅</option>
-                  <option value="completed">Completed ✅</option>
-                  <option value="cancelled">Cancelled ❌</option>
+                  <option value="planned">Planned</option>
+                  <option value="docs_pending">Documents pending</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
             </template>
@@ -589,8 +589,8 @@
                   <label class="form-label">Priority</label>
                   <select v-model="form.priority" class="form-input w-full text-xs">
                     <option value="medium">Medium</option>
-                    <option value="high">High 🔥</option>
-                    <option value="urgent">Urgent ⚡</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                     <option value="low">Low</option>
                   </select>
                 </div>
@@ -605,7 +605,7 @@
               </div>
               <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-400 mt-2">
                 <input type="checkbox" v-model="form.isPrivate" class="rounded border-default text-primary" />
-                🔒 Private note (only visible to your internal team)
+                <AppIcon name="lock" :size="13" class="inline mr-1" /> Private note (only visible to your internal team)
               </label>
             </template>
 
@@ -621,7 +621,7 @@
           <!-- SECTION 2: SUMMARY & CUSTOMER RESPONSE -->
           <div class="bg-surface rounded-xl border border-default p-4 space-y-4 shadow-2xs">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-default pb-2.5 flex items-center gap-1.5">
-              <span>✍️</span> Summary & Notes
+              <AppIcon name="note" :size="14" /> Summary & notes
             </h3>
             <div class="space-y-1">
               <label class="form-label">Summary / Interaction Notes *</label>
@@ -647,7 +647,7 @@
           <!-- SECTION 3: NEXT FOLLOW-UP -->
           <div class="bg-surface rounded-xl border border-default p-4 space-y-3 shadow-2xs">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-default pb-2 flex items-center gap-1.5">
-              <span>📅</span> Next Follow-up (Auto-schedules in Calendar/Tasks)
+              <AppIcon name="calendar" :size="14" /> Next follow-up (auto-schedules in Calendar/Tasks)
             </h3>
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
@@ -657,11 +657,11 @@
               <div class="space-y-1">
                 <label class="form-label">Follow-up Type</label>
                 <select v-model="form.nextFollowUpType" class="form-input w-full text-xs">
-                  <option value="call">Phone Call 📞</option>
-                  <option value="whatsapp">WhatsApp 💬</option>
-                  <option value="meeting">Meeting 🤝</option>
-                  <option value="site_visit">Site Visit 🏗️</option>
-                  <option value="email">Email ✉️</option>
+                  <option value="call">Phone call</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="meeting">Meeting</option>
+                  <option value="site_visit">Site visit</option>
+                  <option value="email">Email</option>
                 </select>
               </div>
             </div>
@@ -682,7 +682,7 @@
             class="btn btn-primary btn-sm text-xs font-bold px-5 flex items-center gap-2 shadow-sm"
           >
             <span v-if="saving" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-            <span>{{ isEditing ? 'Update Activity' : `✓ Save ${selectedConfig?.label || 'Activity'}` }}</span>
+            <span>{{ isEditing ? 'Update activity' : `Save ${selectedConfig?.label || 'activity'}` }}</span>
           </button>
         </div>
       </div>

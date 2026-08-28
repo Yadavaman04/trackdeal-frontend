@@ -6,8 +6,11 @@
       :selectable="true"
       :selectedRows="selectedTasks"
       :isLoading="isLoading"
+      :pagination="pagination"
       @selectionChange="handleSelectionChange"
       @sort="handleSort"
+      @pageChange="$emit('pageChange', $event)"
+      @pageSizeChange="$emit('pageSizeChange', $event)"
       :sorting="sorting"
     >
       <!-- Task Title & Related Entity Slot -->
@@ -132,10 +135,11 @@ import {
 const props = defineProps({
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
-  selectedTasks: { type: Array, default: () => [] }
+  selectedTasks: { type: Array, default: () => [] },
+  pagination: { type: Object, default: null }
 });
 
-const emit = defineEmits(['sort', 'selectionChange', 'select', 'complete', 'cancelTask']);
+const emit = defineEmits(['sort', 'selectionChange', 'select', 'complete', 'cancelTask', 'pageChange', 'pageSizeChange']);
 
 const sorting = ref({ field: 'dueDate', direction: 'asc' });
 

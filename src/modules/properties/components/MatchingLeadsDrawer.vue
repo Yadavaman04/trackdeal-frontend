@@ -67,7 +67,7 @@
 
           <!-- Actions -->
           <div class="flex justify-between items-center border-t border-dashed border-default pt-3">
-            <span class="text-[10px] text-slate-400">📞 {{ lead.mobile }}</span>
+            <span class="text-[10px] text-slate-400 inline-flex items-center gap-1"><AppIcon name="phone" :size="11" /> {{ lead.mobile }}</span>
             <div class="flex space-x-2">
               <a 
                 :href="`tel:${lead.mobile}`"

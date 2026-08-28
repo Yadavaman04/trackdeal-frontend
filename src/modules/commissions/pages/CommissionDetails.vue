@@ -8,7 +8,7 @@
 
     <!-- Error State -->
     <div v-else-if="!commission" class="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
-      <span class="text-3xl">⚠️</span>
+      <AppIcon name="warning" :size="30" class="mx-auto text-amber-500" weight="duotone" />
       <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">Commission Record Not Found</h3>
       <router-link to="/app/commissions" class="btn-md btn-primary inline-flex">
         Return to Commissions
@@ -48,7 +48,7 @@
             @click="paymentModalOpen = true"
             class="px-4 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5"
           >
-            <span>💳 + Record Payment</span>
+            <span class="inline-flex items-center gap-1.5"><AppIcon name="payment" :size="14" /> Record payment</span>
           </button>
           <button 
             @click="loadCommission"
@@ -319,7 +319,7 @@
           <div class="space-y-2">
             <div class="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span>📄</span>
+                <AppIcon name="file" :size="15" />
                 <div>
                   <div class="font-bold text-slate-800 dark:text-slate-200">Commission_Agreement.pdf</div>
                   <div class="text-[10px] text-slate-400">Signed with {{ commission.payablePartyName }}</div>
@@ -329,7 +329,7 @@
             </div>
             <div class="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span>🧾</span>
+                <AppIcon name="clipboard" :size="15" />
                 <div>
                   <div class="font-bold text-slate-800 dark:text-slate-200">B2B_Invoice_INV-001.pdf</div>
                   <div class="text-[10px] text-slate-400">Tax Invoice with GST details</div>
@@ -357,14 +357,14 @@
         <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50">
           <div>
             <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <span>💳</span>
+              <AppIcon name="payment" :size="15" />
               <span>Record Commission Payment</span>
             </h3>
             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               {{ commission?.commissionNumber }} · {{ commission?.payablePartyName }}
             </p>
           </div>
-          <button @click="paymentModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+          <button @click="paymentModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Close"><AppIcon name="close" :size="15" weight="bold" /></button>
         </div>
 
         <form @submit.prevent="submitPayment" class="p-5 space-y-4">

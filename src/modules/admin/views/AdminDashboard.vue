@@ -11,14 +11,14 @@
           @click="loadData"
           class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition flex items-center gap-2"
         >
-          <span :class="{ 'animate-spin': loading }">🔄</span>
+          <AppIcon name="refresh" :size="14" :class="{ 'animate-spin': loading }" />
           <span>Refresh Analytics</span>
         </button>
         <router-link
           to="/admin/organizations"
           class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 transition flex items-center gap-1.5"
         >
-          <span>➕</span>
+          <AppIcon name="add" :size="14" weight="bold" />
           <span>Add Tenant</span>
         </router-link>
       </div>
@@ -38,7 +38,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Organizations</span>
             <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-sm">
-              🏢
+              <AppIcon name="buildings" :size="20" weight="duotone" />
             </div>
           </div>
           <div class="mt-3">
@@ -55,7 +55,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Users</span>
             <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-sm">
-              👥
+              <AppIcon name="users" :size="20" weight="duotone" />
             </div>
           </div>
           <div class="mt-3">
@@ -72,7 +72,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Tenants</span>
             <div class="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 flex items-center justify-center text-sm">
-              ⚡
+              <AppIcon name="lightning" :size="20" weight="duotone" />
             </div>
           </div>
           <div class="mt-3">
@@ -89,7 +89,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Platform Leads</span>
             <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-sm">
-              🎯
+              <AppIcon name="target" :size="20" weight="duotone" />
             </div>
           </div>
           <div class="mt-3">
@@ -222,14 +222,14 @@
               to="/admin/users"
               class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-center gap-2 transition"
             >
-              <span>👥</span>
+              <AppIcon name="users" :size="14" />
               <span>Manage Platform Users</span>
             </router-link>
             <router-link
               to="/admin/audit-logs"
               class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-center gap-2 transition"
             >
-              <span>📜</span>
+              <AppIcon name="agreements" :size="14" />
               <span>View System Audit Logs</span>
             </router-link>
           </div>

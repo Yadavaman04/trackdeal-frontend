@@ -119,7 +119,7 @@
             </thead>
             <tbody class="divide-y divide-default text-slate-655 font-medium">
               <tr 
-                v-for="comm in filteredCommissions" 
+                v-for="comm in paginatedCommissions"
                 :key="comm._id || comm.id"
                 class="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors cursor-pointer"
                 @click="$router.push(`/app/commissions/${comm._id || comm.id}`)"
@@ -176,6 +176,7 @@
             </tbody>
           </table>
         </div>
+        <AppPagination v-bind="commissionPagination" @page-change="setCommissionPage" @page-size-change="setCommissionPageSize" />
       </div>
 
       <!-- 2. FINANCE BOARD VIEW -->
@@ -195,6 +196,7 @@ import { useStore } from 'vuex';
 import { PhCoins, PhTable, PhColumns, PhTrendUp, PhWarning } from '@phosphor-icons/vue';
 import CommissionBoard from '../components/CommissionBoard.vue';
 import { useCommissionsQuery, useTransitionStageMutation } from '../queries';
+import { useClientPagination } from '@/composables/useClientPagination';
 
 const store = useStore();
 const viewMode = ref('table');
@@ -235,6 +237,8 @@ const filteredCommissions = computed(() => {
     return true;
   });
 });
+
+const { paginatedItems: paginatedCommissions, pagination: commissionPagination, setPage: setCommissionPage, setPageSize: setCommissionPageSize } = useClientPagination(filteredCommissions);
 
 const resetFilters = () => {
   filters.value = { search: '', stage: '', sourceType: '' };

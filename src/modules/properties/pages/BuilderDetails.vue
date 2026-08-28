@@ -25,7 +25,7 @@
           </span>
         </div>
         <p class="text-xs text-slate-500 mt-1">
-          📍 Address: {{ builder.address || '—' }}
+          <AppIcon name="mapPin" :size="13" class="inline" /> Address: {{ builder.address || '—' }}
         </p>
       </div>
 

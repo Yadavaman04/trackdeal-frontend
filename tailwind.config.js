@@ -61,6 +61,14 @@ export default {
         'text-muted':     'hsl(var(--neutral-400) / <alpha-value>)',
         // Borders
         'border-default': 'hsl(var(--neutral-100) / <alpha-value>)',
+        'success-bg': 'hsl(var(--success-bg) / <alpha-value>)',
+        'success-text': 'hsl(var(--success-text) / <alpha-value>)',
+        'warning-bg': 'hsl(var(--warning-bg) / <alpha-value>)',
+        'warning-text': 'hsl(var(--warning-text) / <alpha-value>)',
+        'danger-bg': 'hsl(var(--danger-bg) / <alpha-value>)',
+        'danger-text': 'hsl(var(--danger-text) / <alpha-value>)',
+        'info-bg': 'hsl(var(--info-bg) / <alpha-value>)',
+        'info-text': 'hsl(var(--info-text) / <alpha-value>)',
         // Legacy aliases (keep for backward compat)
         background: 'hsl(var(--bg-app) / <alpha-value>)',
         border:     'hsl(var(--neutral-100) / <alpha-value>)',
@@ -71,7 +79,7 @@ export default {
       fontFamily: {
         sans:    ['Inter', 'system-ui', 'sans-serif'],
         mono:    ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
-        heading: ['Inter', 'system-ui', 'sans-serif'],  // Inter for headings too
+        heading: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'micro':   ['10px', { lineHeight: '14px', letterSpacing: '0.05em' }],

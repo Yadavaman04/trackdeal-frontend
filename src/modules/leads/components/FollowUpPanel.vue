@@ -37,7 +37,7 @@
         <div class="flex items-center space-x-2.5 min-w-0">
           <!-- Icon indicator -->
           <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">
-            {{ getOutreachIcon(item.type) }}
+            <AppIcon :name="getOutreachIcon(item.type)" :size="12" />
           </span>
           <div class="min-w-0">
             <h5 class="font-bold text-slate-800 dark:text-slate-200 truncate capitalize">{{ item.title || item.type }}</h5>
@@ -55,7 +55,7 @@
             class="w-5 h-5 rounded-full bg-emerald-50 hover:bg-emerald-500 border border-emerald-250 text-[10px] flex items-center justify-center text-emerald-600 hover:text-white transition-colors"
             title="Mark outreach completed"
           >
-            ✓
+            <AppIcon name="check" :size="11" weight="bold" />
           </button>
           
           <span 
@@ -124,12 +124,12 @@ const getTabCount = (tabId) => {
 
 const getOutreachIcon = (type) => {
   switch (type) {
-    case 'call': return '📞';
-    case 'whatsapp': return '💬';
+    case 'call': return 'phone';
+    case 'whatsapp': return 'note';
     case 'meeting':
-    case 'visit': return '🤝';
-    case 'email': return '✉️';
-    default: return '📋';
+    case 'visit': return 'handshake';
+    case 'email': return 'email';
+    default: return 'clipboard';
   }
 };
 

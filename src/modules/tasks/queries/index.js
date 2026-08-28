@@ -1,10 +1,11 @@
+import { unref } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import tasksApi from '../api/endpoints';
 
 export function useTasksQuery(filters) {
   return useQuery({
     queryKey: ['tasks', filters],
-    queryFn: () => tasksApi.fetchTasks(filters),
+    queryFn: () => tasksApi.fetchTasks(unref(filters)),
     placeholderData: (previousData) => previousData
   });
 }

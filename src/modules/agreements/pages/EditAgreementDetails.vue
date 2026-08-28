@@ -42,7 +42,7 @@
         <div v-for="(t, idx) in form.transferors" :key="idx" class="p-4 bg-slate-50/60 dark:bg-slate-800/30 border border-default rounded-2xl space-y-3">
           <div class="flex justify-between">
             <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Seller #{{ idx + 1 }}</span>
-            <button v-if="form.transferors.length > 1" @click="form.transferors.splice(idx, 1)" class="text-rose-500 text-xs font-bold">✕</button>
+            <button v-if="form.transferors.length > 1" @click="form.transferors.splice(idx, 1)" class="text-rose-500 text-xs font-bold" aria-label="Remove transferor"><AppIcon name="close" :size="14" weight="bold" /></button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div class="sm:col-span-2">
@@ -81,7 +81,7 @@
         <div v-for="(b, idx) in form.transferees" :key="idx" class="p-4 bg-slate-50/60 dark:bg-slate-800/30 border border-default rounded-2xl space-y-3">
           <div class="flex justify-between">
             <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Buyer #{{ idx + 1 }}</span>
-            <button v-if="form.transferees.length > 1" @click="form.transferees.splice(idx, 1)" class="text-rose-500 text-xs font-bold">✕</button>
+            <button v-if="form.transferees.length > 1" @click="form.transferees.splice(idx, 1)" class="text-rose-500 text-xs font-bold" aria-label="Remove transferee"><AppIcon name="close" :size="14" weight="bold" /></button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div class="sm:col-span-2">

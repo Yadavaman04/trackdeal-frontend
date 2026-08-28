@@ -174,7 +174,7 @@
           <div class="flex items-center justify-between border-b border-default/60 pb-2">
             <span class="text-xs font-bold text-slate-900 dark:text-white">Seller / Transferor #{{ idx + 1 }}</span>
             <button v-if="form.transferors.length > 1" @click="removeTransferor(idx)" class="text-rose-500 hover:text-rose-700 text-xs font-semibold">
-              ✕ Remove
+              <AppIcon name="close" :size="13" weight="bold" /> Remove
             </button>
           </div>
 
@@ -249,7 +249,7 @@
           <div class="flex items-center justify-between border-b border-default/60 pb-2">
             <span class="text-xs font-bold text-slate-900 dark:text-white">Buyer / Transferee #{{ idx + 1 }}</span>
             <button v-if="form.transferees.length > 1" @click="removeTransferee(idx)" class="text-rose-500 hover:text-rose-700 text-xs font-semibold">
-              ✕ Remove
+              <AppIcon name="close" :size="13" weight="bold" /> Remove
             </button>
           </div>
 
@@ -465,7 +465,7 @@
                 <th class="py-2.5 px-3">Mode</th>
                 <th class="py-2.5 px-3">Bank & Branch</th>
                 <th class="py-2.5 px-3">Ref / Chq / UTR</th>
-                <th class="py-2.5 px-3 text-right">✕</th>
+                <th class="py-2.5 px-3 text-right"><span class="sr-only">Remove</span></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-default">
@@ -491,7 +491,7 @@
                   <input v-model="p.referenceNumber" type="text" placeholder="UTR/CHQ No" class="bg-transparent font-mono border border-default rounded-lg px-2 py-1 text-xs w-full" />
                 </td>
                 <td class="py-2 px-3 text-right">
-                  <button @click="removePaymentRow(idx)" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
+                  <button @click="removePaymentRow(idx)" class="text-rose-500 hover:text-rose-700 font-bold" aria-label="Remove payment"><AppIcon name="close" :size="14" weight="bold" /></button>
                 </td>
               </tr>
             </tbody>

@@ -1,9 +1,9 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-start justify-center pt-20 p-4 animate-fade-in" @click.self="close">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden transition-all text-xs">
+    <div class="section-panel max-w-xl w-full overflow-hidden transition-all text-xs" role="dialog" aria-modal="true" aria-label="Global search">
       <!-- Search Input Header -->
       <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
-        <span class="text-slate-400 text-base">🔍</span>
+        <AppIcon name="search" :size="17" class="text-slate-400" />
         <input 
           ref="searchInputRef"
           v-model="searchQuery" 
@@ -30,27 +30,27 @@
           <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Quick Navigation</span>
           <div class="grid grid-cols-2 gap-2">
             <router-link to="/app/dashboard" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <span>📊</span>
+              <AppIcon name="chart" :size="16" class="text-accent-600" />
               <span>Dashboard</span>
             </router-link>
             <router-link to="/app/leads" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <span>👥</span>
+              <AppIcon name="users" :size="16" class="text-accent-600" />
               <span>Leads Directory</span>
             </router-link>
             <router-link to="/app/properties" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <span>🏢</span>
+              <AppIcon name="buildings" :size="16" class="text-accent-600" />
               <span>Properties</span>
             </router-link>
             <router-link to="/app/deals" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <span>🤝</span>
+              <AppIcon name="handshake" :size="16" class="text-accent-600" />
               <span>Deals Pipeline</span>
             </router-link>
             <router-link to="/app/commissions" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <span>💰</span>
+              <AppIcon name="currency" :size="16" class="text-accent-600" />
               <span>Commissions</span>
             </router-link>
             <router-link to="/app/commissions/receivables" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <span>📑</span>
+              <AppIcon name="file" :size="16" class="text-accent-600" />
               <span>Receivables Ledger</span>
             </router-link>
           </div>
@@ -58,7 +58,7 @@
 
         <!-- Empty search results -->
         <div v-else-if="resultsCount === 0" class="py-8 text-center text-slate-400 space-y-1">
-          <span class="text-2xl">🔍</span>
+          <AppIcon name="search" :size="26" class="mx-auto" />
           <p class="font-semibold text-slate-600 dark:text-slate-300">No results found for "{{ searchQuery }}"</p>
           <p class="text-[11px]">Try searching by lead name, phone number, project, or deal ID.</p>
         </div>
@@ -209,7 +209,7 @@
       <!-- Footer Help -->
       <div class="p-3 bg-slate-50 dark:bg-slate-850/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-400 text-[10px]">
         <span>Quick search across all active CRM modules</span>
-        <span class="font-mono">⌘ + K / Ctrl + K</span>
+        <span class="font-mono">Ctrl + K</span>
       </div>
     </div>
   </div>

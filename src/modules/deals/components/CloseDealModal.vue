@@ -6,7 +6,7 @@
         <div>
           <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              🤝
+              <AppIcon name="handshake" :size="18" weight="duotone" />
             </span>
             <span>Close Deal & Setup Commission</span>
           </h3>
@@ -18,7 +18,7 @@
           @click="close"
           class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors"
         >
-          ✕
+          <AppIcon name="close" :size="15" weight="bold" />
         </button>
       </div>
 
@@ -187,7 +187,7 @@
           <div class="space-y-0.5">
             <span class="text-[10px] text-indigo-700 dark:text-indigo-300 font-bold uppercase tracking-wider block">Financial Summary</span>
             <p class="text-indigo-900 dark:text-indigo-100 font-semibold">
-              Deal Value: ₹{{ Number(form.finalPropertyValue || 0).toLocaleString('en-IN') }} ➔ Expected Commission: <b class="text-emerald-600 dark:text-emerald-400">₹{{ Number(form.expectedAmount || 0).toLocaleString('en-IN') }}</b>
+              Deal value: ₹{{ Number(form.finalPropertyValue || 0).toLocaleString('en-IN') }} <AppIcon name="arrowRight" :size="12" class="inline mx-1" /> Expected commission: <b class="text-emerald-600 dark:text-emerald-400">₹{{ Number(form.expectedAmount || 0).toLocaleString('en-IN') }}</b>
             </p>
           </div>
           <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-200/60 dark:bg-indigo-800/60 text-indigo-800 dark:text-indigo-200">

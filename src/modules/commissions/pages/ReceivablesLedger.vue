@@ -1,473 +1,245 @@
 <template>
-  <div class="space-y-6 text-xs">
-    <!-- Header Block -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <main class="financial-workspace space-y-6">
+    <header class="financial-page-header">
       <div>
-        <div class="flex items-center gap-2">
-          <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-            📊
-          </span>
-          <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">
-            Financials · Receivables Ledger
-          </h2>
-        </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Complete "Who Owes Us Money" breakdown by Builder, Seller, Buyer, and Channel Partners with debt aging analysis.
-        </p>
+        <p class="eyebrow">Collections command center</p>
+        <h1>Receivables</h1>
+        <p>Prioritize outstanding commission, overdue exposure, debtor ownership, and the next collection action.</p>
       </div>
-
-      <div class="flex items-center gap-3 shrink-0 flex-wrap">
-        <router-link 
-          to="/app/commissions"
-          class="px-3.5 py-2 rounded-xl font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-1.5"
-        >
-          <span>← Back to Commissions</span>
-        </router-link>
-        <button 
-          @click="loadData"
-          class="px-3.5 py-2 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex items-center gap-1.5"
-        >
-          <span>⟳ Refresh Ledger</span>
-        </button>
+      <div class="flex flex-wrap items-center gap-2">
+        <router-link to="/app/commissions" class="btn-md btn-secondary"><AppIcon name="arrowRight" :size="15" class="rotate-180" /> Commissions</router-link>
+        <button type="button" class="btn-md btn-primary" :disabled="loading" @click="loadData"><AppIcon name="refresh" :size="16" :class="{ 'animate-spin': loading }" /> Refresh</button>
       </div>
-    </div>
+    </header>
 
-    <!-- Summary KPI Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Receivables</span>
-        <span class="text-lg font-bold text-slate-800 dark:text-slate-100 block">
-          ₹{{ Number(summary.totalEarned || 0).toLocaleString('en-IN') }}
-        </span>
-        <span class="text-[10px] text-slate-400">Gross pipeline value</span>
-      </div>
+    <section v-if="loading" class="grid grid-cols-1 gap-4 lg:grid-cols-12" aria-label="Loading receivables summary">
+      <div class="skeleton h-52 rounded-xl lg:col-span-6"></div>
+      <div v-for="item in 3" :key="item" class="skeleton h-52 rounded-xl lg:col-span-2"></div>
+    </section>
 
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-500 block">Total Collected</span>
-        <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400 block">
-          ₹{{ Number(summary.totalCollected || 0).toLocaleString('en-IN') }}
-        </span>
-        <span class="text-[10px] text-emerald-500/80 font-semibold">{{ summary.collectionRate || 0 }}% collected</span>
-      </div>
-
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-500 block">Total Outstanding</span>
-        <span class="text-lg font-bold text-amber-600 dark:text-amber-400 block">
-          ₹{{ Number(summary.totalOutstanding || 0).toLocaleString('en-IN') }}
-        </span>
-        <span class="text-[10px] text-slate-400">Across active debtors</span>
-      </div>
-
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-red-500 block">Overdue Amount</span>
-        <span class="text-lg font-bold text-red-600 dark:text-red-400 block">
-          ₹{{ Number(summary.totalOverdue || 0).toLocaleString('en-IN') }}
-        </span>
-        <span class="text-[10px] text-red-400 font-semibold">{{ summary.overdueCount || 0 }} deal(s) past due</span>
-      </div>
-
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block">Expected This Month</span>
-        <span class="text-lg font-bold text-indigo-600 dark:text-indigo-400 block">
-          ₹{{ Number(summary.expectedThisMonth || 0).toLocaleString('en-IN') }}
-        </span>
-        <span class="text-[10px] text-indigo-400">Current calendar cycle</span>
-      </div>
-    </div>
-
-    <!-- Aging Analysis Breakdown Bar -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-        <h3 class="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-[10px] text-indigo-600 dark:text-indigo-400">
-          Receivable Aging Schedule
-        </h3>
-        <span class="text-[10px] text-slate-400 font-medium">Days Past Invoice Due Date</span>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3 space-y-1">
-          <span class="text-[10px] font-semibold text-slate-400 uppercase">Not Due Yet</span>
-          <p class="text-sm font-bold text-slate-700 dark:text-slate-200">
-            ₹{{ Number(summary.aging?.notDue || 0).toLocaleString('en-IN') }}
-          </p>
-        </div>
-        <div class="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 space-y-1">
-          <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase">1 – 30 Days</span>
-          <p class="text-sm font-bold text-amber-700 dark:text-amber-300">
-            ₹{{ Number(summary.aging?.days1to30 || 0).toLocaleString('en-IN') }}
-          </p>
-        </div>
-        <div class="bg-orange-500/5 border border-orange-500/20 rounded-xl p-3 space-y-1">
-          <span class="text-[10px] font-semibold text-orange-600 dark:text-orange-400 uppercase">31 – 60 Days</span>
-          <p class="text-sm font-bold text-orange-700 dark:text-orange-300">
-            ₹{{ Number(summary.aging?.days31to60 || 0).toLocaleString('en-IN') }}
-          </p>
-        </div>
-        <div class="bg-red-500/5 border border-red-500/20 rounded-xl p-3 space-y-1">
-          <span class="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase">61 – 90 Days</span>
-          <p class="text-sm font-bold text-red-700 dark:text-red-300">
-            ₹{{ Number(summary.aging?.days61to90 || 0).toLocaleString('en-IN') }}
-          </p>
-        </div>
-        <div class="bg-rose-950/20 border border-rose-600/30 rounded-xl p-3 space-y-1">
-          <span class="text-[10px] font-semibold text-rose-500 uppercase">90+ Days (Critical)</span>
-          <p class="text-sm font-bold text-rose-600 dark:text-rose-400">
-            ₹{{ Number(summary.aging?.days90Plus || 0).toLocaleString('en-IN') }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Paying Parties Ledger Cards -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">
-          Debtor Organizations & Paying Entities ({{ receivables.length }})
-        </h3>
-      </div>
-
-      <!-- Loading State -->
-      <div v-if="loading" class="grid grid-cols-1 gap-4">
-        <div v-for="i in 3" :key="i" class="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="receivables.length === 0" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-2">
-        <span class="text-3xl">🎉</span>
-        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">No Outstanding Receivables</h4>
-        <p class="text-xs text-slate-400 max-w-md mx-auto">
-          All eligible closed deal commissions have been fully collected or there are no open receivables.
-        </p>
-      </div>
-
-      <!-- Receivables Cards -->
-      <div v-else class="grid grid-cols-1 gap-5">
-        <div 
-          v-for="party in receivables" 
-          :key="party.payablePartyName"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden"
-        >
-          <!-- Party Card Header -->
-          <div class="p-4 bg-slate-50/70 dark:bg-slate-850/60 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">
-                  {{ party.payablePartyName }}
-                </h4>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                  {{ formatPartyType(party.payablePartyType) }}
-                </span>
-              </div>
-              <p class="text-[11px] text-slate-400">
-                {{ party.dealsCount }} active transaction(s) pending clearance
-              </p>
-            </div>
-
-            <!-- Party Balances -->
-            <div class="flex items-center gap-4 text-right">
+    <template v-else-if="!loadError">
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-12" aria-label="Receivables summary">
+        <article class="financial-hero financial-hero--receivables lg:col-span-6">
+          <div class="relative z-10 flex h-full flex-col justify-between gap-8">
+            <div class="flex items-start justify-between gap-4">
               <div>
-                <span class="text-[9px] font-bold uppercase text-slate-400 block">Total Expected</span>
-                <span class="font-bold text-slate-700 dark:text-slate-200">
-                  ₹{{ Number(party.totalExpected || 0).toLocaleString('en-IN') }}
-                </span>
+                <p class="financial-hero__label">Total outstanding</p>
+                <p class="financial-hero__value">{{ formatCurrency(summary.totalOutstanding) }}</p>
+                <p class="financial-hero__caption">{{ formatCurrency(summary.totalOverdue) }} overdue · {{ summary.overdueCount || 0 }} past-due records</p>
               </div>
-              <div>
-                <span class="text-[9px] font-bold uppercase text-emerald-500 block">Collected</span>
-                <span class="font-bold text-emerald-600 dark:text-emerald-400">
-                  ₹{{ Number(party.totalCollected || 0).toLocaleString('en-IN') }}
-                </span>
-              </div>
-              <div class="pl-2 border-l border-slate-200 dark:border-slate-700">
-                <span class="text-[9px] font-bold uppercase text-amber-500 block">Outstanding</span>
-                <span class="text-sm font-extrabold text-amber-600 dark:text-amber-400">
-                  ₹{{ Number(party.totalOutstanding || 0).toLocaleString('en-IN') }}
-                </span>
-              </div>
-              <div v-if="party.totalOverdue > 0" class="pl-2 border-l border-slate-200 dark:border-slate-700">
-                <span class="text-[9px] font-bold uppercase text-red-500 block">Overdue</span>
-                <span class="text-sm font-extrabold text-red-600 dark:text-red-400">
-                  ₹{{ Number(party.totalOverdue || 0).toLocaleString('en-IN') }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Underlying Deals Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="text-[10px] font-bold uppercase text-slate-400 bg-slate-50/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
-                <tr>
-                  <th class="py-2.5 px-4">Commission #</th>
-                  <th class="py-2.5 px-4">Customer</th>
-                  <th class="py-2.5 px-4">Project / Property</th>
-                  <th class="py-2.5 px-4">Deal Value</th>
-                  <th class="py-2.5 px-4">Expected</th>
-                  <th class="py-2.5 px-4">Received</th>
-                  <th class="py-2.5 px-4">Outstanding</th>
-                  <th class="py-2.5 px-4">Due Date</th>
-                  <th class="py-2.5 px-4">Status</th>
-                  <th class="py-2.5 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="deal in party.deals" :key="deal.id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td class="py-3 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                    <router-link :to="`/app/commissions/${deal.id}`" class="hover:underline">
-                      {{ deal.commissionNumber || 'COM-REC' }}
-                    </router-link>
-                  </td>
-                  <td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-100">
-                    {{ deal.customerName }}
-                  </td>
-                  <td class="py-3 px-4 text-slate-600 dark:text-slate-300">
-                    {{ deal.projectOrProperty }}
-                  </td>
-                  <td class="py-3 px-4 font-medium text-slate-700 dark:text-slate-200">
-                    ₹{{ Number(deal.dealValue || 0).toLocaleString('en-IN') }}
-                  </td>
-                  <td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-100">
-                    ₹{{ Number(deal.expected || 0).toLocaleString('en-IN') }}
-                  </td>
-                  <td class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400">
-                    ₹{{ Number(deal.collected || 0).toLocaleString('en-IN') }}
-                  </td>
-                  <td class="py-3 px-4 font-bold text-amber-600 dark:text-amber-400">
-                    ₹{{ Number(deal.outstanding || 0).toLocaleString('en-IN') }}
-                  </td>
-                  <td class="py-3 px-4">
-                    <span :class="deal.isPastDue ? 'text-red-500 font-bold' : 'text-slate-500 dark:text-slate-400'">
-                      {{ formatDate(deal.dueDate) }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <span 
-                      class="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider"
-                      :class="getStatusBadgeClass(deal.paymentStatus)"
-                    >
-                      {{ formatStatusLabel(deal.paymentStatus) }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 text-right space-x-1.5">
-                    <button 
-                      @click="openPaymentModal(deal)"
-                      class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors"
-                    >
-                      + Record Payment
-                    </button>
-                    <router-link 
-                      :to="`/app/commissions/${deal.id}`"
-                      class="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors inline-block"
-                    >
-                      Details
-                    </router-link>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Record Payment Modal Component -->
-    <div v-if="paymentModalOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transition-all text-xs">
-        <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50">
-          <div>
-            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <span>💳</span>
-              <span>Record Commission Payment</span>
-            </h3>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              {{ activeCommission?.commissionNumber }} · {{ activeCommission?.customerName }}
-            </p>
-          </div>
-          <button @click="paymentModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
-        </div>
-
-        <form @submit.prevent="submitPayment" class="p-5 space-y-4">
-          <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex justify-between items-center text-amber-700 dark:text-amber-300">
-            <div>
-              <span class="text-[10px] font-bold uppercase block">Current Outstanding</span>
-              <span class="text-base font-extrabold">₹{{ Number(activeCommission?.outstanding || 0).toLocaleString('en-IN') }}</span>
-            </div>
-            <span class="text-xs font-semibold">Expected: ₹{{ Number(activeCommission?.expected || 0).toLocaleString('en-IN') }}</span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Date *</label>
-              <input v-model="paymentForm.paymentDate" type="date" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100" />
+              <span class="financial-hero__icon"><AppIcon name="chart" :size="22" weight="duotone" /></span>
             </div>
             <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Amount Received (₹) *</label>
-              <input v-model.number="paymentForm.amount" type="number" min="1" :max="activeCommission?.outstanding" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-bold text-emerald-600 dark:text-emerald-400" />
+              <div class="mb-2 flex items-center justify-between text-xs"><span>Overall collection rate</span><strong>{{ summary.collectionRate || 0 }}%</strong></div>
+              <div class="financial-hero__progress"><span :style="{ width: `${Math.min(100, summary.collectionRate || 0)}%` }"></span></div>
+              <p class="mt-3 text-[11px] text-white/65">{{ formatCurrency(summary.totalCollected) }} collected from {{ formatCurrency(summary.totalEarned) }} earned</p>
             </div>
           </div>
+        </article>
+        <FinancialMetric class="lg:col-span-2" label="Collected" :value="formatCurrency(summary.totalCollected)" :caption="`${summary.collectionRate || 0}% of earned value`" icon="checkCircle" tone="success" />
+        <FinancialMetric class="lg:col-span-2" label="Overdue" :value="formatCurrency(summary.totalOverdue)" :caption="`${summary.overdueCount || 0} records need attention`" icon="warning" tone="danger" />
+        <FinancialMetric class="lg:col-span-2" label="Expected this month" :value="formatCurrency(summary.expectedThisMonth)" caption="Current collection cycle" icon="calendar" tone="info" />
+      </section>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Method *</label>
-              <select v-model="paymentForm.paymentMethod" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100">
-                <option value="Bank Transfer">Bank Transfer (NEFT/RTGS/IMPS)</option>
-                <option value="Cheque">Cheque</option>
-                <option value="UPI">UPI</option>
-                <option value="Cash">Cash</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Transaction Ref / UTR *</label>
-              <input v-model="paymentForm.referenceNumber" type="text" placeholder="e.g. UTR123456789" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 font-mono" />
-            </div>
+      <section class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <article class="financial-panel xl:col-span-8">
+          <div class="financial-panel__header">
+            <div><p class="eyebrow">Exposure by age</p><h2>Receivable aging</h2></div>
+            <span class="financial-panel__meta">Based on expected payment date</span>
           </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Received From</label>
-              <input v-model="paymentForm.receivedFrom" type="text" placeholder="e.g. Builder Accounts" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100" />
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Deposited Bank Account</label>
-              <input v-model="paymentForm.bankAccount" type="text" placeholder="e.g. HDFC 00123" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100" />
-            </div>
+          <div class="aging-track" role="img" aria-label="Receivable aging distribution">
+            <span v-for="bucket in agingBuckets" :key="bucket.key" :class="`aging-track__${bucket.tone}`" :style="{ width: `${bucket.percentage}%` }"></span>
           </div>
-
-          <div>
-            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes / Remarks</label>
-            <textarea v-model="paymentForm.notes" rows="2" placeholder="e.g. Milestone 1 payment cleared" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100"></textarea>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
-            <button type="button" @click="paymentModalOpen = false" class="px-4 py-2 rounded-xl font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">Cancel</button>
-            <button type="submit" :disabled="savingPayment" class="px-5 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all">
-              <span v-if="savingPayment">Recording...</span>
-              <span v-else>Record Payment</span>
+          <div class="aging-grid">
+            <button v-for="bucket in agingBuckets" :key="bucket.key" type="button" :class="[`aging-item--${bucket.tone}`, { 'is-active': filters.aging === bucket.key }]" @click="toggleAging(bucket.key)">
+              <span>{{ bucket.label }}</span>
+              <strong>{{ formatCurrency(bucket.value) }}</strong>
+              <small>{{ bucket.percentage }}% of outstanding</small>
             </button>
           </div>
-        </form>
+        </article>
+
+        <article class="financial-panel xl:col-span-4">
+          <div class="financial-panel__header">
+            <div><p class="eyebrow">Debtor concentration</p><h2>Top paying parties</h2></div>
+            <span class="financial-panel__meta">{{ receivables.length }} entities</span>
+          </div>
+          <div v-if="topParties.length" class="party-ranking">
+            <button v-for="(party, index) in topParties" :key="party.payablePartyName" type="button" @click="selectParty(party)">
+              <span class="party-ranking__index">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span class="min-w-0 flex-1"><strong>{{ party.payablePartyName }}</strong><small>{{ formatPartyType(party.payablePartyType) }} · {{ party.dealsCount }} records</small></span>
+              <span class="text-right"><strong>{{ formatCurrency(party.totalOutstanding) }}</strong><small v-if="party.totalOverdue">{{ formatCurrency(party.totalOverdue) }} overdue</small></span>
+            </button>
+          </div>
+          <div v-else class="financial-inline-empty"><AppIcon name="checkCircle" :size="20" /><span>No debtor exposure.</span></div>
+        </article>
+      </section>
+    </template>
+
+    <section v-if="loadError" class="financial-error">
+      <AppIcon name="warning" :size="22" />
+      <div><strong>Receivables could not be loaded</strong><p>The financial data is unchanged. Retry the request to continue.</p></div>
+      <button class="btn-md btn-secondary" @click="loadData">Retry</button>
+    </section>
+
+    <section v-else class="financial-panel overflow-hidden">
+      <div class="financial-table-toolbar">
+        <div>
+          <p class="eyebrow">Collection queue</p>
+          <h2>Outstanding receivables</h2>
+          <p>{{ filteredReceivables.length }} records across {{ filteredPartyCount }} paying parties</p>
+        </div>
+        <div class="financial-filter-row">
+          <label class="relative min-w-0 flex-1 sm:min-w-[260px]">
+            <span class="sr-only">Search receivables</span>
+            <AppIcon name="search" :size="16" class="absolute left-3 top-1/2 -translate-y-1/2" style="color: hsl(var(--neutral-300));" />
+            <input v-model="filters.search" class="filter-control !pl-9" type="search" placeholder="Search commission, customer or party" />
+          </label>
+          <label class="min-w-[180px]">
+            <span class="sr-only">Paying party type</span>
+            <select v-model="filters.partyType" class="filter-control">
+              <option value="">All paying parties</option>
+              <option value="builder">Builder / Developer</option>
+              <option value="seller">Property Seller</option>
+              <option value="customer">Customer / Buyer</option>
+              <option value="channel_partner">Channel Partner</option>
+              <option value="broker">Broker</option>
+              <option value="bank">Bank</option>
+              <option value="dsa">DSA</option>
+            </select>
+          </label>
+          <button v-if="hasFilters" type="button" class="btn-md btn-secondary" @click="resetFilters"><AppIcon name="close" :size="14" /> Clear</button>
+        </div>
       </div>
-    </div>
-  </div>
+
+      <AppTable
+        class="financial-table"
+        :columns="columns"
+        :rows="filteredReceivables"
+        :is-loading="loading"
+        :page-size="15"
+        empty-title="No outstanding receivables in this view"
+        empty-subtext="All matching commission has been collected, or the active filters exclude the remaining queue."
+        @row-click="openDetails"
+      >
+        <template #cell(commission)="{ row }">
+          <div><router-link :to="`/app/commissions/${row.id}`" class="financial-primary-link" @click.stop>{{ row.commissionNumber || 'Commission' }}</router-link><small>{{ row.projectOrProperty }}</small></div>
+        </template>
+        <template #cell(party)="{ row }">
+          <div><strong>{{ row.payablePartyName }}</strong><small>{{ formatPartyType(row.payablePartyType) }}</small></div>
+        </template>
+        <template #cell(customer)="{ row }"><div><strong>{{ row.customerName || 'Customer not linked' }}</strong><small>{{ formatCurrency(row.dealValue) }} deal value</small></div></template>
+        <template #cell(progress)="{ row }">
+          <div class="min-w-[130px]"><div class="flex justify-between gap-3"><span class="financial-amount financial-amount--positive">{{ formatCurrency(row.collected) }}</span><small>{{ getCollectionPercentage(row.collected, row.expected) }}%</small></div><div class="financial-row-progress"><span :style="{ width: `${getCollectionPercentage(row.collected, row.expected)}%` }"></span></div><small>of {{ formatCurrency(row.expected) }}</small></div>
+        </template>
+        <template #cell(outstanding)="{ row }"><span class="financial-amount" :class="row.isPastDue ? 'financial-amount--risk' : 'financial-amount--warning'">{{ formatCurrency(row.outstanding) }}</span><small>{{ row.isPastDue ? `${getDaysPastDue(row.dueDate)} days overdue` : 'Current balance' }}</small></template>
+        <template #cell(due)="{ row }"><div><strong :class="{ 'text-red-600 dark:text-red-400': row.isPastDue }">{{ formatDate(row.dueDate) }}</strong><small>{{ agingLabel(row) }}</small></div></template>
+        <template #cell(status)="{ row }"><FinancialStatusBadge :status="row.paymentStatus" /></template>
+        <template #cell(actions)="{ row }">
+          <div class="flex justify-end gap-1.5">
+            <button type="button" class="financial-action financial-action--primary" @click.stop="openPayment(row)"><AppIcon name="payment" :size="14" /> Record</button>
+            <router-link :to="`/app/commissions/${row.id}`" class="financial-action" @click.stop><AppIcon name="eye" :size="14" /> View</router-link>
+          </div>
+        </template>
+      </AppTable>
+    </section>
+
+    <RecordPaymentModal :is-open="paymentModalOpen" :record="activePaymentRecord" :saving="savingPayment" @close="closePayment" @submit="submitPayment" />
+  </main>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import AppTable from '@/components/AppTable.vue';
+import FinancialMetric from '../components/FinancialMetric.vue';
+import FinancialStatusBadge from '../components/FinancialStatusBadge.vue';
+import RecordPaymentModal from '../components/RecordPaymentModal.vue';
 import { fetchCommissionSummary, fetchReceivables, recordCommissionPayment } from '../api/endpoints';
+import { formatCurrency, formatDate, getCollectionPercentage, getDaysPastDue } from '../utils/financialFormat';
 
+const router = useRouter();
 const loading = ref(true);
+const loadError = ref(false);
 const receivables = ref([]);
-const summary = ref({
-  totalEarned: 0,
-  totalCollected: 0,
-  totalOutstanding: 0,
-  totalOverdue: 0,
-  expectedThisMonth: 0,
-  collectionRate: 0,
-  aging: { notDue: 0, days1to30: 0, days31to60: 0, days61to90: 0, days90Plus: 0 },
-});
-
+const summary = ref({ totalEarned: 0, totalCollected: 0, totalOutstanding: 0, totalOverdue: 0, expectedThisMonth: 0, overdueCount: 0, collectionRate: 0, aging: { notDue: 0, days1to30: 0, days31to60: 0, days61to90: 0, days90Plus: 0 } });
+const filters = ref({ search: '', partyType: '', partyName: '', aging: '' });
 const paymentModalOpen = ref(false);
-const activeCommission = ref(null);
+const activeReceivable = ref(null);
 const savingPayment = ref(false);
-const paymentForm = ref({
-  paymentDate: new Date().toISOString().slice(0, 10),
-  amount: 0,
-  paymentMethod: 'Bank Transfer',
-  referenceNumber: '',
-  receivedFrom: '',
-  bankAccount: '',
-  notes: '',
-});
 
-async function loadData() {
+const columns = [
+  { key: 'commission', label: 'Commission / Asset' },
+  { key: 'party', label: 'Payable by' },
+  { key: 'customer', label: 'Customer' },
+  { key: 'progress', label: 'Collected', align: 'right' },
+  { key: 'outstanding', label: 'Outstanding', align: 'right' },
+  { key: 'due', label: 'Due / Aging' },
+  { key: 'status', label: 'Risk status' },
+  { key: 'actions', label: 'Actions', align: 'right' },
+];
+
+const allReceivables = computed(() => receivables.value.flatMap(party => party.deals.map(deal => ({ ...deal, payablePartyName: party.payablePartyName, payablePartyType: party.payablePartyType }))));
+const filteredReceivables = computed(() => allReceivables.value.filter(item => {
+  if (filters.value.partyType && item.payablePartyType !== filters.value.partyType) return false;
+  if (filters.value.partyName && item.payablePartyName !== filters.value.partyName) return false;
+  if (filters.value.aging && getAgingKey(item) !== filters.value.aging) return false;
+  if (filters.value.search.trim()) {
+    const query = filters.value.search.toLowerCase();
+    const haystack = [item.commissionNumber, item.customerName, item.payablePartyName, item.projectOrProperty].filter(Boolean).join(' ').toLowerCase();
+    if (!haystack.includes(query)) return false;
+  }
+  return true;
+}));
+const filteredPartyCount = computed(() => new Set(filteredReceivables.value.map(item => item.payablePartyName)).size);
+const hasFilters = computed(() => Object.values(filters.value).some(Boolean));
+const topParties = computed(() => [...receivables.value].sort((a, b) => Number(b.totalOutstanding) - Number(a.totalOutstanding)).slice(0, 4));
+const agingBuckets = computed(() => {
+  const total = Number(summary.value.totalOutstanding) || 0;
+  const source = summary.value.aging || {};
+  return [
+    { key: 'notDue', label: 'Current', value: Number(source.notDue) || 0, tone: 'current' },
+    { key: 'days1to30', label: '1–30 days', value: Number(source.days1to30) || 0, tone: 'watch' },
+    { key: 'days31to60', label: '31–60 days', value: Number(source.days31to60) || 0, tone: 'elevated' },
+    { key: 'days61to90', label: '61–90 days', value: Number(source.days61to90) || 0, tone: 'high' },
+    { key: 'days90Plus', label: '90+ days', value: Number(source.days90Plus) || 0, tone: 'critical' },
+  ].map(bucket => ({ ...bucket, percentage: total > 0 ? Math.round((bucket.value / total) * 100) : 0 }));
+});
+const activePaymentRecord = computed(() => activeReceivable.value ? ({ id: activeReceivable.value.id, commissionNumber: activeReceivable.value.commissionNumber, partyName: activeReceivable.value.payablePartyName, expected: activeReceivable.value.expected, outstanding: activeReceivable.value.outstanding }) : null);
+
+const loadData = async () => {
   loading.value = true;
+  loadError.value = false;
   try {
-    const [sumRes, recRes] = await Promise.all([
-      fetchCommissionSummary(),
-      fetchReceivables(),
-    ]);
-    if (sumRes?.data) summary.value = sumRes.data;
-    if (recRes?.data) receivables.value = recRes.data;
-  } catch (err) {
-    console.error('Failed to load receivables:', err);
-  } finally {
-    loading.value = false;
-  }
-}
-
-function formatPartyType(t) {
-  const map = {
-    builder: 'Builder / Developer',
-    seller: 'Property Seller',
-    customer: 'Customer / Buyer',
-    channel_partner: 'Channel Partner',
-    broker: 'Broker',
-    other: 'Other',
-  };
-  return map[t] || t || 'Builder';
-}
-
-function formatDate(d) {
-  if (!d) return 'Not Set';
-  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function formatStatusLabel(s) {
-  const map = {
-    unpaid: 'UNPAID',
-    partially_paid: 'PARTIALLY PAID',
-    fully_paid: 'FULLY PAID',
-    overdue: 'OVERDUE',
-  };
-  return map[s] || String(s).toUpperCase();
-}
-
-function getStatusBadgeClass(s) {
-  switch (s) {
-    case 'fully_paid':
-      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
-    case 'partially_paid':
-      return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
-    case 'overdue':
-      return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20';
-    default:
-      return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20';
-  }
-}
-
-function openPaymentModal(deal) {
-  activeCommission.value = deal;
-  paymentForm.value = {
-    paymentDate: new Date().toISOString().slice(0, 10),
-    amount: deal.outstanding,
-    paymentMethod: 'Bank Transfer',
-    referenceNumber: '',
-    receivedFrom: deal.payablePartyName || '',
-    bankAccount: '',
-    notes: '',
-  };
-  paymentModalOpen.value = true;
-}
-
-async function submitPayment() {
-  if (!activeCommission.value) return;
+    const [summaryResponse, receivablesResponse] = await Promise.all([fetchCommissionSummary(), fetchReceivables()]);
+    summary.value = summaryResponse?.data || summary.value;
+    receivables.value = receivablesResponse?.data || [];
+  } catch (error) { loadError.value = true; console.error('Failed to load receivables:', error); }
+  finally { loading.value = false; }
+};
+const getAgingKey = item => {
+  if (!item.dueDate || !item.isPastDue) return 'notDue';
+  const days = getDaysPastDue(item.dueDate);
+  if (days <= 30) return 'days1to30';
+  if (days <= 60) return 'days31to60';
+  if (days <= 90) return 'days61to90';
+  return 'days90Plus';
+};
+const agingLabel = item => agingBuckets.value.find(bucket => bucket.key === getAgingKey(item))?.label || 'Current';
+const toggleAging = key => { filters.value.aging = filters.value.aging === key ? '' : key; };
+const selectParty = party => { filters.value.partyName = filters.value.partyName === party.payablePartyName ? '' : party.payablePartyName; };
+const resetFilters = () => { filters.value = { search: '', partyType: '', partyName: '', aging: '' }; };
+const openDetails = row => router.push(`/app/commissions/${row.id}`);
+const openPayment = row => { activeReceivable.value = row; paymentModalOpen.value = true; };
+const closePayment = () => { paymentModalOpen.value = false; activeReceivable.value = null; };
+const submitPayment = async form => {
+  if (!activeReceivable.value) return;
   savingPayment.value = true;
-  try {
-    await recordCommissionPayment({
-      id: activeCommission.value.id,
-      ...paymentForm.value,
-    });
-    paymentModalOpen.value = false;
-    await loadData();
-  } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to record payment.');
-  } finally {
-    savingPayment.value = false;
-  }
-}
+  try { await recordCommissionPayment({ id: activeReceivable.value.id, ...form }); closePayment(); await loadData(); }
+  catch (error) { window.alert(error.response?.data?.error?.message || error.message || 'Failed to record payment.'); }
+  finally { savingPayment.value = false; }
+};
+const formatPartyType = type => ({ builder: 'Builder / Developer', seller: 'Property Seller', customer: 'Customer / Buyer', channel_partner: 'Channel Partner', broker: 'Broker', bank: 'Bank', dsa: 'DSA', financial_institution: 'Financial Institution' }[type] || type || 'Other');
 
-onMounted(() => {
-  loadData();
-});
+onMounted(loadData);
 </script>

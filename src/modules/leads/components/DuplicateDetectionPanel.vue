@@ -8,7 +8,7 @@
     >
       <div class="flex items-center gap-2.5">
         <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-          ✓
+          <AppIcon name="check" :size="12" weight="bold" />
         </span>
         <div>
           <p class="font-bold text-slate-900 dark:text-slate-100">
@@ -47,7 +47,7 @@
       <!-- Header -->
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-start gap-2.5">
-          <span class="text-lg leading-none shrink-0 mt-0.5">⚠️</span>
+          <AppIcon name="warning" :size="17" class="shrink-0 mt-0.5" />
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               <h4 class="font-bold text-xs text-amber-900 dark:text-amber-300">
@@ -73,7 +73,7 @@
           class="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors text-sm font-bold"
           title="Dismiss warning"
         >
-          ✕
+          <AppIcon name="close" :size="14" weight="bold" />
         </button>
       </div>
 
@@ -84,7 +84,7 @@
       >
         <div class="flex items-center justify-between">
           <span class="font-bold text-slate-900 dark:text-slate-100 text-body-sm">
-            👤 {{ customerName }}
+            <AppIcon name="user" :size="13" class="inline" /> {{ customerName }}
           </span>
           <span v-if="duplicateState.existingLeads?.length" class="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
             {{ duplicateState.existingLeads.length }} Previous Lead(s) on File
@@ -92,8 +92,8 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
-          <span v-if="customer?.mobile">📞 <b>Mobile:</b> {{ customer.mobile }}</span>
-          <span v-if="customer?.email">✉️ <b>Email:</b> {{ customer.email }}</span>
+          <span v-if="customer?.mobile" class="inline-flex items-center gap-1"><AppIcon name="phone" :size="12" /> <b>Mobile:</b> {{ customer.mobile }}</span>
+          <span v-if="customer?.email" class="inline-flex items-center gap-1"><AppIcon name="email" :size="12" /> <b>Email:</b> {{ customer.email }}</span>
           <span v-if="customer?.alternativeMobile">Alt: {{ customer.alternativeMobile }}</span>
         </div>
 
@@ -110,7 +110,7 @@
           class="px-3 py-1.5 rounded-lg border text-[11px] font-semibold bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-2xs flex items-center gap-1.5"
           style="border-color: hsl(var(--neutral-200));"
         >
-          <span>👁️ View Existing Profile</span>
+          <span class="inline-flex items-center gap-1"><AppIcon name="eye" :size="13" /> View existing profile</span>
         </button>
 
         <div class="flex items-center gap-2">
@@ -128,7 +128,7 @@
             @click="confirmLink"
             class="px-4 py-1.5 rounded-lg bg-primary hover:bg-opacity-95 text-white text-[11px] font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <span>✓ Yes, Create New Lead</span>
+            <span class="inline-flex items-center gap-1"><AppIcon name="check" :size="13" weight="bold" /> Yes, create new lead</span>
           </button>
         </div>
       </div>

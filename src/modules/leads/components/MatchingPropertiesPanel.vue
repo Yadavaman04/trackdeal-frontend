@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between border-b border-default pb-2.5">
       <div class="flex items-center gap-2">
         <span class="text-sm font-bold text-slate-850 dark:text-slate-100 font-heading">
-          🏡 Matching Portfolio Properties
+          <AppIcon name="house" :size="14" /> Matching portfolio properties
         </span>
         <span 
           v-if="!isLoading"
@@ -83,7 +83,7 @@
               </span>
               <span v-if="item.bhk">• {{ item.bhk }} BHK</span>
               <span v-if="item.area?.carpet || item.area?.builtUp">• {{ item.area.carpet || item.area.builtUp }} {{ item.area.unit || 'sqft' }}</span>
-              <span v-if="getLocationText(item)">• 📍 {{ getLocationText(item) }}</span>
+              <span v-if="getLocationText(item)" class="inline-flex items-center gap-1"><AppIcon name="mapPin" :size="11" /> {{ getLocationText(item) }}</span>
             </div>
           </div>
 
@@ -103,7 +103,7 @@
         <!-- Action bar -->
         <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800 text-[10px]">
           <span v-if="item.project?.name" class="text-slate-400 truncate max-w-[160px]">
-            🏢 {{ item.project.name }}
+            <AppIcon name="buildings" :size="12" class="inline" /> {{ item.project.name }}
           </span>
           <span v-else class="text-slate-400">Independent Unit</span>
 
@@ -133,7 +133,7 @@
         class="py-10 text-center rounded-xl border border-dashed text-slate-400 text-xs space-y-2"
         style="border-color: hsl(var(--neutral-200));"
       >
-        <span class="text-2xl block">🏠</span>
+        <AppIcon name="house" :size="26" class="mx-auto" weight="duotone" />
         <p class="font-medium text-slate-600 dark:text-slate-300">
           {{ activeFilter === 'matched' ? 'No properties currently match this lead’s specific criteria.' : 'No available properties in portfolio.' }}
         </p>

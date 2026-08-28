@@ -5,7 +5,7 @@ import leadsApi from '../api/endpoints';
 export function useLeadsQuery(filters) {
   return useQuery({
     queryKey: ['leads', filters],
-    queryFn: () => leadsApi.fetchLeads(filters),
+    queryFn: () => leadsApi.fetchLeads(unref(filters)),
     placeholderData: (previousData) => previousData
   });
 }

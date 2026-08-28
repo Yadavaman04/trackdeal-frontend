@@ -53,7 +53,7 @@
           @click="isCloseDealOpen = true"
           class="btn-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-sm"
         >
-          <span>🤝 Close Deal & Commission</span>
+          <span class="inline-flex items-center gap-1.5"><AppIcon name="handshake" :size="14" /> Close deal & commission</span>
         </button>
 
         <!-- Stepper wizard trigger -->

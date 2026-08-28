@@ -31,19 +31,19 @@
       <h5 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Health Factors</h5>
       <ul class="space-y-1.5 text-[10px]">
         <li class="flex items-center space-x-1.5 text-slate-650 dark:text-slate-400">
-          <span class="text-emerald-500 font-bold">✓</span>
+          <AppIcon name="check" :size="13" weight="bold" class="text-emerald-500" />
           <span>Payments On Time (Token cleared)</span>
         </li>
         <li class="flex items-center space-x-1.5 text-slate-650 dark:text-slate-400">
-          <span class="text-emerald-500 font-bold">✓</span>
+          <AppIcon name="check" :size="13" weight="bold" class="text-emerald-500" />
           <span>Documents Complete (KYC verified)</span>
         </li>
         <li class="flex items-center space-x-1.5 text-slate-650 dark:text-slate-400">
-          <span class="text-emerald-500 font-bold">✓</span>
+          <AppIcon name="check" :size="13" weight="bold" class="text-emerald-500" />
           <span>Registration Slot Confirmed</span>
         </li>
         <li class="flex items-center space-x-1.5 text-slate-450">
-          <span class="text-amber-500 font-bold">⚠️</span>
+          <AppIcon name="warning" :size="13" class="text-amber-500" />
           <span>Builder Confirmation Pending check</span>
         </li>
       </ul>

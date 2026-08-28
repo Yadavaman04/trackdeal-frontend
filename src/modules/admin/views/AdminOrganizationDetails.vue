@@ -29,7 +29,7 @@
           @click="openResetPasswordModal"
           class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-200 transition"
         >
-          🔑 Reset Owner Password
+          <AppIcon name="key" :size="14" /> Reset owner password
         </button>
         <button
           @click="toggleStatus"

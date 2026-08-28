@@ -519,7 +519,7 @@ watch(
   { immediate: true }
 );
 
-const resetForm = () => {
+function resetForm() {
   form.name = '';
   form.officeName = '';
   form.phone = '';
@@ -547,7 +547,7 @@ const resetForm = () => {
   errors.email = '';
   errors.address = '';
   errorMessage.value = '';
-};
+}
 
 const validate = () => {
   errors.name = '';

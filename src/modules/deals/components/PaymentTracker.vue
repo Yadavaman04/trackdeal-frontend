@@ -101,7 +101,7 @@
             <PhReceipt :size="15" class="text-slate-450" />
             <span>Log Payment Receipt</span>
           </h3>
-          <button @click="showLogPaymentModal = false" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+          <button @click="showLogPaymentModal = false" class="text-slate-400 hover:text-slate-600 text-sm" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
         </div>
 
         <form @submit.prevent="handleLogPayment" class="p-4 space-y-3.5 flex-1 overflow-y-auto">

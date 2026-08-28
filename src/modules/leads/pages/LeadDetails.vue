@@ -35,7 +35,8 @@
               class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center gap-1"
               :class="lead.qualification?.leadTemperature === 'hot' ? 'bg-red-500/10 text-red-600 border border-red-500/20' : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'"
             >
-              <span>{{ lead.qualification?.leadTemperature === 'hot' ? '🔥 HOT' : '⚡ WARM' }}</span>
+              <AppIcon :name="lead.qualification?.leadTemperature === 'hot' ? 'flame' : 'lightning'" :size="12" />
+              <span>{{ lead.qualification?.leadTemperature === 'hot' ? 'HIGH INTENT' : 'WARM' }}</span>
             </span>
             <LeadStageBadge :stage="lead.status" />
           </div>
@@ -61,7 +62,7 @@
           :href="`tel:${lead.mobile}`"
           class="px-3 py-1.8 rounded-xl font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs transition-colors flex items-center gap-1.5"
         >
-          <span>📞</span>
+          <AppIcon name="phone" :size="14" />
           <span>Call</span>
         </a>
 
@@ -71,7 +72,7 @@
           target="_blank"
           class="px-3 py-1.8 rounded-xl font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs transition-colors flex items-center gap-1.5"
         >
-          <span>💬</span>
+          <AppIcon name="note" :size="14" />
           <span>WhatsApp</span>
         </a>
 
@@ -79,7 +80,7 @@
           @click="isActivityCenterOpen = true"
           class="px-3.5 py-1.8 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white text-xs shadow-xs transition-all flex items-center gap-1.5"
         >
-          <span>⚡</span>
+          <AppIcon name="lightning" :size="14" />
           <span>+ Add Activity</span>
         </button>
 
@@ -88,7 +89,7 @@
           @click="isWonOpen = true"
           class="px-3.5 py-1.8 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white text-xs shadow-xs transition-all flex items-center gap-1"
         >
-          <span>🤝</span>
+          <AppIcon name="handshake" :size="14" />
           <span>Create Deal</span>
         </button>
       </div>
@@ -107,13 +108,14 @@
               class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
               :class="idx <= getLeadStepIndex(lead.status) ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'"
             >
-              {{ idx <= getLeadStepIndex(lead.status) ? '✓' : idx + 1 }}
+              <AppIcon v-if="idx <= getLeadStepIndex(lead.status)" name="check" :size="10" weight="bold" />
+              <template v-else>{{ idx + 1 }}</template>
             </span>
             <span :class="idx <= getLeadStepIndex(lead.status) ? 'text-slate-900 dark:text-slate-100 font-semibold' : 'text-slate-400'">
               {{ step }}
             </span>
           </div>
-          <span v-if="idx < 7" class="text-slate-300 dark:text-slate-700 text-xs">➔</span>
+          <AppIcon v-if="idx < 7" name="arrowRight" :size="12" class="text-slate-300 dark:text-slate-700" />
         </div>
       </div>
     </div>
@@ -125,7 +127,7 @@
     >
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
-          📥
+          <AppIcon name="download" :size="16" />
         </div>
         <div>
           <div class="flex items-center gap-2">
@@ -140,7 +142,7 @@
         </div>
       </div>
       <div class="hidden sm:flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold bg-amber-100/60 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200/50">
-        <span>🔒</span>
+        <AppIcon name="lock" :size="14" />
         <span>Customer Contact Info Protected</span>
       </div>
     </div>
@@ -155,7 +157,7 @@
           <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
             <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-default pb-2 flex items-center justify-between">
               <span>{{ lead.isTransferred ? 'Transferred Origin Details' : 'Contact Profile Info' }}</span>
-              <span v-if="lead.isTransferred" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">📥 Transferred</span>
+              <span v-if="lead.isTransferred" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1"><AppIcon name="download" :size="10" /> Transferred</span>
             </h4>
             
             <div v-if="lead.isTransferred" class="space-y-2 text-[11px]">
@@ -164,7 +166,7 @@
               <div v-if="lead.receivedFrom?.transferredAt" class="flex justify-between"><span class="text-slate-400">Received Date:</span><span class="font-medium text-slate-750 dark:text-slate-250">{{ new Date(lead.receivedFrom.transferredAt).toLocaleDateString() }}</span></div>
               <div v-if="lead.receivedFrom?.remarks" class="flex justify-between"><span class="text-slate-400">Transfer Remarks:</span><span class="font-medium text-slate-750 dark:text-slate-250 italic">{{ lead.receivedFrom.remarks }}</span></div>
               <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-default text-[10px] text-slate-500 italic mt-2">
-                🔒 Direct customer contact information is protected and managed by the original broker.
+                <AppIcon name="lock" :size="13" class="inline mr-1" /> Direct customer contact information is protected and managed by the original broker.
               </div>
             </div>
 
@@ -180,7 +182,7 @@
           <!-- Requirements details card -->
           <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
             <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-default pb-2">
-              🏡 Buyer Requirement & Financial Profile
+              <AppIcon name="house" :size="14" /> Buyer requirement & financial profile
             </h4>
             <div class="space-y-2 text-[11px]">
               <div class="flex justify-between"><span class="text-slate-400">Property Types:</span><span class="font-bold text-slate-750 dark:text-slate-200 capitalize">{{ lead.buyerRequirement?.propertyType?.join(', ') || lead.requirements?.propertyType?.join(', ') || '—' }}</span></div>
@@ -206,7 +208,7 @@
         <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
           <div class="flex items-center justify-between border-b border-default pb-2">
             <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span>🏢 Transferred Channel Partners & Brokers</span>
+              <span class="inline-flex items-center gap-1.5"><AppIcon name="buildings" :size="14" /> Transferred channel partners & brokers</span>
               <span v-if="transferredCPsCount > 0" class="px-2 py-0.2 rounded-full text-[10px] bg-accent-100 text-accent-700 font-bold">
                 {{ transferredCPsCount }} Partner(s)
               </span>
@@ -238,10 +240,10 @@
                 </span>
               </div>
               <p class="text-caption text-slate-600 dark:text-slate-300 font-medium">
-                🏢 {{ cp.officeName || 'CP' }}
+                <AppIcon name="buildings" :size="12" class="inline" /> {{ cp.officeName || 'CP' }}
               </p>
               <p class="text-micro text-slate-400">
-                📞 {{ cp.phone || 'N/A' }} • 📍 {{ cp.city || 'CP' }}
+                <AppIcon name="phone" :size="11" class="inline" /> {{ cp.phone || 'N/A' }} • <AppIcon name="mapPin" :size="11" class="inline" /> {{ cp.city || 'CP' }}
               </p>
             </div>
           </div>
@@ -414,7 +416,7 @@
                   <h5 class="font-bold text-slate-800">Deal #DL-88301 (Initiated)</h5>
                   <p class="text-[10px] text-slate-400 mt-0.5">Conversion deal created on won transition.</p>
                 </div>
-                <router-link to="/app/deals" class="text-xs text-primary font-bold hover:underline">View Deal ➔</router-link>
+                <router-link to="/app/deals" class="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1">View deal <AppIcon name="arrowRight" :size="12" /></router-link>
               </div>
               <div v-else class="text-center py-8 text-slate-400 text-xs">
                 Deals are created upon marking lead Won.

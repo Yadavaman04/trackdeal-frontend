@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-indigo-500 selection:text-white font-sans">
+  <div class="min-h-screen bg-neutral-950 text-slate-100 flex flex-col antialiased selection:bg-accent-500 selection:text-white font-sans">
     <!-- TOP HEADER -->
     <header class="h-16 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between">
       <!-- Brand / Logo -->
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-500/25 ring-1 ring-white/20">
-            ⚡
+          <div class="brand-mark w-9 h-9 rounded-[11px] flex items-center justify-center text-white">
+            <AppIcon name="lightning" :size="18" weight="duotone" />
           </div>
           <div>
             <div class="font-heading font-black text-sm text-white tracking-wider flex items-center gap-1.5">
@@ -26,7 +26,7 @@
           placeholder="Global Search (Organizations, Tenants, Users, Codes)..."
           class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner"
         />
-        <span class="absolute right-3 top-2.5 text-slate-400 text-xs">⌘K</span>
+        <kbd class="absolute right-3 top-2 text-slate-400 text-[10px] border border-slate-700 rounded px-1.5 py-0.5">Ctrl K</kbd>
 
         <!-- Search Results Dropdown -->
         <div
@@ -83,7 +83,7 @@
           class="p-2 rounded-xl bg-slate-800/80 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-800/50 transition text-xs font-semibold flex items-center gap-1.5"
           title="Sign Out"
         >
-          <span>🚪</span>
+          <AppIcon name="signOut" :size="15" />
           <span class="hidden sm:inline">Logout</span>
         </button>
       </div>
@@ -101,7 +101,7 @@
               class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition"
               :class="$route.path === '/admin/dashboard' || $route.path === '/admin' ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
             >
-              <span class="text-sm">📊</span>
+              <AppIcon name="chart" :size="16" />
               <span>Dashboard</span>
             </router-link>
           </div>
@@ -114,7 +114,7 @@
               class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition"
               :class="$route.path.startsWith('/admin/organizations') ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
             >
-              <span class="text-sm">🏢</span>
+              <AppIcon name="buildings" :size="16" />
               <span>Organizations / Tenants</span>
             </router-link>
             <router-link
@@ -122,7 +122,7 @@
               class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition"
               :class="$route.path.startsWith('/admin/users') ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
             >
-              <span class="text-sm">👥</span>
+              <AppIcon name="users" :size="16" />
               <span>Platform Users</span>
             </router-link>
           </div>
@@ -135,7 +135,7 @@
               class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition"
               :class="$route.path.startsWith('/admin/audit-logs') ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
             >
-              <span class="text-sm">📜</span>
+              <AppIcon name="agreements" :size="16" />
               <span>Audit Logs</span>
             </router-link>
             <router-link
@@ -143,7 +143,7 @@
               class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition"
               :class="$route.path.startsWith('/admin/settings') ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
             >
-              <span class="text-sm">⚙️</span>
+              <AppIcon name="settings" :size="16" />
               <span>System Settings</span>
             </router-link>
           </div>

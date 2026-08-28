@@ -7,7 +7,7 @@
   >
     <div class="space-y-4 text-xs">
       <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-250 p-3 rounded-lg text-[10px] text-amber-800 dark:text-amber-450 leading-relaxed">
-        💡 **Extension Policy Limit**: Holds can be extended by a maximum of 24 hours at a time. All extension records are logged in the audit history timeline.
+        <AppIcon name="lightbulb" :size="15" class="inline mr-1" /> <strong>Extension policy limit:</strong> Holds can be extended by a maximum of 24 hours at a time. All extension records are logged in the audit history timeline.
       </div>
 
       <!-- Add Hours -->

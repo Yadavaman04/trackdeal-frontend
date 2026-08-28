@@ -139,17 +139,17 @@
                   {{ agent.name }}
                 </router-link>
                 <span class="text-micro font-medium" style="color: hsl(var(--neutral-500));">
-                  🏢 {{ agent.officeName }}
+                  <AppIcon name="buildings" :size="12" /> {{ agent.officeName }}
                 </span>
               </td>
 
               <!-- Phone & Email -->
               <td class="px-4 py-3.5 text-caption">
                 <div class="font-medium" style="color: hsl(var(--neutral-800));">
-                  📞 {{ agent.phone }}
+                  <AppIcon name="phone" :size="12" /> {{ agent.phone }}
                 </div>
                 <div v-if="agent.email" class="text-micro" style="color: hsl(var(--neutral-400));">
-                  ✉️ {{ agent.email }}
+                  <AppIcon name="email" :size="12" /> {{ agent.email }}
                 </div>
               </td>
 
@@ -243,34 +243,14 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div
-        v-if="pagination.totalPages > 1"
-        class="px-4 py-3 border-t flex items-center justify-between"
-        style="border-color: hsl(var(--neutral-100));"
-      >
-        <span class="text-caption" style="color: hsl(var(--neutral-500));">
-          Showing Page {{ pagination.page }} of {{ pagination.totalPages }} ({{ pagination.total }} agents)
-        </span>
-        <div class="flex items-center gap-2">
-          <button
-            :disabled="pagination.page <= 1"
-            @click="filters.page--"
-            class="px-3 h-8 rounded border text-caption font-medium disabled:opacity-40"
-            style="border-color: hsl(var(--neutral-200));"
-          >
-            Previous
-          </button>
-          <button
-            :disabled="pagination.page >= pagination.totalPages"
-            @click="filters.page++"
-            class="px-3 h-8 rounded border text-caption font-medium disabled:opacity-40"
-            style="border-color: hsl(var(--neutral-200));"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <AppPagination
+        :page="pagination.page"
+        :page-size="filters.limit"
+        :total="pagination.total"
+        :total-pages="pagination.totalPages"
+        @page-change="filters.page = $event"
+        @page-size-change="filters.limit = $event; filters.page = 1"
+      />
     </div>
 
     <!-- Create / Edit Drawer -->
@@ -284,7 +264,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, watch } from 'vue';
 import {
   PhUserPlus,
   PhMagnifyingGlass,
@@ -305,6 +285,11 @@ const filters = reactive({
   page: 1,
   limit: 20,
 });
+
+watch(
+  () => [filters.search, filters.status, filters.agentType, filters.city],
+  () => { filters.page = 1; }
+);
 
 const drawerOpen = ref(false);
 const selectedAgent = ref(null);

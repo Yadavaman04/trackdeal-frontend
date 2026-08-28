@@ -9,7 +9,7 @@
       <!-- Notice Header -->
       <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl text-amber-900 dark:text-amber-300">
         <h4 class="font-heading font-bold text-xs flex items-center gap-1.5">
-          <span>🏆 Transaction Closing Workflow</span>
+          <span class="inline-flex items-center gap-1.5"><AppIcon name="trophy" :size="15" /> Transaction closing workflow</span>
         </h4>
         <p class="text-[11px] mt-0.5 leading-relaxed">
           Please enter the transaction details before closing this lead. Once confirmed, the lead status becomes <b>Won</b>, the purchased property inventory status is updated to <b>Sold</b>, and a transaction audit record is saved.
@@ -167,8 +167,8 @@
           <div>
             <span>Sum of Funding (OC + Loan + Other): <b>₹{{ calculatedFundingSum.toLocaleString('en-IN') }}</b></span>
           </div>
-          <span v-if="isFundingMatched" class="font-bold">✓ Matches Sale Price</span>
-          <span v-else class="text-[10px] text-amber-700 dark:text-amber-400">⚠️ Difference of ₹{{ Math.abs(finalSalePrice - calculatedFundingSum).toLocaleString('en-IN') }}</span>
+          <span v-if="isFundingMatched" class="font-bold inline-flex items-center gap-1"><AppIcon name="check" :size="12" weight="bold" /> Matches sale price</span>
+          <span v-else class="text-[10px] text-amber-700 dark:text-amber-400 inline-flex items-center gap-1"><AppIcon name="warning" :size="12" /> Difference of ₹{{ Math.abs(finalSalePrice - calculatedFundingSum).toLocaleString('en-IN') }}</span>
         </div>
       </div>
 
@@ -341,7 +341,7 @@
         <!-- FINAL CLOSING SUMMARY -->
         <div class="p-3 bg-surface border border-default rounded-xl space-y-2 text-[11px] mt-3">
           <h5 class="font-bold text-slate-800 dark:text-slate-100 border-b border-default pb-1">
-            📋 Final Closing Summary
+            <AppIcon name="clipboard" :size="14" /> Final closing summary
           </h5>
           <div class="grid grid-cols-2 gap-2 text-slate-600 dark:text-slate-400">
             <div><b>Customer:</b> {{ lead?.firstName }} {{ lead?.lastName || '' }}</div>
@@ -393,7 +393,7 @@
             class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:bg-slate-350 font-semibold flex items-center justify-center min-w-[140px]"
           >
             <span v-if="isSubmitting">Processing...</span>
-            <span v-else>Confirm & Close Lead 🎉</span>
+            <span v-else>Confirm & close lead</span>
           </button>
         </div>
       </div>

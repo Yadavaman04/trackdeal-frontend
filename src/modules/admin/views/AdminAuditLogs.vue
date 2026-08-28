@@ -10,7 +10,7 @@
         @click="loadLogs"
         class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition flex items-center gap-2"
       >
-        <span :class="{ 'animate-spin': loading }">🔄</span>
+        <AppIcon name="refresh" :size="14" :class="{ 'animate-spin': loading }" />
         <span>Refresh Logs</span>
       </button>
     </div>
@@ -65,26 +65,14 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="pagination.pages > 1" class="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-        <div>Page {{ pagination.page }} of {{ pagination.pages }}</div>
-        <div class="flex items-center gap-2">
-          <button
-            @click="changePage(pagination.page - 1)"
-            :disabled="pagination.page <= 1"
-            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold disabled:opacity-40 transition"
-          >
-            ← Previous
-          </button>
-          <button
-            @click="changePage(pagination.page + 1)"
-            :disabled="pagination.page >= pagination.pages"
-            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold disabled:opacity-40 transition"
-          >
-            Next →
-          </button>
-        </div>
-      </div>
+      <AppPagination
+        :page="pagination.page"
+        :page-size="pagination.limit"
+        :total="pagination.total"
+        :total-pages="pagination.pages"
+        :show-page-size="false"
+        @page-change="changePage"
+      />
     </div>
   </div>
 </template>

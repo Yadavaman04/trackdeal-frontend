@@ -1,120 +1,82 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" @click.self="close">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-all text-xs">
-      <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-        <div>
-          <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-            <span class="p-1 rounded-lg bg-indigo-500/10 text-indigo-600">⚡</span>
-            <span>Quick Create Action</span>
-          </h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">Select what you would like to add to TrackDeal</p>
-        </div>
-        <button @click="close" class="text-slate-400 hover:text-slate-600">✕</button>
+  <Teleport to="body">
+    <Transition name="quick-add">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-neutral-950/65 p-4 backdrop-blur-sm"
+        @click.self="close"
+      >
+        <section class="section-panel w-full max-w-lg overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="quick-add-title">
+          <header class="flex items-start justify-between border-b border-default px-5 py-4">
+            <div class="flex gap-3">
+              <div class="brand-mark flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]">
+                <AppIcon name="lightning" :size="17" weight="fill" />
+              </div>
+              <div>
+                <p class="eyebrow">Create</p>
+                <h2 id="quick-add-title" class="font-heading text-h3 font-bold text-text-primary">Quick action</h2>
+                <p class="mt-0.5 text-caption text-text-muted">Start a common workflow without losing your place.</p>
+              </div>
+            </div>
+            <button class="icon-button" type="button" aria-label="Close quick actions" @click="close">
+              <AppIcon name="close" :size="16" weight="bold" />
+            </button>
+          </header>
+
+          <div class="grid gap-1.5 p-3 sm:grid-cols-2">
+            <router-link
+              v-for="action in actions"
+              :key="action.title"
+              :to="action.to"
+              class="quick-action group flex min-h-[108px] flex-col justify-between rounded-[11px] p-3.5"
+              @click="close"
+            >
+              <div class="flex items-start justify-between">
+                <span class="quick-action-icon" :class="action.tone">
+                  <AppIcon :name="action.icon" :size="17" weight="duotone" />
+                </span>
+                <AppIcon name="arrowRight" :size="15" class="text-text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-accent-600" />
+              </div>
+              <div>
+                <h3 class="font-heading text-body-sm font-bold text-text-primary">{{ action.title }}</h3>
+                <p class="mt-0.5 text-[10px] leading-4 text-text-muted">{{ action.description }}</p>
+              </div>
+            </router-link>
+          </div>
+        </section>
       </div>
-
-      <div class="p-4 grid grid-cols-1 gap-2.5">
-        <router-link 
-          to="/app/leads"
-          @click="close"
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-between group"
-        >
-          <div class="flex items-center gap-3">
-            <span class="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 text-base">👤</span>
-            <div>
-              <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 text-xs">New Lead / Customer Enquiry</h4>
-              <p class="text-[10px] text-slate-400">Capture buyer requirements, budget, & loan info</p>
-            </div>
-          </div>
-          <span class="text-slate-400 group-hover:text-indigo-600 font-bold text-sm">→</span>
-        </router-link>
-
-        <router-link 
-          to="/app/properties"
-          @click="close"
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-between group"
-        >
-          <div class="flex items-center gap-3">
-            <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 text-base">🏢</span>
-            <div>
-              <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 text-xs">Add Property / Inventory</h4>
-              <p class="text-[10px] text-slate-400">Add apartment unit, villa, plot, or commercial space</p>
-            </div>
-          </div>
-          <span class="text-slate-400 group-hover:text-indigo-600 font-bold text-sm">→</span>
-        </router-link>
-
-        <router-link 
-          to="/app/tasks"
-          @click="close"
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-between group"
-        >
-          <div class="flex items-center gap-3">
-            <span class="p-2 rounded-xl bg-amber-500/10 text-amber-600 text-base">📋</span>
-            <div>
-              <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 text-xs">Create Task / Reminder</h4>
-              <p class="text-[10px] text-slate-400">Schedule follow-up call, client visit, or internal task</p>
-            </div>
-          </div>
-          <span class="text-slate-400 group-hover:text-indigo-600 font-bold text-sm">→</span>
-        </router-link>
-
-        <router-link 
-          to="/app/loans"
-          @click="close"
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-between group"
-        >
-          <div class="flex items-center gap-3">
-            <span class="p-2 rounded-xl bg-blue-500/10 text-blue-600 text-base">🏦</span>
-            <div>
-              <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 text-xs">Home Loan Application</h4>
-              <p class="text-[10px] text-slate-400">Manage bank submissions, sanctions & disbursements</p>
-            </div>
-          </div>
-          <span class="text-slate-400 group-hover:text-indigo-600 font-bold text-sm">→</span>
-        </router-link>
-
-        <router-link 
-          to="/app/agreements/new"
-          @click="close"
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-between group"
-        >
-          <div class="flex items-center gap-3">
-            <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 text-base">📜</span>
-            <div>
-              <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 text-xs">Create Property Agreement</h4>
-              <p class="text-[10px] text-slate-400">Generate sale deed, resale, or rental agreement</p>
-            </div>
-          </div>
-          <span class="text-slate-400 group-hover:text-indigo-600 font-bold text-sm">→</span>
-        </router-link>
-
-        <router-link 
-          to="/app/commissions"
-          @click="close"
-          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex items-center justify-between group"
-        >
-          <div class="flex items-center gap-3">
-            <span class="p-2 rounded-xl bg-purple-500/10 text-purple-600 text-base">💳</span>
-            <div>
-              <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 text-xs">Record Commission Payment</h4>
-              <p class="text-[10px] text-slate-400">Log partial payment, UTR reference, TDS withholding</p>
-            </div>
-          </div>
-          <span class="text-slate-400 group-hover:text-indigo-600 font-bold text-sm">→</span>
-        </router-link>
-      </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-defineProps({
-  isOpen: { type: Boolean, default: false }
-});
+defineProps({ isOpen: { type: Boolean, default: false } });
 
 const emit = defineEmits(['close']);
 
-function close() {
-  emit('close');
-}
+const actions = [
+  { title: 'New lead', description: 'Capture buyer needs, budget and financing.', to: '/app/leads', icon: 'user', tone: 'tone-accent' },
+  { title: 'Add inventory', description: 'Add a unit, villa, plot or commercial space.', to: '/app/properties', icon: 'buildings', tone: 'tone-success' },
+  { title: 'Create task', description: 'Schedule a follow-up, visit or internal task.', to: '/app/tasks', icon: 'clipboard', tone: 'tone-warning' },
+  { title: 'Loan application', description: 'Manage submissions, sanctions and disbursals.', to: '/app/loans', icon: 'bank', tone: 'tone-info' },
+  { title: 'Property agreement', description: 'Generate a sale, resale or rental agreement.', to: '/app/agreements/new', icon: 'agreements', tone: 'tone-success' },
+  { title: 'Commission payment', description: 'Record payment, UTR and withholding details.', to: '/app/commissions', icon: 'payment', tone: 'tone-highlight' },
+];
+
+const close = () => emit('close');
 </script>
+
+<style scoped>
+.quick-action { border: 1px solid transparent; background: hsl(var(--bg-elevated) / 0.72); transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, background-color 180ms ease; }
+.quick-action:hover { transform: translateY(-2px); border-color: hsl(var(--accent-200)); background: hsl(var(--accent-50) / 0.65); }
+.quick-action-icon { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; border-radius: 9px; }
+.tone-accent { color: hsl(var(--accent-600)); background: hsl(var(--accent-100)); }
+.tone-success { color: hsl(var(--success-text)); background: hsl(var(--success-bg)); }
+.tone-warning { color: hsl(var(--warning-text)); background: hsl(var(--warning-bg)); }
+.tone-info { color: hsl(var(--info-text)); background: hsl(var(--info-bg)); }
+.tone-highlight { color: hsl(30 68% 35%); background: hsl(var(--highlight-100)); }
+.quick-add-enter-active, .quick-add-leave-active { transition: opacity 160ms ease; }
+.quick-add-enter-active .section-panel, .quick-add-leave-active .section-panel { transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease; }
+.quick-add-enter-from, .quick-add-leave-to { opacity: 0; }
+.quick-add-enter-from .section-panel { opacity: 0; transform: translateY(8px) scale(0.97); }
+</style>

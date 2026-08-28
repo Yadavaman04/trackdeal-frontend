@@ -33,7 +33,7 @@
               </p>
             </div>
           </div>
-          <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition">✕</button>
+          <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
         </div>
 
         <!-- Loading State -->
@@ -178,7 +178,7 @@
 
                         <!-- Private Badge -->
                         <span v-if="item.isPrivate" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                          🔒 Internal Team Only
+                          <AppIcon name="lock" :size="11" class="inline mr-1" /> Internal team only
                         </span>
 
                         <!-- Interest Badge -->
@@ -246,7 +246,7 @@
 
                     <!-- Property Shared details -->
                     <div v-if="item.type === 'property_shared' && (item.metadata?.propertyName || item.metadata?.quotedPrice)" class="mb-2 text-xs font-semibold text-sky-700 dark:text-sky-300 flex items-center gap-2">
-                      <span>🏠 {{ item.metadata?.propertyName }}</span>
+                      <span class="inline-flex items-center gap-1"><AppIcon name="house" :size="11" /> {{ item.metadata?.propertyName }}</span>
                       <span v-if="item.metadata?.configuration">• {{ item.metadata?.configuration }}</span>
                       <span v-if="item.metadata?.quotedPrice" class="text-slate-800 dark:text-slate-100 font-bold">• ₹{{ formatAmount(item.metadata.quotedPrice) }}</span>
                     </div>
@@ -729,10 +729,10 @@ function formatStatus(status) {
 
 function interestLabel(level) {
   switch (level) {
-    case 'very_interested': return 'Very Interested 🔥';
-    case 'interested': return 'Interested ✅';
-    case 'maybe': return 'Maybe 🤔';
-    case 'not_interested': return 'Not Interested ❌';
+    case 'very_interested': return 'Very interested';
+    case 'interested': return 'Interested';
+    case 'maybe': return 'Maybe';
+    case 'not_interested': return 'Not interested';
     default: return '';
   }
 }

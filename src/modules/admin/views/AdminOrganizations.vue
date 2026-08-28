@@ -10,7 +10,7 @@
         @click="openCreateModal"
         class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-lg shadow-indigo-600/30 transition flex items-center gap-2 self-start sm:self-auto"
       >
-        <span>➕</span>
+        <AppIcon name="add" :size="14" weight="bold" />
         <span>Create Organization</span>
       </button>
     </div>
@@ -127,26 +127,14 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="pagination.pages > 1" class="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-        <div>Page {{ pagination.page }} of {{ pagination.pages }}</div>
-        <div class="flex items-center gap-2">
-          <button
-            @click="changePage(pagination.page - 1)"
-            :disabled="pagination.page <= 1"
-            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold disabled:opacity-40 transition"
-          >
-            ← Previous
-          </button>
-          <button
-            @click="changePage(pagination.page + 1)"
-            :disabled="pagination.page >= pagination.pages"
-            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold disabled:opacity-40 transition"
-          >
-            Next →
-          </button>
-        </div>
-      </div>
+      <AppPagination
+        :page="pagination.page"
+        :page-size="pagination.limit"
+        :total="pagination.total"
+        :total-pages="pagination.pages"
+        :show-page-size="false"
+        @page-change="changePage"
+      />
     </div>
 
     <!-- CREATE ORGANIZATION MODAL -->
@@ -162,7 +150,7 @@
               <h2 class="text-base font-bold text-white">Create Tenant Organization</h2>
               <p class="text-xs text-slate-400">Onboard a new real-estate brokerage & configure initial owner credentials.</p>
             </div>
-            <button @click="showCreateModal = false" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+            <button @click="showCreateModal = false" class="text-slate-400 hover:text-white p-1 rounded-lg" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
           </div>
 
           <div v-if="createError" class="p-3 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-300">

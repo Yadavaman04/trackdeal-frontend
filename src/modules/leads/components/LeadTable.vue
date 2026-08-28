@@ -7,8 +7,11 @@
       :selectable="true"
       :selectedRows="selectedLeads"
       :isLoading="isLoading"
+      :pagination="pagination"
       @selectionChange="handleSelectionChange"
       @sort="handleSort"
+      @pageChange="$emit('pageChange', $event)"
+      @pageSizeChange="$emit('pageSizeChange', $event)"
       :sorting="sorting"
     >
       <!-- Slot for Lead Profile -->
@@ -25,8 +28,9 @@
             >
               {{ row.firstName }} {{ row.lastName || '' }}
             </router-link>
-            <div class="text-[10px] text-slate-400 font-mono truncate">
-              {{ row.isTransferred ? '🔒 Contact Protected' : (row.mobile || row.phone || 'No phone') }}
+            <div class="text-[10px] text-slate-400 font-mono truncate flex items-center gap-1">
+              <AppIcon v-if="row.isTransferred" name="lock" :size="10" />
+              {{ row.isTransferred ? 'Contact protected' : (row.mobile || row.phone || 'No phone') }}
             </div>
           </div>
         </div>
@@ -65,9 +69,7 @@
           class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center gap-1"
           :class="getTemperatureClass(row.temperature)"
         >
-          <span v-if="row.temperature === 'hot'">🔥</span>
-          <span v-else-if="row.temperature === 'warm'">⚡</span>
-          <span v-else>❄️</span>
+          <AppIcon :name="row.temperature === 'hot' ? 'flame' : row.temperature === 'warm' ? 'lightning' : 'snowflake'" :size="10" />
           <span>{{ row.temperature || 'WARM' }}</span>
         </span>
       </template>
@@ -119,10 +121,11 @@ import LeadStageBadge from './LeadStageBadge.vue';
 const props = defineProps({
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
-  selectedLeads: { type: Array, default: () => [] }
+  selectedLeads: { type: Array, default: () => [] },
+  pagination: { type: Object, default: null }
 });
 
-const emit = defineEmits(['sort', 'selectionChange']);
+const emit = defineEmits(['sort', 'selectionChange', 'pageChange', 'pageSizeChange']);
 
 const sorting = ref({ field: 'createdAt', direction: 'desc' });
 
@@ -134,7 +137,7 @@ const columns = [
   { key: 'temperature', label: 'Temperature', sortable: true },
   { key: 'nextFollowup', label: 'Next Follow-up' },
   { key: 'assignedTo', label: 'Assigned To' },
-  { key: 'actions', label: '', align: 'right' },
+  { key: 'actions', label: 'Actions', align: 'right' },
 ];
 
 const handleSelectionChange = (updatedSelection) => {

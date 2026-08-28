@@ -318,7 +318,7 @@
             <PhPlus :size="16" class="text-primary-600" weight="bold" />
             Insert Legal Clause
           </h3>
-          <button @click="isInsertClauseModalOpen = false" class="text-slate-400 hover:text-slate-600">✕</button>
+          <button @click="isInsertClauseModalOpen = false" class="text-slate-400 hover:text-slate-600" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
         </div>
 
         <div class="space-y-3 text-xs">
@@ -377,7 +377,7 @@
             <PhClockCounterClockwise :size="18" class="text-primary-600" />
             Document Version History
           </h3>
-          <button @click="isVersionDrawerOpen = false" class="text-slate-400 hover:text-slate-600">✕</button>
+          <button @click="isVersionDrawerOpen = false" class="text-slate-400 hover:text-slate-600" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
         </div>
 
         <div class="space-y-3">

@@ -15,7 +15,7 @@
             {{ agent?.name || 'Agent Details' }}
           </h1>
           <p class="text-body-sm flex items-center gap-2" style="color: hsl(var(--neutral-400));">
-            <span>🏢 {{ agent?.officeName }}</span>
+            <span class="inline-flex items-center gap-1"><AppIcon name="buildings" :size="12" /> {{ agent?.officeName }}</span>
             <span>•</span>
             <span class="capitalize">{{ agent?.agentType?.replace(/_/g, ' ') }}</span>
           </p>
@@ -131,7 +131,7 @@
             <div class="space-y-2 text-caption">
               <div>
                 <span class="block text-micro" style="color: hsl(var(--neutral-400));">Phone Number</span>
-                <span class="font-medium" style="color: hsl(var(--neutral-800));">📞 {{ agent.phone }}</span>
+                <span class="font-medium inline-flex items-center gap-1.5" style="color: hsl(var(--neutral-800));"><AppIcon name="phone" :size="13" /> {{ agent.phone }}</span>
                 <span v-if="agent.alternatePhone" class="text-micro ml-2" style="color: hsl(var(--neutral-500));">
                   (Alt: {{ agent.alternatePhone }})
                 </span>
@@ -139,20 +139,20 @@
 
               <div v-if="agent.email">
                 <span class="block text-micro" style="color: hsl(var(--neutral-400));">Email Address</span>
-                <span class="font-medium" style="color: hsl(var(--neutral-800));">✉️ {{ agent.email }}</span>
+                <span class="font-medium inline-flex items-center gap-1.5" style="color: hsl(var(--neutral-800));"><AppIcon name="email" :size="13" /> {{ agent.email }}</span>
               </div>
 
               <div>
                 <span class="block text-micro" style="color: hsl(var(--neutral-400));">Address</span>
                 <span class="font-medium" style="color: hsl(var(--neutral-800));">
-                  📍 {{ agent.address }}, {{ agent.city }} {{ agent.pincode }}
+                  <AppIcon name="mapPin" :size="13" class="inline" /> {{ agent.address }}, {{ agent.city }} {{ agent.pincode }}
                 </span>
               </div>
 
               <div v-if="agent.contactPersonName">
                 <span class="block text-micro" style="color: hsl(var(--neutral-400));">Contact Person</span>
                 <span class="font-medium" style="color: hsl(var(--neutral-800));">
-                  👤 {{ agent.contactPersonName }} ({{ agent.contactPersonPhone || 'N/A' }})
+                  <AppIcon name="user" :size="13" class="inline" /> {{ agent.contactPersonName }} ({{ agent.contactPersonPhone || 'N/A' }})
                 </span>
               </div>
             </div>

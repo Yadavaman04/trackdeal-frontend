@@ -54,7 +54,8 @@
 
     <!-- ── BANKS TABLE ──────────────────────────────────────────────────────── -->
     <div v-if="activeTab === 'banks'" class="bg-surface border border-default rounded-2xl overflow-hidden shadow-sm">
-      <table class="w-full text-left text-xs">
+      <div class="overflow-x-auto">
+      <table class="w-full min-w-[800px] text-left text-xs">
         <thead class="bg-slate-50/80 dark:bg-slate-900/50 border-b border-default text-[11px] font-bold text-slate-500 uppercase">
           <tr>
             <th class="py-3 px-4">Bank Name</th>
@@ -67,7 +68,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-default">
-          <tr v-for="b in banks" :key="b._id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
+          <tr v-for="b in paginatedBanks" :key="b._id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
             <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <PhBank :size="16" class="text-primary-600" />
               {{ b.bankName }}
@@ -88,11 +89,14 @@
           </tr>
         </tbody>
       </table>
+      </div>
+      <AppPagination v-bind="bankPagination" @page-change="setBankPage" @page-size-change="setBankPageSize" />
     </div>
 
     <!-- ── DSAs TABLE ───────────────────────────────────────────────────────── -->
     <div v-else class="bg-surface border border-default rounded-2xl overflow-hidden shadow-sm">
-      <table class="w-full text-left text-xs">
+      <div class="overflow-x-auto">
+      <table class="w-full min-w-[800px] text-left text-xs">
         <thead class="bg-slate-50/80 dark:bg-slate-900/50 border-b border-default text-[11px] font-bold text-slate-500 uppercase">
           <tr>
             <th class="py-3 px-4">DSA Company Name</th>
@@ -105,7 +109,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-default">
-          <tr v-for="d in dsas" :key="d._id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
+          <tr v-for="d in paginatedDsas" :key="d._id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
             <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <PhBuildings :size="16" class="text-purple-600" />
               {{ d.companyName }}
@@ -128,6 +132,8 @@
           </tr>
         </tbody>
       </table>
+      </div>
+      <AppPagination v-bind="dsaPagination" @page-change="setDsaPage" @page-size-change="setDsaPageSize" />
     </div>
 
     <!-- Add Bank Modal -->
@@ -214,10 +220,13 @@
 import { ref, reactive, onMounted } from 'vue';
 import { PhArrowLeft, PhPlus, PhBank, PhUsersThree, PhBuildings, PhX } from '@phosphor-icons/vue';
 import apiClient from '@/api/client';
+import { useClientPagination } from '@/composables/useClientPagination';
 
 const activeTab = ref('banks');
 const banks = ref([]);
 const dsas = ref([]);
+const { paginatedItems: paginatedBanks, pagination: bankPagination, setPage: setBankPage, setPageSize: setBankPageSize } = useClientPagination(banks, 10);
+const { paginatedItems: paginatedDsas, pagination: dsaPagination, setPage: setDsaPage, setPageSize: setDsaPageSize } = useClientPagination(dsas, 10);
 
 const isAddBankModalOpen = ref(false);
 const isAddDsaModalOpen = ref(false);

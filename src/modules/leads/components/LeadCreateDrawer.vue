@@ -352,9 +352,9 @@
           <div>
             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lead Temperature</label>
             <select v-model="leadTemperature" class="w-full bg-surface border border-default rounded-lg px-3 py-1.5 outline-none focus:border-primary">
-              <option value="hot">🔥 Hot</option>
-              <option value="warm">⚡ Warm</option>
-              <option value="cold">❄️ Cold</option>
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
             </select>
           </div>
           <div>
