@@ -77,6 +77,51 @@ const routes = [
         component: () => import('@/modules/deals/pages/DealDetails.vue')
       },
       {
+        path: 'loans',
+        name: 'Loans',
+        component: () => import('@/modules/loans/pages/LoansList.vue')
+      },
+      {
+        path: 'loans/banks-dsa',
+        name: 'LoanBanksDsa',
+        component: () => import('@/modules/loans/pages/BankDsaDirectory.vue')
+      },
+      {
+        path: 'loans/:id',
+        name: 'LoanDetails',
+        component: () => import('@/modules/loans/pages/LoanDetails.vue')
+      },
+      {
+        path: 'agreements',
+        name: 'Agreements',
+        component: () => import('@/modules/agreements/pages/AgreementsList.vue')
+      },
+      {
+        path: 'agreements/new',
+        name: 'CreateAgreement',
+        component: () => import('@/modules/agreements/pages/CreateAgreementWizard.vue')
+      },
+      {
+        path: 'agreements/templates',
+        name: 'DocumentTemplates',
+        component: () => import('@/modules/agreements/pages/DocumentTemplatesDirectory.vue')
+      },
+      {
+        path: 'agreements/:id',
+        name: 'AgreementPreview',
+        component: () => import('@/modules/agreements/pages/AgreementPreview.vue')
+      },
+      {
+        path: 'agreements/:id/edit-details',
+        name: 'EditAgreementDetails',
+        component: () => import('@/modules/agreements/pages/EditAgreementDetails.vue')
+      },
+      {
+        path: 'agreements/:id/editor',
+        name: 'AgreementFullEditor',
+        component: () => import('@/modules/agreements/pages/AgreementFullEditor.vue')
+      },
+      {
         path: 'tasks',
         name: 'Tasks',
         component: () => import('@/modules/tasks/pages/TasksList.vue')
@@ -120,6 +165,12 @@ const routes = [
         path: 'commissions',
         name: 'CommissionsDashboard',
         component: () => import('@/modules/commissions/pages/CommissionsDashboard.vue'),
+        meta: { permission: 'commissions.read', featureFlag: 'commissionModule' }
+      },
+      {
+        path: 'commissions/receivables',
+        name: 'ReceivablesLedger',
+        component: () => import('@/modules/commissions/pages/ReceivablesLedger.vue'),
         meta: { permission: 'commissions.read', featureFlag: 'commissionModule' }
       },
       {
@@ -197,6 +248,47 @@ const routes = [
             meta: { requiresOrgType: ['AGENCY', 'ENTERPRISE_AGENCY'] }
           }
         ]
+      }
+    ]
+  },
+  {
+    path: '/admin',
+    component: () => import('@/layouts/AdminLayout.vue'),
+    meta: { requiresAuth: true, requiresSystemAdmin: true },
+    children: [
+      {
+        path: '',
+        redirect: '/admin/dashboard'
+      },
+      {
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: () => import('@/modules/admin/views/AdminDashboard.vue')
+      },
+      {
+        path: 'organizations',
+        name: 'AdminOrganizations',
+        component: () => import('@/modules/admin/views/AdminOrganizations.vue')
+      },
+      {
+        path: 'organizations/:id',
+        name: 'AdminOrganizationDetails',
+        component: () => import('@/modules/admin/views/AdminOrganizationDetails.vue')
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: () => import('@/modules/admin/views/AdminUsers.vue')
+      },
+      {
+        path: 'audit-logs',
+        name: 'AdminAuditLogs',
+        component: () => import('@/modules/admin/views/AdminAuditLogs.vue')
+      },
+      {
+        path: 'settings',
+        name: 'AdminSettings',
+        component: () => import('@/modules/admin/views/AdminSettings.vue')
       }
     ]
   },

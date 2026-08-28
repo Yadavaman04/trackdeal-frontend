@@ -23,10 +23,15 @@ export default {
     }
   },
   getters: {
-    hasCapability: (state) => (permission) => {
+    hasCapability: (state, getters, rootState, rootGetters) => (permission) => {
       if (!permission) return true;
+      const role = String(rootGetters?.['auth/userRole'] || '').toLowerCase();
+      if (['super_admin', 'system_admin', 'org_admin', 'organization_admin'].includes(role)) {
+        return true;
+      }
+      if (state.capabilities.includes('*')) return true;
       const normalized = permission.replace(/:/g, '.');
-      return state.capabilities.includes(normalized);
+      return state.capabilities.includes(normalized) || state.capabilities.includes(permission);
     }
   }
 };

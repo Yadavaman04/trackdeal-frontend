@@ -1,460 +1,671 @@
 <template>
-  <div class="space-y-6">
-    <!-- Top Dashboard Filter Header Toolbar -->
-    <div class="card p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
+  <div class="space-y-6 text-xs font-sans">
+    <!-- Header Block with Greeting, Quick Actions & Date Filter -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
       <div>
-        <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight flex items-center gap-1.5">
-          <span>{{ greetingText }}, {{ userName }}</span>
-          <component :is="greetingIcon" :class="['w-5 h-5', greetingIcon === PhSun ? 'text-amber-500' : 'text-indigo-400 dark:text-indigo-300']" />
+        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <span>{{ greeting }}, {{ userName }}</span>
         </h2>
-        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-          {{ formattedDate }} · {{ displayRoleName }} Workspace
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Here's what's happening with your real estate business today · {{ formattedToday }}
         </p>
       </div>
 
-      <!-- Filters control tools -->
-      <div class="flex flex-wrap items-center gap-3 shrink-0">
-        <!-- Date range selectors -->
-        <DateRangeSelector />
+      <!-- Actions & Date Range Controls -->
+      <div class="flex items-center gap-3 shrink-0 flex-wrap">
+        <!-- Date Filter Selector -->
+        <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          <button 
+            v-for="period in ['today', 'this_week', 'this_month', 'this_quarter', 'this_year']"
+            :key="period"
+            @click="setPeriod(period)"
+            class="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+            :class="selectedPeriod === period ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+          >
+            {{ formatPeriodLabel(period) }}
+          </button>
+        </div>
 
-        <!-- Branch Selector (For Manager / Admin / Super Admin roles only) -->
-        <AppSelect 
-          v-if="showBranchFilter"
-          v-model="selectedBranch"
-          :options="branchOptions"
-          @update:modelValue="handleBranchChange"
-          class="w-40"
-        />
-        
-        <button 
-          @click="refreshData"
-          class="btn btn-secondary h-9 w-9 p-0"
-          title="Force refresh metrics"
+        <!-- + New Lead Primary Action -->
+        <router-link 
+          to="/app/leads"
+          class="px-3.5 py-2 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all flex items-center gap-1.5 text-xs"
         >
-          <PhArrowClockwise class="w-4 h-4 text-neutral-500" />
-        </button>
+          <span class="font-bold text-sm">+</span>
+          <span>New Lead</span>
+        </router-link>
       </div>
     </div>
 
-    <!-- Active Loading state skeletal widget -->
-    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div v-for="i in 4" :key="i" class="card p-4 h-28 flex flex-col justify-between">
-        <div class="h-4 skeleton rounded w-1/3"></div>
-        <div class="h-8 skeleton rounded w-2/3 mt-2"></div>
+    <!-- 4 Primary Operational & Financial KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- 1. Active Leads -->
+      <router-link 
+        to="/app/leads"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group block space-y-1"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600">Active Leads</span>
+          <span class="text-slate-400 group-hover:text-indigo-600 text-sm">👥</span>
+        </div>
+        <span class="text-2xl font-bold text-slate-900 dark:text-slate-100 block">
+          {{ kpis.activeLeads || 0 }}
+        </span>
+        <span class="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+          <span>+{{ kpis.newLeadsThisMonth || 0 }}</span>
+          <span class="text-slate-400">new this month</span>
+        </span>
+      </router-link>
+
+      <!-- 2. Active Deals -->
+      <router-link 
+        to="/app/deals"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group block space-y-1"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600">Active Deals</span>
+          <span class="text-slate-400 group-hover:text-indigo-600 text-sm">🤝</span>
+        </div>
+        <span class="text-2xl font-bold text-slate-900 dark:text-slate-100 block">
+          {{ kpis.activeDeals || 0 }}
+        </span>
+        <span class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+          ₹{{ formatCompact(kpis.activePipelineValue || 0) }} pipeline value
+        </span>
+      </router-link>
+
+      <!-- 3. Properties Inventory -->
+      <router-link 
+        to="/app/properties"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group block space-y-1"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600">Properties</span>
+          <span class="text-slate-400 group-hover:text-indigo-600 text-sm">🏢</span>
+        </div>
+        <span class="text-2xl font-bold text-slate-900 dark:text-slate-100 block">
+          {{ kpis.activeProperties || 0 }}
+        </span>
+        <span class="text-[11px] text-slate-500 font-medium">
+          {{ kpis.activeProperties || 0 }} units available
+        </span>
+      </router-link>
+
+      <!-- 4. Receivables -->
+      <router-link 
+        to="/app/commissions/receivables"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group block space-y-1"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600">Receivable</span>
+          <span class="text-slate-400 group-hover:text-indigo-600 text-sm">💰</span>
+        </div>
+        <span class="text-2xl font-bold text-slate-900 dark:text-slate-100 block">
+          ₹{{ formatCompact(kpis.commissionReceivable || 0) }}
+        </span>
+        <span class="text-[11px] font-medium" :class="kpis.commissionOverdue > 0 ? 'text-red-500' : 'text-slate-400'">
+          {{ kpis.commissionOverdue > 0 ? '₹' + formatCompact(kpis.commissionOverdue) + ' overdue' : 'All accounts on track' }}
+        </span>
+      </router-link>
+    </div>
+
+    <!-- Section 10: Today's Priorities Operational Strip -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-2.5">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+        <h3 class="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
+          <span>⚡</span>
+          <span>Today's Priorities</span>
+        </h3>
+        <span class="text-[10px] text-slate-400 font-medium">What needs your immediate attention today</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <!-- 1. Follow-ups Due -->
+        <router-link 
+          to="/app/tasks"
+          class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30 border border-slate-200/70 dark:border-slate-700/60 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Follow-ups Due</span>
+            <span class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ kpis.followupsDueTodayCount || 0 }} Due</span>
+          </div>
+          <span class="text-indigo-600 font-bold">→</span>
+        </router-link>
+
+        <!-- 2. Site Visits -->
+        <router-link 
+          to="/app/tasks"
+          class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 border border-slate-200/70 dark:border-slate-700/60 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Site Visits</span>
+            <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">{{ kpis.siteVisitsScheduledCount || 0 }} Scheduled</span>
+          </div>
+          <span class="text-emerald-600 font-bold">→</span>
+        </router-link>
+
+        <!-- 3. Meetings -->
+        <router-link 
+          to="/app/tasks"
+          class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-purple-50/60 dark:hover:bg-purple-950/30 border border-slate-200/70 dark:border-slate-700/60 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Meetings</span>
+            <span class="text-sm font-bold text-purple-600 dark:text-purple-400">2 Meetings</span>
+          </div>
+          <span class="text-purple-600 font-bold">→</span>
+        </router-link>
+
+        <!-- 4. Hot Leads -->
+        <router-link 
+          to="/app/leads"
+          class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-red-50/60 dark:hover:bg-red-950/30 border border-slate-200/70 dark:border-slate-700/60 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Hot Leads</span>
+            <span class="text-sm font-bold text-red-500">{{ kpis.hotLeads || 0 }} Need Attention</span>
+          </div>
+          <span class="text-red-500 font-bold">→</span>
+        </router-link>
+
+        <!-- 5. Overdue Payments -->
+        <router-link 
+          to="/app/commissions/receivables"
+          class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-amber-50/60 dark:hover:bg-amber-950/30 border border-slate-200/70 dark:border-slate-700/60 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Overdue Payments</span>
+            <span class="text-sm font-bold text-amber-600 dark:text-amber-400">{{ kpis.overdueFollowupsCount || 0 }} Overdue</span>
+          </div>
+          <span class="text-amber-600 font-bold">→</span>
+        </router-link>
       </div>
     </div>
 
-    <!-- Layout templates switch by active user role -->
-    <div v-else class="space-y-6">
-      <!-- 1. AGENT DASHBOARD LAYOUT -->
-      <template v-if="dashboardRole === 'agent'">
-        <!-- KPIs Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPIWidget title="Active Leads" :value="metrics.activeLeads" description="Total leads currently in your active sales pipeline." trend="12%" trendDirection="up" />
-          <KPIWidget title="Deals Closed (MTD)" :value="formatCurrency(metrics.dealsValueMTD)" description="Gross revenue value of deals successfully closed this month." trend="8%" trendDirection="up" />
-          <KPIWidget title="Commissions Earned" :value="formatCurrency(metrics.commissionsEarned)" description="Your total approved commission earnings MTD." trend="15%" trendDirection="up" />
-          <KPIWidget title="Pending Tasks" :value="metrics.pendingTasks" description="Action items assigned to you due today or overdue." trend="0" trendDirection="flat" />
+    <!-- Section 11: Sales Pipeline Conversion Funnel -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span>📈</span>
+            <span>Sales Pipeline Funnel</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Opportunity flow and estimated value across lead stages</p>
         </div>
+        <router-link to="/app/leads" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
+          View Pipeline Board →
+        </router-link>
+      </div>
 
-        <!-- Layout grid tables and quick actions -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Active Leads list -->
-          <DashboardCard title="My Active Leads" subtitle="Leads currently awaiting action" class="lg:col-span-8 h-80">
-            <template #actions>
-              <button @click="triggerQuickAction('lead')" class="btn btn-secondary btn-sm h-7 text-xs px-2.5">
-                <PhPlus class="w-3.5 h-3.5 text-neutral-550" />
-                <span>Quick Lead</span>
-              </button>
-            </template>
-            <DashboardTable 
-              :columns="[
-                { key: 'name', label: 'Lead Name' },
-                { key: 'budget', label: 'Budget' },
-                { key: 'stage', label: 'Stage' },
-                { key: 'lastContact', label: 'Last Contact' }
-              ]"
-              :rows="metrics.activeLeadsList || []"
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+        <router-link 
+          v-for="stage in pipelineStages" 
+          :key="stage.key"
+          to="/app/leads"
+          class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 border border-slate-200/60 dark:border-slate-700/60 transition-all text-center space-y-1 block group"
+        >
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block truncate group-hover:text-indigo-600">
+            {{ stage.label }}
+          </span>
+          <span class="text-lg font-bold text-slate-900 dark:text-slate-100 block">
+            {{ getStageCount(stage.key) }}
+          </span>
+          <span class="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 block truncate">
+            ₹{{ formatCompact(getStageValue(stage.key)) }}
+          </span>
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Section: Loan Management & Banking Operations Strip -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+        <div>
+          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+            <span>🏦</span>
+            <span>Home Loan Pipeline & Banking Operations</span>
+          </h3>
+          <p class="text-[10px] text-slate-400">Real-time status of loan cases, bank submissions, sanctions & disbursements</p>
+        </div>
+        <router-link to="/app/loans" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+          Manage Loans →
+        </router-link>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <router-link to="/app/loans" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-blue-400 transition block space-y-0.5">
+          <span class="text-[10px] text-slate-400 font-semibold uppercase">Active Loan Files</span>
+          <div class="text-base font-extrabold text-slate-900 dark:text-white font-mono">{{ loanSummary.activeCases || 0 }} Cases</div>
+          <span class="text-[10px] text-blue-600 font-medium">In Bank Pipeline</span>
+        </router-link>
+
+        <router-link to="/app/loans" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-emerald-400 transition block space-y-0.5">
+          <span class="text-[10px] text-slate-400 font-semibold uppercase">Sanctioned</span>
+          <div class="text-base font-extrabold text-emerald-600 font-mono">{{ loanSummary.sanctionedCount || 0 }} Approved</div>
+          <span class="text-[10px] text-emerald-700 dark:text-emerald-400/80 font-medium">₹{{ formatCompact(loanSummary.totalSanctionedAmount || 0) }} Sanctioned</span>
+        </router-link>
+
+        <router-link to="/app/loans" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-purple-400 transition block space-y-0.5">
+          <span class="text-[10px] text-slate-400 font-semibold uppercase">Disbursed This Month</span>
+          <div class="text-base font-extrabold text-purple-600 font-mono">₹{{ formatCompact(loanSummary.disbursedThisMonth || 0) }}</div>
+          <span class="text-[10px] text-slate-400 font-medium">Total: ₹{{ formatCompact(loanSummary.totalDisbursedAmount || 0) }}</span>
+        </router-link>
+
+        <router-link to="/app/commissions" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 hover:border-amber-400 transition block space-y-0.5">
+          <span class="text-[10px] text-slate-400 font-semibold uppercase">Loan Comm. Receivable</span>
+          <div class="text-base font-extrabold text-amber-600 font-mono">₹{{ formatCompact(loanSummary.commissionReceivable || 0) }}</div>
+          <span class="text-[10px] text-amber-700 dark:text-amber-400/80 font-medium">Auto-synced</span>
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Section 12 & 15 & 16: Today's Follow-ups & Hot Leads / Visits Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left: Today's Follow-ups Widget -->
+      <div class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>⏰</span>
+                <span>Today's Follow-ups</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">Scheduled client touches, calls, and site visits</p>
+            </div>
+            <router-link to="/app/tasks" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
+              All Tasks →
+            </router-link>
+          </div>
+
+          <!-- Follow-ups List -->
+          <div class="mt-3 space-y-2.5 max-h-[340px] overflow-y-auto">
+            <div v-if="todayFollowups.length === 0 && overdueFollowups.length === 0" class="py-12 text-center text-slate-400 space-y-1">
+              <span class="text-2xl">✨</span>
+              <p class="font-semibold text-slate-600 dark:text-slate-300">All follow-ups completed!</p>
+              <p class="text-[11px]">No pending calls or visits scheduled for today.</p>
+            </div>
+
+            <div 
+              v-for="task in [...overdueFollowups, ...todayFollowups]" 
+              :key="task.id"
+              class="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 rounded-xl flex items-center justify-between gap-3 hover:border-indigo-300 transition-colors"
             >
-              <template #cell(budget)="{ value }">{{ formatCurrency(value) }}</template>
-              <template #cell(stage)="{ value }">
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-blue-50 text-blue-700 capitalize border border-blue-200/50">
-                  {{ value }}
-                </span>
-              </template>
-            </DashboardTable>
-          </DashboardCard>
+              <div class="space-y-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ task.leadName }}</span>
+                  <span class="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    {{ task.type }}
+                  </span>
+                  <span v-if="task.temperature === 'hot'" class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-red-500/10 text-red-600">
+                    HOT
+                  </span>
+                </div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                  <span>🕒 {{ task.dueTime || '11:00 AM' }}</span>
+                  <span>·</span>
+                  <span class="truncate">{{ task.title }}</span>
+                </div>
+              </div>
 
-          <!-- Today's Tasks list -->
-          <DashboardCard title="My Tasks" subtitle="Due today or overdue" class="lg:col-span-4 h-80">
-            <template #actions>
-              <button @click="triggerQuickAction('task')" class="btn btn-secondary btn-sm h-7 text-xs px-2.5">
-                <PhPlus class="w-3.5 h-3.5 text-neutral-550" />
-                <span>New Task</span>
-              </button>
-            </template>
-            <DashboardTable 
-              :columns="[
-                { key: 'title', label: 'Task' },
-                { key: 'due', label: 'Due' }
-              ]"
-              :rows="metrics.tasksList || []"
-            />
-          </DashboardCard>
-        </div>
-      </template>
-
-      <!-- 2. BRANCH MANAGER DASHBOARD LAYOUT -->
-      <template v-else-if="dashboardRole === 'branch_manager'">
-        <!-- KPIs Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPIWidget title="Branch Gross Sales" :value="formatCurrency(metrics.branchGrossSales)" description="Total value of branch deals closed this month." trend="14%" trendDirection="up" />
-          <KPIWidget title="Active Agents" :value="metrics.activeAgents" description="Total registered sales agents in this branch." trend="0" trendDirection="flat" />
-          <KPIWidget title="Pending Approvals" :value="metrics.pendingApprovals" description="Deals and payouts waiting for manager audit." trend="2" trendDirection="up" />
-          <KPIWidget title="Branch Conversion %" :value="`${metrics.conversionRate}%`" description="Conversion ratio from lead registration to closed-won deals." trend="3.2%" trendDirection="up" />
+              <div class="flex items-center gap-1.5 shrink-0">
+                <router-link 
+                  to="/app/tasks"
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-300"
+                >
+                  Reschedule
+                </router-link>
+                <router-link 
+                  to="/app/tasks"
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+                >
+                  Complete
+                </router-link>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Approvals queue -->
-          <DashboardCard title="Approvals Queue" subtitle="Required actions" class="lg:col-span-7 h-80">
-            <DashboardTable 
-              :columns="[
-                { key: 'item', label: 'Item Details' },
-                { key: 'agent', label: 'Agent' },
-                { key: 'value', label: 'Value' },
-                { key: 'date', label: 'Requested Date' }
-              ]"
-              :rows="metrics.approvalsList || []"
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+          <router-link to="/app/tasks" class="text-slate-500 hover:text-indigo-600 font-semibold text-xs">
+            + Schedule New Follow-up
+          </router-link>
+        </div>
+      </div>
+
+      <!-- Right: Hot Leads & Upcoming Visits -->
+      <div class="lg:col-span-5 space-y-6">
+        <!-- Hot Leads Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-red-600 flex items-center gap-1">
+              <span>🔥</span>
+              <span>Hot Leads (High Intent)</span>
+            </h3>
+            <router-link to="/app/leads" class="text-[11px] text-indigo-600 hover:underline font-semibold">
+              View All →
+            </router-link>
+          </div>
+
+          <div v-if="recentLeads.length === 0" class="py-6 text-center text-slate-400">
+            <span class="text-xs">No hot leads currently flagged.</span>
+          </div>
+
+          <div v-else class="space-y-2">
+            <router-link 
+              v-for="lead in recentLeads.slice(0, 4)" 
+              :key="lead.id"
+              :to="`/app/leads/${lead.id}`"
+              class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between transition-colors block"
             >
-              <template #cell(value)="{ value }">{{ formatCurrency(value) }}</template>
-            </DashboardTable>
-          </DashboardCard>
+              <div class="space-y-0.5">
+                <div class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>{{ lead.name }}</span>
+                  <span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-red-500/10 text-red-600">HOT</span>
+                </div>
+                <div class="text-[10px] text-slate-400">{{ lead.requirement }}</div>
+              </div>
+              <span class="text-[10px] font-semibold text-slate-500 capitalize bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                {{ (lead.stage || 'new').replace(/_/g, ' ') }}
+              </span>
+            </router-link>
+          </div>
+        </div>
 
-          <!-- Agent performance ranking -->
-          <DashboardCard title="Agent Leaderboard" subtitle="Top performing branch staff" class="lg:col-span-5 h-80">
-            <DashboardTable 
-              :columns="[
-                { key: 'agent', label: 'Agent' },
-                { key: 'leads', label: 'Leads' },
-                { key: 'sales', label: 'Gross Sales' }
-              ]"
-              :rows="metrics.leaderboardList || []"
+        <!-- Upcoming Site Visits Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider text-emerald-600 flex items-center gap-1">
+              <span>🚗</span>
+              <span>Upcoming Site Visits</span>
+            </h3>
+            <router-link to="/app/tasks" class="text-[11px] text-indigo-600 hover:underline font-semibold">
+              View All →
+            </router-link>
+          </div>
+
+          <div class="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex items-center justify-between">
+            <div class="space-y-0.5">
+              <div class="font-bold text-slate-900 dark:text-slate-100 text-xs">Today · 4:30 PM</div>
+              <div class="text-[11px] text-slate-500">Neha Sharma · Godrej River Royale (3 BHK)</div>
+            </div>
+            <router-link to="/app/tasks" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 text-white shadow-xs">
+              Complete Visit
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 13 & 14 & 17: Monthly Performance & Financial Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Monthly Performance Chart Card -->
+      <div class="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <span>📊</span>
+              <span>Sales & Commission Performance</span>
+            </h3>
+            <p class="text-[11px] text-slate-400">Deal volume and revenue realization trend</p>
+          </div>
+
+          <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[10px] font-semibold">
+            <button 
+              v-for="range in ['3M', '6M', '12M']" 
+              :key="range"
+              @click="chartRange = range"
+              class="px-2 py-0.5 rounded-md transition-all"
+              :class="chartRange === range ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-xs font-bold' : 'text-slate-500'"
             >
-              <template #cell(sales)="{ value }">{{ formatCurrency(value) }}</template>
-            </DashboardTable>
-          </DashboardCard>
-        </div>
-      </template>
-
-      <!-- 3. EXECUTIVE / ORGANIZATIONAL DASHBOARD LAYOUT -->
-      <template v-else-if="dashboardRole === 'org_admin' || dashboardRole === 'super_admin'">
-        <!-- KPIs Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPIWidget title="Total Org Revenue" :value="formatCurrency(metrics.orgRevenue)" description="Organization-wide gross revenue closed MTD." trend="19%" trendDirection="up" />
-          <KPIWidget title="Gross Commission" :value="formatCurrency(metrics.grossCommission)" description="Total company commissions generated." trend="11%" trendDirection="up" />
-          <KPIWidget title="Active Leads" :value="metrics.orgLeads" description="Active leads managed across all branches." trend="6%" trendDirection="up" />
-          <KPIWidget title="Avg Sales Cycle" :value="`${metrics.avgSalesCycle} Days`" description="Average conversion velocity of closed-won deals." trend="2 days" trendDirection="down" />
+              {{ range }}
+            </button>
+          </div>
         </div>
 
-        <!-- SVG Visual Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartContainer title="Revenue Growth Trend" subtitle="Monthly organization closed-won revenues" type="line" :data="metrics.revenueTrend || []" />
-          <ChartContainer title="Lead Conversion Funnel" subtitle="Pipeline drop-offs and stages counts" type="funnel" :data="metrics.funnelData || []" />
+        <!-- Metric Bars -->
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Deals Closed</span>
+            <span class="text-base font-bold text-slate-900 dark:text-slate-100">{{ kpis.closedDealsPeriodCount || 0 }} Deals</span>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase block">Deal Value</span>
+            <span class="text-base font-bold text-slate-900 dark:text-slate-100">₹{{ formatCompact(kpis.closedDealsPeriodValue || 0) }}</span>
+          </div>
+          <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-700 dark:text-emerald-400">
+            <span class="text-[10px] font-semibold uppercase block">Commission Received</span>
+            <span class="text-base font-extrabold">₹{{ formatCompact(kpis.commissionReceived || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Snapshot & Expected Collections -->
+      <div class="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <span>💎</span>
+              <span>Financial Snapshot</span>
+            </h3>
+            <router-link to="/app/commissions" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
+              View Financials →
+            </router-link>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mt-3">
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl">
+              <span class="text-slate-400 block text-[10px] font-semibold uppercase">Earned</span>
+              <span class="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                ₹{{ formatCompact(kpis.commissionEarned || 0) }}
+              </span>
+            </div>
+            <div class="bg-emerald-500/10 p-3 rounded-xl text-emerald-700 dark:text-emerald-400">
+              <span class="block text-[10px] font-semibold uppercase">Received</span>
+              <span class="text-base font-extrabold">
+                ₹{{ formatCompact(kpis.commissionReceived || 0) }}
+              </span>
+            </div>
+            <div class="bg-amber-500/10 p-3 rounded-xl text-amber-700 dark:text-amber-400">
+              <span class="block text-[10px] font-semibold uppercase">Outstanding</span>
+              <span class="text-base font-extrabold">
+                ₹{{ formatCompact(kpis.commissionReceivable || 0) }}
+              </span>
+            </div>
+            <div class="bg-red-500/10 p-3 rounded-xl text-red-700 dark:text-red-400">
+              <span class="block text-[10px] font-semibold uppercase">Overdue</span>
+              <span class="text-base font-extrabold">
+                ₹{{ formatCompact(kpis.commissionOverdue || 0) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Collection Progress Bar -->
+          <div class="space-y-1.5 pt-3 mt-3 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex justify-between text-[11px] font-semibold">
+              <span class="text-slate-500">Collection Progress</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ kpis.collectionRate || 0 }}%</span>
+            </div>
+            <div class="bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" :style="`width: ${Math.min(100, kpis.collectionRate || 0)}%`"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Branch rankings -->
-          <DashboardCard title="Branch Rankings" subtitle="MTD branch volumes comparisons" class="lg:col-span-6 h-80">
-            <DashboardTable 
-              :columns="[
-                { key: 'branch', label: 'Branch Office' },
-                { key: 'leads', label: 'Active Leads' },
-                { key: 'sales', label: 'Gross Closed' }
-              ]"
-              :rows="metrics.branchRankingsList || []"
-            >
-              <template #cell(sales)="{ value }">{{ formatCurrency(value) }}</template>
-            </DashboardTable>
-          </DashboardCard>
-
-          <!-- Top Projects -->
-          <DashboardCard title="Top Performing Projects" subtitle="Developments by sales yield value" class="lg:col-span-6 h-80">
-            <DashboardTable 
-              :columns="[
-                { key: 'project', label: 'Development Project' },
-                { key: 'available', label: 'Available Units' },
-                { key: 'sales', label: 'Closed Revenue' }
-              ]"
-              :rows="metrics.topProjectsList || []"
-            >
-              <template #cell(sales)="{ value }">{{ formatCurrency(value) }}</template>
-            </DashboardTable>
-          </DashboardCard>
+        <div class="pt-2 text-center">
+          <router-link to="/app/commissions/receivables" class="text-indigo-600 font-semibold text-xs hover:underline">
+            Open Receivables Ledger ("Who Owes Us") →
+          </router-link>
         </div>
-      </template>
-
-      <!-- 4. FINANCE DASHBOARD LAYOUT -->
-      <template v-else-if="dashboardRole === 'finance'">
-        <!-- KPIs Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPIWidget title="Unpaid Commissions" :value="formatCurrency(metrics.unpaidCommissions)" description="Total approved commissions awaiting payout disbursements." trend="4%" trendDirection="up" />
-          <KPIWidget title="Disbursed MTD" :value="formatCurrency(metrics.disbursedCommissions)" description="Commissions successfully cleared and paid out." trend="22%" trendDirection="up" />
-          <KPIWidget title="Compliance Audits" :value="metrics.complianceReviews" description="Closed-won deals requiring regulatory compliance checks." trend="0" trendDirection="flat" />
-          <KPIWidget title="Tax Reserves (MTD)" :value="formatCurrency(metrics.taxReserves)" description="Tax deductions and reserves stored from disbursements." trend="15%" trendDirection="up" />
-        </div>
-
-        <!-- Visual chart row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartContainer title="Payout Disbursement History" subtitle="Monthly commissions payouts cleared" type="bar" :data="metrics.collectionsTrend || []" />
-          <ChartContainer title="Tax & compliance Reserves" subtitle="Taxes accumulated across regions" type="line" :data="metrics.taxReservesTrend || []" />
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Pending Payouts -->
-          <DashboardCard title="Pending Payouts" subtitle="Commissions approved for disbursement" class="lg:col-span-8 h-80">
-            <DashboardTable 
-              :columns="[
-                { key: 'ref', label: 'Reference Ref' },
-                { key: 'agent', label: 'Agent' },
-                { key: 'amount', label: 'Amount' },
-                { key: 'date', label: 'Approved Date' }
-              ]"
-              :rows="metrics.pendingPayoutsList || []"
-            >
-              <template #cell(amount)="{ value }">{{ formatCurrency(value) }}</template>
-            </DashboardTable>
-          </DashboardCard>
-
-          <!-- Compliance alerts -->
-          <DashboardCard title="Compliance Warnings" subtitle="Deal compliance alert flags" class="lg:col-span-4 h-80">
-            <DashboardTable 
-              :columns="[
-                { key: 'deal', label: 'Deal' },
-                { key: 'message', label: 'Message' }
-              ]"
-              :rows="metrics.complianceAlertsList || []"
-            />
-          </DashboardCard>
-        </div>
-      </template>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { PhArrowClockwise, PhPlus, PhSun, PhMoon } from '@phosphor-icons/vue';
-import KPIWidget from '@/components/KPIWidget.vue';
-import DashboardCard from '@/components/DashboardCard.vue';
-import DashboardTable from '@/components/DashboardTable.vue';
-import ChartContainer from '@/components/ChartContainer.vue';
-import DateRangeSelector from '@/components/DateRangeSelector.vue';
-import AppSelect from '@/components/AppSelect.vue';
-import { useDashboardMetricsQuery } from '../queries';
-import { useBranchesQuery } from '@/modules/settings/queries';
+import { fetchBrokerDashboard } from '../api/endpoints';
+import apiClient from '@/api/client';
 
 const store = useStore();
-const selectedBranch = ref('all');
 
-const userProfile = computed(() => store.state.auth.currentUser);
+const selectedPeriod = ref('this_month');
+const chartRange = ref('6M');
+const loading = ref(true);
+
+const kpis = ref({
+  activeLeads: 0,
+  activeProperties: 0,
+  activeDeals: 0,
+  activePipelineValue: 0,
+  closedDealsPeriodCount: 0,
+  closedDealsPeriodValue: 0,
+  commissionReceivable: 0,
+  commissionReceived: 0,
+  commissionEarned: 0,
+  commissionOverdue: 0,
+  expectedThisMonth: 0,
+  collectionRate: 0,
+  followupsDueTodayCount: 0,
+  overdueFollowupsCount: 0,
+  siteVisitsScheduledCount: 0,
+});
+
+const salesPipeline = ref({});
+const leadSources = ref({});
+const leadTemperatures = ref({ hot: 0, warm: 0, cold: 0 });
+const todayFollowups = ref([]);
+const overdueFollowups = ref([]);
+const expectedCollections = ref([]);
+const recentLeads = ref([]);
+const loanSummary = ref({
+  activeCases: 0,
+  sanctionedCount: 0,
+  disbursedThisMonth: 0,
+  totalSanctionedAmount: 0,
+  totalDisbursedAmount: 0,
+  commissionReceivable: 0,
+});
+
 const userName = computed(() => {
-  if (userProfile.value?.name) return userProfile.value.name;
-  if (userProfile.value?.firstName) {
-    return `${userProfile.value.firstName} ${userProfile.value.lastName || ""}`.trim();
-  }
-  return 'Mayank';
+  const user = store.state.auth.currentUser;
+  return user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Sameer';
 });
 
-const greetingText = computed(() => {
+const greeting = computed(() => {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) {
-    return 'Good morning';
-  } else if (hour >= 12 && hour < 17) {
-    return 'Good afternoon';
-  } else {
-    return 'Good evening';
-  }
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
 });
 
-const greetingIcon = computed(() => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 17) {
-    return PhSun;
-  } else {
-    return PhMoon;
-  }
+const formattedToday = computed(() => {
+  return new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 });
 
-const formattedDate = computed(() => {
-  const options = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
-  return new Date().toLocaleDateString('en-IN', options);
+const pipelineStages = [
+  { key: 'new', label: 'New' },
+  { key: 'qualified', label: 'Qualified' },
+  { key: 'property_shared', label: 'Prop Shared' },
+  { key: 'site_visit', label: 'Site Visit' },
+  { key: 'negotiation', label: 'Negotiation' },
+  { key: 'booking', label: 'Booking' },
+  { key: 'closed_won', label: 'Closed' },
+];
+
+function formatPeriodLabel(p) {
+  const map = {
+    today: 'Today',
+    this_week: 'This Week',
+    this_month: 'This Month',
+    this_quarter: 'This Quarter',
+    this_year: 'This Year',
+  };
+  return map[p] || p;
+}
+
+function setPeriod(p) {
+  selectedPeriod.value = p;
+  loadDashboardData();
+}
+
+function getPeriodDates() {
+  const now = new Date();
+  let start = new Date();
+  let end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
+  if (selectedPeriod.value === 'today') {
+    start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  } else if (selectedPeriod.value === 'this_week') {
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    start = new Date(now.setDate(diff));
+    start.setHours(0, 0, 0, 0);
+  } else if (selectedPeriod.value === 'this_month') {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else if (selectedPeriod.value === 'this_quarter') {
+    const quarterMonth = Math.floor(now.getMonth() / 3) * 3;
+    start = new Date(now.getFullYear(), quarterMonth, 1);
+  } else if (selectedPeriod.value === 'this_year') {
+    start = new Date(now.getFullYear(), 0, 1);
+  }
+
+  return {
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+  };
+}
+
+async function loadDashboardData() {
+  loading.value = true;
+  try {
+    const dates = getPeriodDates();
+    const [res, loanRes] = await Promise.allSettled([
+      fetchBrokerDashboard(dates),
+      apiClient.get('/loans/summary'),
+    ]);
+
+    if (res.status === 'fulfilled') {
+      const data = res.value?.data || res.value;
+      if (data) {
+        if (data.kpis) kpis.value = data.kpis;
+        if (data.salesPipeline) salesPipeline.value = data.salesPipeline;
+        if (data.leadSources) leadSources.value = data.leadSources;
+        if (data.leadTemperatures) leadTemperatures.value = data.leadTemperatures;
+        if (data.todayFollowups) todayFollowups.value = data.todayFollowups;
+        if (data.overdueFollowups) overdueFollowups.value = data.overdueFollowups;
+        if (data.expectedCollections) expectedCollections.value = data.expectedCollections;
+        if (data.recentLeads) recentLeads.value = data.recentLeads;
+      }
+    }
+
+    if (loanRes.status === 'fulfilled') {
+      loanSummary.value = loanRes.value?.data?.data || loanRes.value?.data || loanSummary.value;
+    }
+  } catch (err) {
+    console.error('Failed to load broker dashboard:', err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function getStageCount(key) {
+  return salesPipeline.value[key]?.count || 0;
+}
+
+function getStageValue(key) {
+  return salesPipeline.value[key]?.value || 0;
+}
+
+function formatCompact(val) {
+  const n = Number(val) || 0;
+  if (n >= 10000000) return `${(n / 10000000).toFixed(2)} Cr`;
+  if (n >= 100000) return `${(n / 100000).toFixed(2)} L`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)} K`;
+  return n.toLocaleString('en-IN');
+}
+
+onMounted(() => {
+  loadDashboardData();
 });
-
-const { data: branchesData } = useBranchesQuery();
-
-const branchOptions = computed(() => {
-  const list = [{ value: 'all', label: 'All Branches' }];
-  const data = branchesData.value?.data || branchesData.value;
-  if (Array.isArray(data)) {
-    data.forEach(b => {
-      list.push({ value: b.id || b._id, label: b.name });
-    });
-  }
-  return list;
-});
-
-// Read current user role to trigger dashboard view
-const userRoleName = computed(() => store.getters['auth/userRole'] || 'agent');
-const displayRoleName = computed(() => userRoleName.value.replace(/_/g, ' '));
-const dashboardRole = computed(() => {
-  // Normalize roles to match layout targets
-  const role = userRoleName.value;
-  if (role === 'super_admin') return 'org_admin'; // Super admins see org-wide stats
-  return role;
-});
-
-const showBranchFilter = computed(() => {
-  const role = userRoleName.value;
-  return role === 'super_admin' || role === 'org_admin' || role === 'branch_manager';
-});
-
-// Watch parameters from Vuex dashboard store
-const dateRangeFilters = computed(() => store.state.dashboard.dateRange);
-const activeQueryFilters = computed(() => ({
-  startDate: dateRangeFilters.value.startDate,
-  endDate: dateRangeFilters.value.endDate,
-  branchId: selectedBranch.value
-}));
-
-// API metrics queries bound to filters
-const { data, isLoading, refetch } = useDashboardMetricsQuery(dashboardRole, activeQueryFilters);
-
-const emptyMetrics = {
-  agent: {
-    activeLeads: 0,
-    dealsValueMTD: 0,
-    commissionsEarned: 0,
-    pendingTasks: 0,
-    activeLeadsList: [],
-    tasksList: []
-  },
-  branch_manager: {
-    branchGrossSales: 0,
-    activeAgents: 0,
-    pendingApprovals: 0,
-    conversionRate: 0,
-    approvalsList: [],
-    leaderboardList: []
-  },
-  org_admin: {
-    orgRevenue: 0,
-    grossCommission: 0,
-    orgLeads: 0,
-    avgSalesCycle: 0,
-    revenueTrend: [],
-    funnelData: [],
-    branchRankingsList: [],
-    topProjectsList: []
-  },
-  finance: {
-    unpaidCommissions: 0,
-    disbursedCommissions: 0,
-    complianceReviews: 0,
-    taxReserves: 0,
-    collectionsTrend: [],
-    taxReservesTrend: [],
-    pendingPayoutsList: [],
-    complianceAlertsList: []
-  }
-};
-
-const metrics = computed(() => {
-  const apiData = data.value?.data;
-  if (!apiData) {
-    return emptyMetrics[dashboardRole.value] || {};
-  }
-
-  const role = dashboardRole.value;
-
-  if (role === 'org_admin') {
-    return {
-      orgRevenue: apiData.sales?.grossDealValue || 0,
-      grossCommission: apiData.commission?.expectedRevenue || 0,
-      orgLeads: apiData.leads?.leadCount || 0,
-      avgSalesCycle: apiData.sales?.avgSalesCycle || 0,
-      revenueTrend: apiData.revenueTrend || [],
-      funnelData: apiData.funnelData || [],
-      branchRankingsList: apiData.branchRankingsList || [],
-      topProjectsList: apiData.topProjectsList || []
-    };
-  }
-
-  if (role === 'finance') {
-    return {
-      unpaidCommissions: apiData.totals?.outstandingRevenue || 0,
-      disbursedCommissions: apiData.totals?.collectedRevenue || 0,
-      complianceReviews: apiData.totals?.complianceReviews || 0,
-      taxReserves: apiData.totals?.adjustmentDeductions || 0,
-      collectionsTrend: apiData.collectionsTrend || [],
-      taxReservesTrend: apiData.taxReservesTrend || [],
-      pendingPayoutsList: apiData.pendingPayoutsList || [],
-      complianceAlertsList: apiData.complianceAlertsList || []
-    };
-  }
-
-  if (role === 'branch_manager') {
-    return {
-      branchGrossSales: apiData.totals?.grossDealValue || 0,
-      activeAgents: apiData.totals?.activeAgents || 0,
-      pendingApprovals: apiData.totals?.reservationsCount || 0,
-      conversionRate: apiData.totals?.dealsClosedCount && apiData.totals?.reservationsCount 
-        ? Math.round((apiData.totals.dealsClosedCount / apiData.totals.reservationsCount) * 100) 
-        : 0,
-      approvalsList: apiData.approvalsList || [],
-      leaderboardList: apiData.leaderboardList || []
-    };
-  }
-
-  if (role === 'agent') {
-    const agentStats = apiData.byAgent?.find(a => String(a.agentId) === String(userProfile.value?.id || userProfile.value?._id)) || apiData.byAgent?.[0] || {};
-    return {
-      activeLeads: agentStats.leadsCreatedCount || 0,
-      dealsValueMTD: agentStats.grossDealValue || 0,
-      commissionsEarned: agentStats.commissionsEarned || 0,
-      pendingTasks: agentStats.tasksPending || 0,
-      activeLeadsList: apiData.activeLeadsList || [],
-      tasksList: apiData.tasksList || []
-    };
-  }
-
-  return apiData;
-});
-
-const handleBranchChange = () => {
-  refetch();
-};
-
-const refreshData = () => {
-  refetch();
-};
-
-const triggerQuickAction = (action) => {
-  if (action === 'lead') {
-    // Open create lead layout or drawer triggers
-    store.dispatch('notifications/triggerToast', {
-      message: 'Create Lead Drawer template launched.',
-      type: 'info'
-    });
-  } else if (action === 'task') {
-    store.dispatch('notifications/triggerToast', {
-      message: 'Create Task Modal template launched.',
-      type: 'info'
-    });
-  }
-};
-
-const formatCurrency = (val) => {
-  if (val === null || val === undefined) return '$0';
-  return '$' + Number(val).toLocaleString();
-};
 </script>

@@ -58,6 +58,14 @@
       </div>
 
       <div class="w-40 shrink-0">
+        <select v-model="filters.sourceType" class="w-full bg-slate-55/30 border border-default rounded-lg px-3 py-1.5 outline-none font-medium">
+          <option value="">All Sources</option>
+          <option value="PROPERTY_DEAL">Property Deals</option>
+          <option value="LOAN">Loan Commission</option>
+        </select>
+      </div>
+
+      <div class="w-40 shrink-0">
         <select v-model="filters.stage" class="w-full bg-slate-55/30 border border-default rounded-lg px-3 py-1.5 outline-none font-medium">
           <option value="">All Stages</option>
           <option value="expected">Expected</option>
@@ -204,8 +212,9 @@ const commissionsList = computed(() => {
   return list.map(item => ({
     ...item,
     commissionNumber: item.commissionNumber || `#COM-${(item._id || item.id || '').substring(18).toUpperCase()}`,
-    dealNumber: item.deal?.dealNumber || item.dealNumber || 'DEAL-FILE',
-    builderName: item.builder?.name || item.builderName || 'Skyway Builders',
+    dealNumber: item.dealId?.dealNumber || item.deal?.dealNumber || item.dealNumber || (item.sourceType === 'LOAN' ? 'LOAN-CASE' : 'DEAL-FILE'),
+    builderName: item.payablePartyName || item.builder?.name || item.builderName || 'Builder / Bank',
+    sourceType: item.sourceType || 'PROPERTY_DEAL',
     grossCommission: item.grossCommission || item.totalCommissionExpected || 0,
     netReceivable: item.netReceivable || (item.grossCommission || item.totalCommissionExpected || 0) * 1.08,
     stage: item.stage || item.status || 'expected'
@@ -214,6 +223,7 @@ const commissionsList = computed(() => {
 
 const filteredCommissions = computed(() => {
   return commissionsList.value.filter(c => {
+    if (filters.value.sourceType && c.sourceType !== filters.value.sourceType) return false;
     if (filters.value.stage && c.stage !== filters.value.stage) return false;
     if (filters.value.search.trim()) {
       const q = filters.value.search.toLowerCase();
@@ -227,7 +237,7 @@ const filteredCommissions = computed(() => {
 });
 
 const resetFilters = () => {
-  filters.value = { search: '', stage: '' };
+  filters.value = { search: '', stage: '', sourceType: '' };
 };
 
 const { mutateAsync: transitionStage } = useTransitionStageMutation();

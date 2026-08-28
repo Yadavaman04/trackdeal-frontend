@@ -46,8 +46,69 @@ export async function addLeadNote({ id, content, isPrivate }) {
   return response.data;
 }
 
-export async function logLeadActivity({ id, type, description, metadata }) {
-  const response = await apiClient.post(`/leads/${id}/activities`, { type, description, metadata });
+export async function logLeadActivity({ id, type, activityDate, activityTime, summary, description, customerResponse, nextFollowUpAt, status, assignedTo, metadata }) {
+  const response = await apiClient.post(`/leads/${id}/activities`, {
+    type,
+    activityDate,
+    activityTime,
+    summary,
+    description: description || summary,
+    customerResponse,
+    nextFollowUpAt,
+    status,
+    assignedTo,
+    metadata,
+  });
+  return response.data;
+}
+
+export async function updateLeadActivity({ leadId, activityId, ...data }) {
+  const response = await apiClient.put(`/leads/${leadId}/activities/${activityId}`, data);
+  return response.data;
+}
+
+export async function deleteLeadActivity({ leadId, activityId }) {
+  const response = await apiClient.delete(`/leads/${leadId}/activities/${activityId}`);
+  return response.data;
+}
+
+export async function updateVisit({ leadId, visitId, ...data }) {
+  const response = await apiClient.put(`/leads/${leadId}/visits/${visitId}`, data);
+  return response.data;
+}
+
+export async function deleteVisit({ leadId, visitId }) {
+  const response = await apiClient.delete(`/leads/${leadId}/visits/${visitId}`);
+  return response.data;
+}
+
+export async function updateQuotation({ leadId, quotationId, ...data }) {
+  const response = await apiClient.put(`/leads/${leadId}/quotations/${quotationId}`, data);
+  return response.data;
+}
+
+export async function deleteQuotation({ leadId, quotationId }) {
+  const response = await apiClient.delete(`/leads/${leadId}/quotations/${quotationId}`);
+  return response.data;
+}
+
+export async function updateLeadNote({ leadId, noteId, ...data }) {
+  const response = await apiClient.put(`/leads/${leadId}/notes/${noteId}`, data);
+  return response.data;
+}
+
+export async function deleteLeadNote({ leadId, noteId }) {
+  const response = await apiClient.delete(`/leads/${leadId}/notes/${noteId}`);
+  return response.data;
+}
+
+export async function updateLeadFollowUp({ leadId, followUpId, ...data }) {
+  const response = await apiClient.put(`/leads/${leadId}/follow-ups/${followUpId}`, data);
+  return response.data;
+}
+
+export async function deleteLeadFollowUp({ leadId, followUpId }) {
+  const response = await apiClient.delete(`/leads/${leadId}/follow-ups/${followUpId}`);
   return response.data;
 }
 
@@ -100,6 +161,21 @@ export async function fetchQuotations(leadId) {
   return response.data;
 }
 
+export async function checkDuplicateLead(params) {
+  const response = await apiClient.get('/leads/check-duplicate', { params });
+  return response.data;
+}
+
+export async function fetchCustomerLeads(customerId) {
+  const response = await apiClient.get(`/customers/${customerId}/leads`);
+  return response.data;
+}
+
+export async function lookupCustomer(params) {
+  const response = await apiClient.get('/customers/lookup', { params });
+  return response.data;
+}
+
 export default {
   fetchLeads,
   fetchLeadById,
@@ -110,15 +186,28 @@ export default {
   bulkAssignLeads,
   changeLeadStage,
   addLeadNote,
+  updateLeadNote,
+  deleteLeadNote,
   logLeadActivity,
+  updateLeadActivity,
+  deleteLeadActivity,
   addLeadFollowUp,
+  updateLeadFollowUp,
+  deleteLeadFollowUp,
   reopenLead,
   markLeadWon,
   markLeadLost,
   fetchActivityCenter,
   createVisit,
+  updateVisit,
+  deleteVisit,
   fetchVisits,
   createQuotation,
+  updateQuotation,
+  deleteQuotation,
   fetchQuotations,
+  checkDuplicateLead,
+  fetchCustomerLeads,
+  lookupCustomer,
 };
 

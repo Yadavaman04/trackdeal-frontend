@@ -42,8 +42,13 @@ export async function deleteAgent(id) {
   return response.data;
 }
 
-export async function transferLeadToAgent({ leadId, agentId, remarks }) {
-  const response = await apiClient.post(`/leads/${leadId}/transfer-agent`, { agentId, remarks });
+export async function transferLeadToAgent({ leadId, agentId, agentIds, remarks }) {
+  const payload = {
+    agentId: agentId || (Array.isArray(agentIds) && agentIds.length > 0 ? agentIds[0] : undefined),
+    agentIds: Array.isArray(agentIds) ? agentIds : (agentId ? [agentId] : []),
+    remarks
+  };
+  const response = await apiClient.post(`/leads/${leadId}/transfer-agent`, payload);
   return response.data;
 }
 

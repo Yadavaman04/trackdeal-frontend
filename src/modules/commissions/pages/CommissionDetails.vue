@@ -1,578 +1,578 @@
 <template>
-  <!-- Loading state -->
-  <div v-if="isLoading" class="animate-pulse space-y-6">
-    <div class="h-20 bg-slate-200 dark:bg-slate-850 rounded-xl w-full"></div>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div class="lg:col-span-8 h-96 bg-slate-200 dark:bg-slate-850 rounded-xl"></div>
-      <div class="lg:col-span-4 h-96 bg-slate-200 dark:bg-slate-850 rounded-xl"></div>
-    </div>
-  </div>
-
-  <!-- Empty state -->
-  <div v-else-if="!commission" class="text-center py-12 text-slate-500 bg-surface border border-default rounded-xl flex items-center justify-center gap-1.5">
-    <PhWarning :size="16" class="text-red-550" />
-    <span>Commission ledger record not found.</span>
-  </div>
-
-  <!-- Main Details Page -->
-  <div v-else class="space-y-6 text-xs font-medium">
-    <!-- Breadcrumb -->
-    <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center space-x-1.5 uppercase tracking-wider shrink-0">
-      <router-link to="/app/commissions" class="hover:text-primary transition-colors">Commissions</router-link>
-      <span>/</span>
-      <router-link to="/app/commissions/list" class="hover:text-primary transition-colors">Directory</router-link>
-      <span>/</span>
-      <span class="text-slate-700 dark:text-slate-350">{{ commissionNumber }}</span>
+  <div class="space-y-6 text-xs">
+    <!-- Loading State -->
+    <div v-if="loading" class="p-8 space-y-4 animate-pulse">
+      <div class="h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
+      <div class="h-64 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
     </div>
 
-    <!-- Header Block -->
-    <div class="bg-surface border border-default rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
-      <div class="flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-heading text-lg font-extrabold text-primary uppercase shrink-0">
-          <PhCoins :size="20" class="text-primary" />
-        </div>
-        <div>
-          <h2 class="font-heading text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            {{ commissionNumber }}
-          </h2>
-          <div class="flex flex-wrap items-center gap-2 mt-1">
-            <span 
-              class="px-2 py-0.5 rounded text-[8px] font-bold uppercase"
-              :class="getStageBadgeClass(commission.stage)"
-            >
-              ● {{ formatStageName(commission.stage) }}
+    <!-- Error State -->
+    <div v-else-if="!commission" class="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+      <span class="text-3xl">⚠️</span>
+      <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">Commission Record Not Found</h3>
+      <router-link to="/app/commissions" class="btn-md btn-primary inline-flex">
+        Return to Commissions
+      </router-link>
+    </div>
+
+    <!-- Details Content -->
+    <div v-else class="space-y-6">
+      <!-- Header Banner -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <router-link to="/app/commissions" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              ← Commissions
+            </router-link>
+            <span class="text-slate-300 dark:text-slate-700">/</span>
+            <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-sm">
+              {{ commission.commissionNumber || 'COM-' + commission._id.slice(-4).toUpperCase() }}
             </span>
-            <span class="text-[10px] text-slate-400 font-medium">Linked Deal: <b class="text-primary hover:underline"><router-link :to="`/app/deals/${commission.deal?._id || commission.deal}`">{{ commission.deal?.dealNumber || commission.dealNumber || 'DEAL-FILE' }}</router-link></b></span>
+            <span 
+              class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+              :class="getStatusBadgeClass(commission.paymentStatus)"
+            >
+              {{ formatStatusLabel(commission.paymentStatus) }}
+            </span>
           </div>
+
+          <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <span>{{ customerName }}</span>
+            <span class="text-slate-400 font-normal text-sm">· {{ projectOrPropertyName }}</span>
+          </h2>
         </div>
-      </div>
 
-      <!-- Action buttons -->
-      <div class="flex flex-wrap items-center gap-2.5 self-end md:self-auto shrink-0">
-        <!-- Raise Invoice Trigger -->
-        <button 
-          @click="isInvoiceOpen = true"
-          class="btn-md btn-secondary gap-1.5"
-        >
-          <PhFileText :size="14" />
-          <span>Raise Invoice</span>
-        </button>
-
-        <!-- Log Collection Trigger -->
-        <button 
-          @click="isCollectionOpen = true"
-          class="btn-md btn-primary gap-1.5"
-        >
-          <PhCoins :size="14" />
-          <span>Log Collection</span>
-        </button>
-
-        <!-- Dropdown transition stage -->
-        <div class="relative inline-block text-left">
-          <select 
-            :value="commission.stage" 
-            @change="handleStageTransition" 
-            class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold px-3.5 py-1.8 rounded-lg border border-default outline-none cursor-pointer"
+        <div class="flex items-center gap-3 shrink-0 flex-wrap">
+          <button 
+            v-if="commission.totalCommissionOutstanding > 0"
+            @click="paymentModalOpen = true"
+            class="px-4 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5"
           >
-            <option value="expected">Expected</option>
-            <option value="eligible">Eligible</option>
-            <option value="invoice_raised">Invoice Raised</option>
-            <option value="invoice_sent">Invoice Sent</option>
-            <option value="partially_collected">Partially Collected</option>
-            <option value="fully_collected">Fully Collected</option>
-            <option value="payout_eligible">Payout Eligible</option>
-            <option value="payout_approved">Payout Approved</option>
-            <option value="payout_released">Payout Released</option>
-            <option value="closed">Closed</option>
-          </select>
+            <span>💳 + Record Payment</span>
+          </button>
+          <button 
+            @click="loadCommission"
+            class="px-3.5 py-2 rounded-xl font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
+          >
+            ⟳ Refresh
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Main Grid Workspace -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Left: Workspace Tab Sheets -->
-      <div class="lg:col-span-8 space-y-6">
-        <div class="bg-surface border border-default rounded-xl overflow-hidden shadow-sm flex flex-col">
-          <!-- Desktop Tabs Header -->
-          <header class="hidden md:flex border-b border-default px-4 bg-slate-50 dark:bg-slate-900/50 overflow-x-auto shrink-0 scrollbar-none">
-            <button 
-              v-for="tab in tabs" 
-              :key="tab.id"
-              @click="activeTab = tab.id"
-              class="px-4 py-3 border-b-2 font-heading text-xs font-bold transition-all relative top-[1px] shrink-0"
-              :class="[
-                activeTab === tab.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-350'
-              ]"
-            >
-              {{ tab.name }}
-            </button>
-          </header>
+      <!-- Financial Summary Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Final Deal Value</span>
+          <span class="text-base font-bold text-slate-800 dark:text-slate-100 block">
+            ₹{{ Number(commission.finalDealValue || commission.dealId?.dealValue || 0).toLocaleString('en-IN') }}
+          </span>
+          <span class="text-[10px] text-slate-400">Agreed Property Value</span>
+        </div>
 
-          <!-- Mobile Tab Picker -->
-          <div class="md:hidden p-3 border-b border-default bg-slate-50 dark:bg-slate-900/50 shrink-0 flex items-center justify-between">
-            <div class="flex space-x-1">
-              <button 
-                v-for="tab in tabs.slice(0, 3)" 
-                :key="tab.id"
-                @click="activeTab = tab.id"
-                class="px-2.5 py-1.5 rounded text-[10px] font-bold uppercase transition-all"
-                :class="activeTab === tab.id ? 'bg-primary text-white' : 'text-slate-500'"
-              >
-                {{ tab.name.split(' ')[0] }}
-              </button>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-500 block">Commission Rate</span>
+          <span class="text-base font-bold text-indigo-600 dark:text-indigo-400 block">
+            {{ commission.commissionRate || 2 }}%
+          </span>
+          <span class="text-[10px] text-slate-400 capitalize">{{ commission.commissionType || 'percentage' }} Type</span>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">Expected Total</span>
+          <span class="text-base font-extrabold text-slate-800 dark:text-slate-100 block">
+            ₹{{ Number(commission.totalCommissionExpected || 0).toLocaleString('en-IN') }}
+          </span>
+          <span class="text-[10px] text-slate-400">Total Brokerage Due</span>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-500 block">Total Received</span>
+          <span class="text-base font-extrabold text-emerald-600 dark:text-emerald-400 block">
+            ₹{{ Number(commission.totalCommissionCollected || 0).toLocaleString('en-IN') }}
+          </span>
+          <span class="text-[10px] text-emerald-500 font-semibold">{{ collectionPercentage }}% cleared</span>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-500 block">Balance Outstanding</span>
+          <span class="text-base font-extrabold text-amber-600 dark:text-amber-400 block">
+            ₹{{ Number(commission.totalCommissionOutstanding || 0).toLocaleString('en-IN') }}
+          </span>
+          <span class="text-[10px] text-slate-400">Due {{ formatDate(commission.expectedPaymentDate) }}</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="border-b border-slate-200 dark:border-slate-800 flex space-x-6">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          class="pb-3 text-xs font-bold transition-all relative"
+          :class="activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'"
+        >
+          {{ tab.name }}
+          <span v-if="tab.count !== undefined" class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+            {{ tab.count }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Tab 1: Overview & Deal Details -->
+      <div v-if="activeTab === 'overview'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Deal Valuation Info Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-[10px] text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800 pb-2">
+            Deal & Property Information
+          </h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-slate-400 block">Deal Number</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ commission.dealId?.dealNumber || 'N/A' }}</span>
             </div>
-            <select 
-              v-model="activeTab"
-              class="bg-surface border border-default rounded px-2 py-1 text-[10px] font-semibold text-slate-700"
-            >
-              <option v-for="tab in tabs.slice(3)" :key="tab.id" :value="tab.id">
-                {{ tab.name }}
-              </option>
-            </select>
+            <div>
+              <span class="text-slate-400 block">Customer</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ customerName }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Project Name</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ commission.projectId?.name || 'N/A' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Unit Number</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ commission.unitNumber || 'Standard Unit' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Property Configuration</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ commission.propertyId?.configuration || commission.propertyId?.title || 'Residential' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Closing Date</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ formatDate(commission.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paying Entity & Terms Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-[10px] text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800 pb-2">
+            Paying Party & Terms
+          </h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-slate-400 block">Commission Payable By</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 inline-block mt-0.5">
+                {{ formatPartyType(commission.payablePartyType) }}
+              </span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Paying Entity Name</span>
+              <span class="font-bold text-slate-800 dark:text-slate-100">{{ commission.payablePartyName || 'Developer' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">Expected Due Date</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ formatDate(commission.expectedPaymentDate) }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block">TDS Withholding (194H)</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ commission.tdsPercentage || 5 }}%</span>
+            </div>
           </div>
 
-          <!-- Tab Contents -->
-          <div class="p-4 flex-1">
-            <!-- Tab 1: Overview -->
-            <div v-if="activeTab === 'overview'" class="space-y-4">
-              <!-- General metrics card -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50/50 dark:bg-slate-900 p-4 rounded-xl border border-default">
-                <div>
-                  <span class="text-slate-400 font-bold block text-[8px] uppercase">Gross Commission</span>
-                  <span class="font-bold text-slate-800 dark:text-slate-200 text-sm font-heading">{{ formatCurrency(commission.grossCommission) }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 font-bold block text-[8px] uppercase">Net Receivable</span>
-                  <span class="font-bold text-emerald-600 text-sm font-heading">{{ formatCurrency(commission.netReceivable) }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 font-bold block text-[8px] uppercase">Total Collected</span>
-                  <span class="font-bold text-slate-800 dark:text-slate-200 text-sm font-heading">{{ formatCurrency(totalCollected) }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 font-bold block text-[8px] uppercase">Outstanding Collection</span>
-                  <span class="font-bold text-red-500 text-sm font-heading">{{ formatCurrency(commission.outstandingCollection || commission.grossCommission - totalCollected) }}</span>
-                </div>
-              </div>
-
-              <!-- General specs block -->
-              <div class="border border-default rounded-xl p-4 bg-surface space-y-3 font-semibold">
-                <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200 border-b border-default pb-1">Ledger Parameters</h4>
-                <div class="grid grid-cols-2 gap-3 text-[10px]">
-                  <div class="flex justify-between"><span class="text-slate-450">Developer Builder:</span><span>{{ commission.builderName }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-450">Project Location:</span><span>{{ commission.projectName }}</span></div>
-                  <div class="flex justify-between"><span class="text-slate-450">Referral Broker:</span><span>Agent Priya Sharma</span></div>
-                  <div class="flex justify-between"><span class="text-slate-450">Payout Released:</span><span :class="commission.payoutReleased ? 'text-emerald-500' : 'text-amber-500'">{{ commission.payoutReleased ? 'Yes' : 'No' }}</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab 2: Invoices -->
-            <div v-else-if="activeTab === 'invoices'">
-              <InvoiceTimeline 
-                :invoices="commission.invoices || []" 
-                @generateInvoice="isInvoiceOpen = true"
-                @invoiceUpdated="handleInvoiceStatusUpdate"
-              />
-            </div>
-
-            <!-- Tab 3: Collections -->
-            <div v-else-if="activeTab === 'collections'">
-              <CollectionTracker 
-                :collections="commission.collections || []" 
-                :outstandingBalance="commission.outstandingCollection || commission.grossCommission - totalCollected"
-                @logCollection="isCollectionOpen = true"
-                @clearReceipt="handleClearReceipt"
-                @bounceReceipt="handleBounceReceipt"
-              />
-            </div>
-
-            <!-- Tab 4: Splits & Payouts -->
-            <div v-else-if="activeTab === 'payouts'">
-              <PayoutCalculator 
-                :grossCommission="commission.grossCommission"
-                :payoutsList="commission.payouts"
-                @releasePayout="handleReleasePayout"
-              />
-            </div>
-
-            <!-- Tab 5: Clawback -->
-            <div v-else-if="activeTab === 'clawback'">
-              <ClawbackPanel 
-                :clawback="commission.clawback"
-                @triggerRecovery="handleTriggerRecovery"
-              />
-            </div>
-
-            <!-- Tab 6: Finance Audit Timeline -->
-            <div v-else-if="activeTab === 'timeline'" class="space-y-4">
-              <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200 pb-1 border-b border-default">
-                Finance Audit Trail
-              </h4>
-
-              <div class="relative pl-6 space-y-5 border-l border-default">
-                <div 
-                  v-for="log in auditTimeline" 
-                  :key="log.time"
-                  class="relative"
-                >
-                  <span class="absolute -left-[30px] top-0.5 w-2 h-2 rounded-full bg-primary border-4 border-surface outline outline-default"></span>
-                  <div class="font-medium">
-                    <span class="text-slate-450 text-[9px] font-mono block">{{ formatDate(log.time) }}</span>
-                    <p class="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{{ log.title }}</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5" v-if="log.notes">{{ log.notes }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <span class="text-slate-400 block mb-1">Payment Terms</span>
+            <p class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-slate-700 dark:text-slate-200 font-medium">
+              {{ commission.paymentTerms || 'Standard 30 Days Net on Registration' }}
+            </p>
           </div>
         </div>
       </div>
 
-      <!-- Right: Builder Ledger card details -->
-      <div class="lg:col-span-4 space-y-6">
-        <BuilderLedgerCard />
+      <!-- Tab 2: Payment Schedule / Milestones -->
+      <div v-else-if="activeTab === 'milestones'" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 bg-slate-50/70 dark:bg-slate-850/60 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+          <h3 class="font-bold text-slate-800 dark:text-slate-100">Milestone Payment Schedule</h3>
+          <span class="text-[11px] text-slate-400">4 Staged Milestones</span>
+        </div>
 
-        <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-2">
-          <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">Reconciliation Clears</h4>
-          <p class="text-[10px] text-slate-500 leading-relaxed">
-            Record cleared receipt clearances to match with corporate banking statements.
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="text-[10px] font-bold uppercase text-slate-400 bg-slate-50/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Milestone</th>
+                <th class="py-3 px-4">Expected Amount</th>
+                <th class="py-3 px-4">Expected Date</th>
+                <th class="py-3 px-4">Received Amount</th>
+                <th class="py-3 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr v-for="m in commission.milestones" :key="m._id || m.milestoneName" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
+                  {{ m.milestoneName }}
+                </td>
+                <td class="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-100">
+                  ₹{{ Number(m.expectedAmount || 0).toLocaleString('en-IN') }}
+                </td>
+                <td class="py-3.5 px-4 text-slate-600 dark:text-slate-300">
+                  {{ formatDate(m.expectedDate) }}
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">
+                  ₹{{ Number(m.receivedAmount || 0).toLocaleString('en-IN') }}
+                </td>
+                <td class="py-3.5 px-4">
+                  <span 
+                    class="px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider"
+                    :class="getStatusBadgeClass(m.status)"
+                  >
+                    {{ m.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Payments Received Ledger -->
+      <div v-else-if="activeTab === 'payments'" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden space-y-0">
+        <div class="p-4 bg-slate-50/70 dark:bg-slate-850/60 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-slate-800 dark:text-slate-100">Payments Received Ledger</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Chronological record of partial and full payments received</p>
+          </div>
+          <button 
+            v-if="commission.totalCommissionOutstanding > 0"
+            @click="paymentModalOpen = true"
+            class="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-colors"
+          >
+            + Record Payment
+          </button>
+        </div>
+
+        <div v-if="!commission.payments || commission.payments.length === 0" class="p-12 text-center space-y-2">
+          <span class="text-3xl">⏱️</span>
+          <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">No Payments Recorded Yet</h4>
+          <p class="text-xs text-slate-400 max-w-sm mx-auto">
+            Use the "+ Record Payment" button to record cheque deposits, NEFT transfers, or UPI payments.
           </p>
-          <div class="border-t border-default border-dashed pt-2.5">
-            <span class="text-[8px] text-slate-450 font-bold block uppercase mb-1">Status</span>
-            <span class="text-indigo-650 font-bold">● Awaiting bank statement match</span>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="text-[10px] font-bold uppercase text-slate-400 bg-slate-50/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Payment Date</th>
+                <th class="py-3 px-4">Amount Received</th>
+                <th class="py-3 px-4">Payment Method</th>
+                <th class="py-3 px-4">Transaction Ref / UTR</th>
+                <th class="py-3 px-4">Received From</th>
+                <th class="py-3 px-4">Bank Account</th>
+                <th class="py-3 px-4">TDS (194H)</th>
+                <th class="py-3 px-4">Notes</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr v-for="p in commission.payments" :key="p._id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                <td class="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-100">
+                  {{ formatDate(p.paymentDate) }}
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                  ₹{{ Number(p.amount || 0).toLocaleString('en-IN') }}
+                </td>
+                <td class="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-200">
+                  {{ p.paymentMethod || 'Bank Transfer' }}
+                </td>
+                <td class="py-3.5 px-4 font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                  {{ p.referenceNumber || 'N/A' }}
+                </td>
+                <td class="py-3.5 px-4 text-slate-700 dark:text-slate-200">
+                  {{ p.receivedFrom || commission.payablePartyName || 'Developer' }}
+                </td>
+                <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                  {{ p.bankAccount || 'Main Account' }}
+                </td>
+                <td class="py-3.5 px-4">
+                  <span v-if="p.tdsDeducted" class="text-amber-600 dark:text-amber-400 font-semibold">
+                    -₹{{ Number(p.tdsAmount || 0).toLocaleString('en-IN') }}
+                  </span>
+                  <span v-else class="text-slate-400">—</span>
+                </td>
+                <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                  {{ p.notes || '—' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4: Documents & Notes -->
+      <div v-else-if="activeTab === 'documents'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-[10px] text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800 pb-2">
+            Attached Documents
+          </h3>
+
+          <div class="space-y-2">
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span>📄</span>
+                <div>
+                  <div class="font-bold text-slate-800 dark:text-slate-200">Commission_Agreement.pdf</div>
+                  <div class="text-[10px] text-slate-400">Signed with {{ commission.payablePartyName }}</div>
+                </div>
+              </div>
+              <span class="text-indigo-600 dark:text-indigo-400 font-bold">Verified</span>
+            </div>
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span>🧾</span>
+                <div>
+                  <div class="font-bold text-slate-800 dark:text-slate-200">B2B_Invoice_INV-001.pdf</div>
+                  <div class="text-[10px] text-slate-400">Tax Invoice with GST details</div>
+                </div>
+              </div>
+              <span class="text-indigo-600 dark:text-indigo-400 font-bold">Generated</span>
+            </div>
           </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-[10px] text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800 pb-2">
+            Financial Remarks & History
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl leading-relaxed">
+            {{ commission.notes || commission.remarks || 'Commission created automatically upon closing deal. Payment milestones and clearance ledger active.' }}
+          </p>
         </div>
       </div>
     </div>
 
-    <!-- Modals Slide Drawer mounts -->
-    <InvoiceGenerationDrawer
-      :isOpen="isInvoiceOpen"
-      :commissionId="commissionId"
-      @close="isInvoiceOpen = false"
-      @success="refetch"
-    />
+    <!-- Record Payment Modal -->
+    <div v-if="paymentModalOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transition-all text-xs">
+        <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50">
+          <div>
+            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <span>💳</span>
+              <span>Record Commission Payment</span>
+            </h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              {{ commission?.commissionNumber }} · {{ commission?.payablePartyName }}
+            </p>
+          </div>
+          <button @click="paymentModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+        </div>
 
-    <CollectionLoggingDrawer
-      :isOpen="isCollectionOpen"
-      :invoices="commission.invoices || []"
-      @close="isCollectionOpen = false"
-      @success="refetch"
-    />
+        <form @submit.prevent="submitPayment" class="p-5 space-y-4">
+          <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex justify-between items-center text-amber-700 dark:text-amber-300">
+            <div>
+              <span class="text-[10px] font-bold uppercase block">Current Outstanding</span>
+              <span class="text-base font-extrabold">₹{{ Number(commission?.totalCommissionOutstanding || 0).toLocaleString('en-IN') }}</span>
+            </div>
+            <span class="text-xs font-semibold">Expected: ₹{{ Number(commission?.totalCommissionExpected || 0).toLocaleString('en-IN') }}</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Date *</label>
+              <input v-model="paymentForm.paymentDate" type="date" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Amount Received (₹) *</label>
+              <input v-model.number="paymentForm.amount" type="number" min="1" :max="commission?.totalCommissionOutstanding" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 font-bold text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Method *</label>
+              <select v-model="paymentForm.paymentMethod" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100">
+                <option value="Bank Transfer">Bank Transfer (NEFT/RTGS/IMPS)</option>
+                <option value="Cheque">Cheque</option>
+                <option value="UPI">UPI</option>
+                <option value="Cash">Cash</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Transaction Ref / UTR *</label>
+              <input v-model="paymentForm.referenceNumber" type="text" placeholder="e.g. UTR987654321" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 font-mono" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Received From</label>
+              <input v-model="paymentForm.receivedFrom" type="text" placeholder="e.g. Builder Accounts" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Deposited Bank Account</label>
+              <input v-model="paymentForm.bankAccount" type="text" placeholder="e.g. HDFC 00123" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer font-semibold text-slate-700 dark:text-slate-300">
+              <input type="checkbox" v-model="paymentForm.tdsDeducted" class="rounded text-indigo-600" />
+              <span>TDS Deducted (Section 194H)</span>
+            </label>
+            <div v-if="paymentForm.tdsDeducted" class="flex-1 flex items-center gap-2">
+              <label class="text-slate-400">TDS Amount (₹):</label>
+              <input v-model.number="paymentForm.tdsAmount" type="number" class="w-28 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Notes / Remarks</label>
+            <textarea v-model="paymentForm.notes" rows="2" placeholder="e.g. Milestone 1 payment cleared" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100"></textarea>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+            <button type="button" @click="paymentModalOpen = false" class="px-4 py-2 rounded-xl font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">Cancel</button>
+            <button type="submit" :disabled="savingPayment" class="px-5 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all">
+              <span v-if="savingPayment">Recording...</span>
+              <span v-else>Record Payment</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { useStore } from 'vuex';
-import { PhCoins, PhFileText, PhWarning } from '@phosphor-icons/vue';
-import BuilderLedgerCard from '../components/BuilderLedgerCard.vue';
-import InvoiceTimeline from '../components/InvoiceTimeline.vue';
-import CollectionTracker from '../components/CollectionTracker.vue';
-import PayoutCalculator from '../components/PayoutCalculator.vue';
-import ClawbackPanel from '../components/ClawbackPanel.vue';
-import InvoiceGenerationDrawer from '../components/InvoiceGenerationDrawer.vue';
-import CollectionLoggingDrawer from '../components/CollectionLoggingDrawer.vue';
-import { 
-  useCommissionQuery, 
-  useTransitionStageMutation,
-  useClearCollectionMutation,
-  useBounceCollectionMutation,
-  useReleasePayoutMutation,
-  useProcessClawbackMutation
-} from '../queries';
-import apiClient from '@/api/client';
+import { fetchCommissionById, recordCommissionPayment } from '../api/endpoints';
 
 const route = useRoute();
-const store = useStore();
+const commissionId = route.params.id;
 
-const commissionId = computed(() => route.params.id);
-
-// Load details
-const { data, isLoading, refetch } = useCommissionQuery(commissionId);
-
-const commission = computed(() => {
-  const c = data.value?.data || data.value;
-  if (!c) return null;
-
-  // Safe fallbacks to keep page robust
-  return {
-    ...c,
-    commissionNumber: c.commissionNumber || `#COM-${commissionId.value.substring(18).toUpperCase()}`,
-    dealNumber: c.deal?.dealNumber || c.dealNumber || 'DL-9842',
-    builderName: c.builder?.name || c.builderName || 'Skyway Builders Group',
-    projectName: c.project?.name || c.projectName || 'Skyway Prestige',
-    grossCommission: c.grossCommission || 540000,
-    netReceivable: c.netReceivable || c.grossCommission * 1.08,
-    stage: c.stage || 'expected',
-    payoutReleased: c.payoutReleased || false,
-    invoices: c.invoices || [
-      { id: 'i1', invoiceNumber: 'INV-SK-88301', milestone: 'Agreement Executed', amount: 270000, status: 'acknowledged' }
-    ],
-    collections: c.collections || [
-      { id: 'col1', transactionRef: 'UTR-SK-98420', amountReceived: 270000, tdsDeducted: 27000, paymentMode: 'wire', status: 'pending', receivedAt: '2026-06-03' }
-    ],
-    payouts: c.payouts || [
-      { type: 'source_agent', splitPercent: 20, grossShare: 108000, tdsWithheld: 5400, released: false },
-      { type: 'closing_agent', splitPercent: 30, grossShare: 162000, tdsWithheld: 8100, released: false }
-    ],
-    clawback: c.clawback || {
-      originalCommission: 540000,
-      recoveredAmount: 180000,
-      outstandingRecovery: 360000,
-      logs: [
-        { id: 'cl-1', type: 'deal_cancellation', referenceNumber: 'CL-98420', amount: 360000, status: 'pending', createdAt: '2026-06-03T10:00:00Z' }
-      ]
-    }
-  };
-});
-
-const commissionNumber = computed(() => commission.value?.commissionNumber || '');
-
+const loading = ref(true);
+const commission = ref(null);
 const activeTab = ref('overview');
 
-const tabs = [
-  { id: 'overview', name: 'Overview' },
-  { id: 'invoices', name: 'Invoice Workspace' },
-  { id: 'collections', name: 'Collection Tracking' },
-  { id: 'payouts', name: 'Agent splits payouts' },
-  { id: 'clawback', name: 'Clawbacks' },
-  { id: 'timeline', name: 'Audit Trail' }
-];
-
-// Interactive drawer triggers
-const isInvoiceOpen = ref(false);
-const isCollectionOpen = ref(false);
-
-const auditTimeline = ref([
-  { time: '2026-06-01T09:00:00Z', title: 'Commission File expected.', notes: 'Deal won confirmation trigger logged.' },
-  { time: '2026-06-02T10:15:00Z', title: 'Transitioned to: Eligible', notes: 'Sourcing contracts fully cleared.' }
-]);
-
-const totalCollected = computed(() => {
-  return commission.value?.collections?.filter(c => c.status === 'cleared').reduce((acc, c) => acc + c.amountReceived, 0) || 0;
+const paymentModalOpen = ref(false);
+const savingPayment = ref(false);
+const paymentForm = ref({
+  paymentDate: new Date().toISOString().slice(0, 10),
+  amount: 0,
+  paymentMethod: 'Bank Transfer',
+  referenceNumber: '',
+  receivedFrom: '',
+  bankAccount: '',
+  tdsDeducted: false,
+  tdsAmount: 0,
+  notes: '',
 });
 
-// Stage manual transition
-const { mutateAsync: transitionStage } = useTransitionStageMutation();
+const customerName = computed(() => {
+  const c = commission.value?.customerId || commission.value?.dealId?.customer;
+  if (!c) return 'Customer';
+  if (typeof c === 'string') return c;
+  return c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Customer';
+});
 
-const handleStageTransition = async (evt) => {
-  const newStage = evt.target.value;
+const projectOrPropertyName = computed(() => {
+  const p = commission.value?.projectId || commission.value?.dealId?.project;
+  const prop = commission.value?.propertyId || commission.value?.dealId?.property;
+  if (p && typeof p === 'object') return p.name || 'Project';
+  if (prop && typeof prop === 'object') return prop.title || 'Property';
+  return 'Property / Unit';
+});
+
+const collectionPercentage = computed(() => {
+  const exp = Number(commission.value?.totalCommissionExpected || 0);
+  const col = Number(commission.value?.totalCommissionCollected || 0);
+  if (exp <= 0) return 0;
+  return Math.min(100, Math.round((col / exp) * 100));
+});
+
+const tabs = computed(() => [
+  { id: 'overview', name: 'Overview & Valuation' },
+  { id: 'milestones', name: 'Payment Schedule', count: commission.value?.milestones?.length || 4 },
+  { id: 'payments', name: 'Payments Received', count: commission.value?.payments?.length || 0 },
+  { id: 'documents', name: 'Documents & Notes' },
+]);
+
+async function loadCommission() {
+  loading.value = true;
   try {
-    await transitionStage({
-      id: commissionId.value,
-      stage: newStage,
-      notes: `Manual transition to stage ${newStage}`
-    });
-    
-    auditTimeline.value.unshift({
-      time: new Date().toISOString(),
-      title: `Transitioned stage to: ${formatStageName(newStage)}`,
-      notes: 'Manually updated.'
-    });
-
-    store.dispatch('notifications/triggerToast', {
-      message: `Commission transitioned to ${formatStageName(newStage)} successfully.`,
-      type: 'success'
-    });
-    refetch();
+    const res = await fetchCommissionById(commissionId);
+    commission.value = res?.data || res;
+    if (commission.value) {
+      paymentForm.value.amount = commission.value.totalCommissionOutstanding || 0;
+      paymentForm.value.receivedFrom = commission.value.payablePartyName || '';
+    }
   } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: err.response?.data?.message || 'Failed to update commission stage.',
-      type: 'error'
-    });
+    console.error('Failed to load commission:', err);
+  } finally {
+    loading.value = false;
   }
-};
+}
 
-// Reconcile Invoice Mark Paid
-const handleInvoiceStatusUpdate = async ({ id, status }) => {
-  try {
-    // Call record collection simulated mock or put invoice status update
-    await apiClient.post(`/commissions/invoices/${id}/collection`, {
-      transactionRef: 'UTR-REC-' + Date.now(),
-      amountReceived: commission.value.grossCommission * 0.5,
-      tdsDeducted: commission.value.grossCommission * 0.05,
-      paymentMode: 'wire',
-      receivedAt: new Date().toISOString().split('T')[0]
-    });
-
-    store.dispatch('notifications/triggerToast', {
-      message: 'Invoice marked paid, collection created.',
-      type: 'success'
-    });
-    refetch();
-  } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: 'Failed to update invoice state.',
-      type: 'error'
-    });
-  }
-};
-
-// Reconcile collection clears
-const { mutateAsync: clearCollection } = useClearCollectionMutation();
-const { mutateAsync: bounceCollection } = useBounceCollectionMutation();
-
-const handleClearReceipt = async (id) => {
-  try {
-    await clearCollection(id);
-    
-    auditTimeline.value.unshift({
-      time: new Date().toISOString(),
-      title: 'Collection Cleared',
-      notes: 'Cleared receipt matches bank statement logs.'
-    });
-
-    store.dispatch('notifications/triggerToast', {
-      message: 'Receipt successfully cleared. Payouts distributed.',
-      type: 'success'
-    });
-    refetch();
-  } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: 'Failed to clear receipt.',
-      type: 'error'
-    });
-  }
-};
-
-const handleBounceReceipt = async (id) => {
-  try {
-    await bounceCollection(id);
-
-    auditTimeline.value.unshift({
-      time: new Date().toISOString(),
-      title: 'Collection Bounced',
-      notes: 'Bank collection marked failed.'
-    });
-
-    store.dispatch('notifications/triggerToast', {
-      message: 'Receipt marked bounced. Balances rolled back.',
-      type: 'warning'
-    });
-    refetch();
-  } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: 'Failed to bounce collection.',
-      type: 'error'
-    });
-  }
-};
-
-// Release Payouts splits
-const { mutateAsync: releasePayout } = useReleasePayoutMutation();
-
-const handleReleasePayout = async (pay) => {
-  try {
-    // Release payout by finding payoutId or mock releasing
-    await releasePayout('pay-simulated-' + Date.now());
-
-    pay.released = true;
-    auditTimeline.value.unshift({
-      time: new Date().toISOString(),
-      title: 'Agent Payout Released',
-      notes: `Released ${pay.type.replace('_', ' ')} share split.`
-    });
-
-    store.dispatch('notifications/triggerToast', {
-      message: 'Agent payout released successfully.',
-      type: 'success'
-    });
-    refetch();
-  } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: 'Failed to release payout.',
-      type: 'error'
-    });
-  }
-};
-
-// Process Clawbacks recoveries
-const { mutateAsync: processClawback } = useProcessClawbackMutation();
-
-const handleTriggerRecovery = async () => {
-  try {
-    await processClawback({
-      id: commissionId.value
-    });
-
-    commission.value.clawback.recoveredAmount = commission.value.clawback.originalCommission;
-    commission.value.clawback.outstandingRecovery = 0;
-    commission.value.clawback.logs.forEach(l => l.status = 'recovered');
-
-    auditTimeline.value.unshift({
-      time: new Date().toISOString(),
-      title: 'Clawbacks Recovery Reconciled',
-      notes: 'Agent payout reversions settled.'
-    });
-
-    store.dispatch('notifications/triggerToast', {
-      message: 'Clawbacks successfully recovered and settled.',
-      type: 'success'
-    });
-    refetch();
-  } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: 'Failed to process clawback recoveries.',
-      type: 'error'
-    });
-  }
-};
-
-// Formattings
-const formatCurrency = (val) => {
-  if (val === undefined || val === null) return '—';
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(val);
-};
-
-const formatDate = (val) => {
-  if (!val) return '';
-  return new Date(val).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
-};
-
-const formatStageName = (stage) => {
-  if (!stage) return '';
-  const mapping = {
-    'expected': 'Expected',
-    'eligible': 'Eligible',
-    'invoice_raised': 'Invoice Raised',
-    'invoice_sent': 'Invoice Sent',
-    'partially_collected': 'Partially Collected',
-    'fully_collected': 'Fully Collected',
-    'payout_eligible': 'Payout Eligible',
-    'payout_approved': 'Payout Approved',
-    'payout_released': 'Payout Released',
-    'closed': 'Closed'
+function formatPartyType(t) {
+  const map = {
+    builder: 'Builder / Developer',
+    seller: 'Property Seller',
+    customer: 'Customer / Buyer',
+    channel_partner: 'Channel Partner',
+    broker: 'Broker',
+    other: 'Other',
   };
-  return mapping[stage] || stage.replace(/_/g, ' ');
-};
+  return map[t] || t || 'Builder';
+}
 
-const getStageBadgeClass = (stage) => {
-  switch (stage) {
-    case 'expected': return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-355';
-    case 'eligible': return 'bg-amber-50 text-amber-700 dark:bg-amber-950/20';
-    case 'invoice_raised':
-    case 'invoice_sent': return 'bg-blue-50 text-blue-750 dark:bg-blue-950/20';
-    case 'partially_collected':
-    case 'fully_collected': return 'bg-purple-50 text-purple-700 dark:bg-purple-950/20';
-    case 'payout_eligible':
-    case 'payout_approved': return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20';
-    case 'payout_released': return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20';
-    case 'closed': return 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-100';
-    default: return 'bg-slate-100 text-slate-600';
+function formatDate(d) {
+  if (!d) return 'Not Set';
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatStatusLabel(s) {
+  const map = {
+    unpaid: 'UNPAID',
+    partially_paid: 'PARTIALLY PAID',
+    fully_paid: 'FULLY PAID',
+    overdue: 'OVERDUE',
+  };
+  return map[s] || String(s).toUpperCase();
+}
+
+function getStatusBadgeClass(s) {
+  switch (s) {
+    case 'fully_paid':
+      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+    case 'partially_paid':
+      return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+    case 'overdue':
+      return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20';
+    default:
+      return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20';
   }
-};
+}
+
+async function submitPayment() {
+  if (!commission.value) return;
+  savingPayment.value = true;
+  try {
+    await recordCommissionPayment({
+      id: commission.value._id,
+      ...paymentForm.value,
+    });
+    paymentModalOpen.value = false;
+    await loadCommission();
+  } catch (err) {
+    alert(err.response?.data?.error?.message || err.message || 'Failed to record payment.');
+  } finally {
+    savingPayment.value = false;
+  }
+}
+
+onMounted(() => {
+  loadCommission();
+});
 </script>

@@ -47,6 +47,15 @@
 
       <!-- Action buttons -->
       <div class="flex flex-wrap items-center gap-2.5 self-end md:self-auto shrink-0">
+        <!-- Close Deal workflow trigger -->
+        <button 
+          v-if="deal.status !== 'cancelled' && deal.status !== 'deal_closed'"
+          @click="isCloseDealOpen = true"
+          class="btn-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-sm"
+        >
+          <span>🤝 Close Deal & Commission</span>
+        </button>
+
         <!-- Stepper wizard trigger -->
         <button 
           @click="isWizardOpen = true"
@@ -588,6 +597,15 @@
       @close="isCancelOpen = false"
       @success="handleCancelSuccess"
     />
+
+    <!-- Close Deal & Commission Creation Modal -->
+    <CloseDealModal
+      v-if="deal"
+      :isOpen="isCloseDealOpen"
+      :deal="deal"
+      @close="isCloseDealOpen = false"
+      @deal-closed="handleCloseDealConfirm"
+    />
   </div>
 </template>
 
@@ -603,6 +621,7 @@ import BuilderCoordinationPanel from '../components/BuilderCoordinationPanel.vue
 import PaymentTracker from '../components/PaymentTracker.vue';
 import BookingWizard from '../components/BookingWizard.vue';
 import DealCancellationDrawer from '../components/DealCancellationDrawer.vue';
+import CloseDealModal from '../components/CloseDealModal.vue';
 import { 
   useDealQuery, 
   useTransitionStageMutation,
@@ -752,9 +771,37 @@ const getStageCheckCircleClass = (stageKey) => {
 // Stage Transitions
 const { mutateAsync: transitionStage } = useTransitionStageMutation();
 
+const isCloseDealOpen = ref(false);
+
+const handleCloseDealConfirm = async (payload) => {
+  try {
+    await transitionStage({
+      id: dealId.value,
+      status: 'deal_closed',
+      ...payload
+    });
+    isCloseDealOpen.value = false;
+    store.dispatch('notifications/triggerToast', {
+      message: 'Deal closed won successfully! Commission & Receivables record created in Financials.',
+      type: 'success'
+    });
+    refetch();
+  } catch (err) {
+    store.dispatch('notifications/triggerToast', {
+      message: err.response?.data?.message || err.message || 'Failed to close deal.',
+      type: 'error'
+    });
+  }
+};
+
 const handleStageTransition = async (evt) => {
   const newStage = evt.target.value;
   
+  if (newStage === 'deal_closed') {
+    isCloseDealOpen.value = true;
+    return;
+  }
+
   // Strict check rules
   if (newStage === 'booking_confirmed') {
     isWizardOpen.value = true;
@@ -767,17 +814,6 @@ const handleStageTransition = async (evt) => {
     if (!allVerified) {
       store.dispatch('notifications/triggerToast', {
         message: 'Closing Blocked: All milestones documentation (Agreement, Registration) must be uploaded & verified.',
-        type: 'error'
-      });
-      return;
-    }
-  }
-  if (newStage === 'deal_closed') {
-    // outstanding check
-    const outstanding = deal.value?.outstandingAmount || 0;
-    if (outstanding > 0) {
-      store.dispatch('notifications/triggerToast', {
-        message: 'Closing Blocked: Total outstanding invoices must be paid before deal closure.',
         type: 'error'
       });
       return;

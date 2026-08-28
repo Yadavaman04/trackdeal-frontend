@@ -22,6 +22,17 @@ export default {
         },
         // Keep "primary" as alias for accent for backward compat
         primary: {
+          50:  'hsl(var(--accent-50) / <alpha-value>)',
+          100: 'hsl(var(--accent-100) / <alpha-value>)',
+          200: 'hsl(var(--accent-200) / <alpha-value>)',
+          300: 'hsl(var(--accent-200) / <alpha-value>)',
+          400: 'hsl(var(--accent-500) / <alpha-value>)',
+          500: 'hsl(var(--accent-500) / <alpha-value>)',
+          600: 'hsl(var(--accent-600) / <alpha-value>)',
+          700: 'hsl(var(--accent-700) / <alpha-value>)',
+          800: 'hsl(var(--accent-700) / <alpha-value>)',
+          900: 'hsl(var(--accent-700) / <alpha-value>)',
+          950: 'hsl(var(--accent-700) / <alpha-value>)',
           DEFAULT: 'hsl(var(--accent-600) / <alpha-value>)',
           foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
         },

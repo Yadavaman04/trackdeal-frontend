@@ -181,3 +181,11 @@ export function useMarkLeadLostMutation() {
     }
   });
 }
+
+export function useCustomerLeadsQuery(customerId) {
+  return useQuery({
+    queryKey: ['customers', customerId, 'leads'],
+    queryFn: () => leadsApi.fetchCustomerLeads(unref(customerId)),
+    enabled: computed(() => !!unref(customerId)),
+  });
+}

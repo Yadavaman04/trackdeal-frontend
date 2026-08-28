@@ -19,90 +19,156 @@
       <span class="text-slate-700 dark:text-slate-350">{{ lead.firstName }} {{ lead.lastName || '' }}</span>
     </div>
 
-    <!-- Header Block -->
-    <div class="bg-surface border border-default rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
+    <!-- Header Block / Lead 360 Workspace -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
       <div class="flex items-center space-x-4">
-        <!-- Lead Avatar Circle -->
-        <div class="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-heading text-lg font-extrabold text-primary capitalize shrink-0">
-          {{ lead.firstName.charAt(0) }}
+        <!-- Lead Initials Avatar -->
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-base uppercase shrink-0">
+          {{ (lead.firstName?.charAt(0) || '') + (lead.lastName?.charAt(0) || '') }}
         </div>
-        <div>
-          <h2 class="font-heading text-lg font-bold text-slate-800 dark:text-slate-100">
-            {{ lead.firstName }} {{ lead.lastName || '' }}
-          </h2>
-          <div class="flex flex-wrap items-center gap-2 mt-1">
-            <LeadStageBadge :stage="lead.status" />
-            <span class="text-[10px] text-slate-400 font-medium">Score: <b>{{ lead.score }}</b></span>
-            <span
-              v-if="transferredCPsCount > 0"
-              class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent-50 text-accent-700 border border-accent-200 flex items-center gap-1 shrink-0"
-              :title="`Transferred to ${transferredCPsCount} Channel Partner(s)`"
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">
+              {{ lead.firstName }} {{ lead.lastName || '' }}
+            </h2>
+            <span 
+              class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider inline-flex items-center gap-1"
+              :class="lead.qualification?.leadTemperature === 'hot' ? 'bg-red-500/10 text-red-600 border border-red-500/20' : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'"
             >
-              🏢 Transferred to {{ transferredCPsCount }} Channel Partner(s)
+              <span>{{ lead.qualification?.leadTemperature === 'hot' ? '🔥 HOT' : '⚡ WARM' }}</span>
+            </span>
+            <LeadStageBadge :stage="lead.status" />
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 text-slate-500 dark:text-slate-400 text-xs">
+            <span class="font-medium text-slate-700 dark:text-slate-200">
+              {{ lead.buyerRequirement?.propertyType?.join(', ') || lead.requirements?.propertyType?.join(', ') || '3 BHK Apartment' }}
+            </span>
+            <span>·</span>
+            <span>{{ lead.buyerRequirement?.preferredLocation || lead.buyerRequirement?.locality || lead.requirements?.locations?.join(', ') || 'Pune / Mumbai' }}</span>
+            <span>·</span>
+            <span class="font-semibold text-indigo-600 dark:text-indigo-400">
+              {{ lead.budgetMin || lead.budgetMax ? '₹' + (lead.budgetMin ? Number(lead.budgetMin).toLocaleString('en-IN') : '') + ' – ₹' + (lead.budgetMax ? Number(lead.budgetMax).toLocaleString('en-IN') : '') : 'Budget Flexible' }}
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Action Actions Buttons -->
-      <div class="flex flex-wrap items-center gap-2.5 self-end md:self-auto shrink-0">
-        <!-- Reopen Lost Lead -->
-        <button 
-          v-if="lead.status === 'lost'"
-          @click="isReopenOpen = true"
-          class="bg-indigo-50 border border-indigo-200 dark:bg-indigo-950/20 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 text-xs font-bold px-3.5 py-1.8 rounded-lg hover:underline transition-all"
+      <!-- Quick Actions Bar -->
+      <div class="flex flex-wrap items-center gap-2 self-end md:self-auto shrink-0">
+        <a 
+          v-if="!lead.isTransferred && lead.mobile"
+          :href="`tel:${lead.mobile}`"
+          class="px-3 py-1.8 rounded-xl font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs transition-colors flex items-center gap-1.5"
         >
-          Reopen Lead
-        </button>
+          <span>📞</span>
+          <span>Call</span>
+        </a>
 
-        <template v-else-if="lead.status !== 'won'">
-          <button 
-            @click="isTransferOpen = true"
-            class="px-3.5 py-1.8 border border-default text-xs font-semibold text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            Transfer context
-          </button>
-          <button 
-            @click="isLostOpen = true"
-            class="px-3.5 py-1.8 border border-red-200 text-xs font-semibold text-red-650 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            Mark Lost
-          </button>
-          <button 
-            @click="isWonOpen = true"
-            class="px-4 py-1.8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-xs"
-          >
-            Convert Lead 🎉
-          </button>
-        </template>
-
-        <button 
-          @click="isEditOpen = true"
-          class="px-3.5 py-1.8 border border-default text-xs font-semibold text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+        <a 
+          v-if="!lead.isTransferred && lead.mobile"
+          :href="`https://wa.me/${lead.mobile.replace(/[^0-9]/g, '')}`"
+          target="_blank"
+          class="px-3 py-1.8 rounded-xl font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs transition-colors flex items-center gap-1.5"
         >
-          Edit Profile
-        </button>
+          <span>💬</span>
+          <span>WhatsApp</span>
+        </a>
+
         <button 
           @click="isActivityCenterOpen = true"
-          class="px-3.5 py-1.8 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-lg transition-colors shadow-xs flex items-center gap-1.5"
+          class="px-3.5 py-1.8 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white text-xs shadow-xs transition-all flex items-center gap-1.5"
         >
-          🏠 Visits & Activities
+          <span>⚡</span>
+          <span>+ Add Activity</span>
+        </button>
+
+        <button 
+          v-if="lead.status !== 'won'"
+          @click="isWonOpen = true"
+          class="px-3.5 py-1.8 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white text-xs shadow-xs transition-all flex items-center gap-1"
+        >
+          <span>🤝</span>
+          <span>Create Deal</span>
         </button>
       </div>
     </div>
 
-    <!-- Details Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Left & Center Workspace -->
+    <!-- Lead Journey Progress Stepper (Section 25) -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+      <div class="flex items-center justify-between text-xs overflow-x-auto gap-2 pb-1">
+        <div 
+          v-for="(step, idx) in ['New', 'Contacted', 'Qualified', 'Property Shared', 'Site Visit', 'Negotiation', 'Booking', 'Closed']"
+          :key="step"
+          class="flex items-center gap-2 shrink-0 font-medium"
+        >
+          <div class="flex items-center gap-1.5">
+            <span 
+              class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+              :class="idx <= getLeadStepIndex(lead.status) ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'"
+            >
+              {{ idx <= getLeadStepIndex(lead.status) ? '✓' : idx + 1 }}
+            </span>
+            <span :class="idx <= getLeadStepIndex(lead.status) ? 'text-slate-900 dark:text-slate-100 font-semibold' : 'text-slate-400'">
+              {{ step }}
+            </span>
+          </div>
+          <span v-if="idx < 7" class="text-slate-300 dark:text-slate-700 text-xs">➔</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transferred Lead Banner -->
+    <div 
+      v-if="lead.isTransferred"
+      class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl p-4 flex items-center justify-between shadow-xs"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+          📥
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h4 class="font-heading font-bold text-amber-900 dark:text-amber-200 text-sm">Transferred Lead</h4>
+            <span class="px-2 py-0.2 text-[9px] font-bold rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 uppercase">External Partner</span>
+          </div>
+          <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+            Received from <strong class="font-semibold text-amber-950 dark:text-amber-150">{{ lead.receivedFrom?.organizationName || 'Partner Broker' }}</strong>
+            <span v-if="lead.receivedFrom?.transferredByName"> (Transferred by {{ lead.receivedFrom.transferredByName }})</span>
+            <span v-if="lead.receivedFrom?.remarks" class="italic ml-2 text-slate-500">— "{{ lead.receivedFrom.remarks }}"</span>
+          </p>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 font-semibold bg-amber-100/60 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200/50">
+        <span>🔒</span>
+        <span>Customer Contact Info Protected</span>
+      </div>
+    </div>
+
+    <!-- Main Workspace Grid (Left 8 cols, Right 4 cols) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Left Column: Work & Details Area -->
       <div class="lg:col-span-8 space-y-6">
         <!-- Profiles Cards & Requirements (Double columns) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Lead details card -->
           <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
-            <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-default pb-2">
-              Contact Profile Info
+            <h4 class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-default pb-2 flex items-center justify-between">
+              <span>{{ lead.isTransferred ? 'Transferred Origin Details' : 'Contact Profile Info' }}</span>
+              <span v-if="lead.isTransferred" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">📥 Transferred</span>
             </h4>
-            <div class="space-y-2 text-[11px]">
+            
+            <div v-if="lead.isTransferred" class="space-y-2 text-[11px]">
+              <div class="flex justify-between"><span class="text-slate-400">Received From:</span><span class="font-bold text-slate-750 dark:text-slate-200">{{ lead.receivedFrom?.organizationName || 'Partner Broker' }}</span></div>
+              <div v-if="lead.receivedFrom?.transferredByName" class="flex justify-between"><span class="text-slate-400">Transferred By:</span><span class="font-medium text-slate-750 dark:text-slate-250">{{ lead.receivedFrom.transferredByName }}</span></div>
+              <div v-if="lead.receivedFrom?.transferredAt" class="flex justify-between"><span class="text-slate-400">Received Date:</span><span class="font-medium text-slate-750 dark:text-slate-250">{{ new Date(lead.receivedFrom.transferredAt).toLocaleDateString() }}</span></div>
+              <div v-if="lead.receivedFrom?.remarks" class="flex justify-between"><span class="text-slate-400">Transfer Remarks:</span><span class="font-medium text-slate-750 dark:text-slate-250 italic">{{ lead.receivedFrom.remarks }}</span></div>
+              <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-default text-[10px] text-slate-500 italic mt-2">
+                🔒 Direct customer contact information is protected and managed by the original broker.
+              </div>
+            </div>
+
+            <div v-else class="space-y-2 text-[11px]">
               <div class="flex justify-between"><span class="text-slate-400">Mobile:</span><span class="font-bold text-slate-750 dark:text-slate-200">{{ lead.mobile }}</span></div>
               <div v-if="lead.alternativeMobile" class="flex justify-between"><span class="text-slate-400">Alt Mobile:</span><span class="font-medium text-slate-750 dark:text-slate-250">{{ lead.alternativeMobile }}</span></div>
               <div class="flex justify-between"><span class="text-slate-400">Email:</span><span class="font-medium text-slate-750 dark:text-slate-250">{{ lead.email || '—' }}</span></div>
@@ -122,7 +188,15 @@
               <div class="flex justify-between"><span class="text-slate-400">Preferred Location:</span><span class="font-semibold text-slate-750 dark:text-slate-200 capitalize">{{ lead.buyerRequirement?.preferredLocation || lead.buyerRequirement?.locality || lead.requirements?.locations?.join(', ') || '—' }}</span></div>
               <div class="flex justify-between"><span class="text-slate-400">Possession & Purpose:</span><span class="font-medium text-slate-750 dark:text-slate-200 capitalize">{{ (lead.buyerRequirement?.possessionPreference || '—').replace('_', ' ') }} • {{ (lead.buyerRequirement?.purpose || '—').replace('_', ' ') }}</span></div>
               <div class="flex justify-between"><span class="text-slate-400">Loan Required:</span><span class="font-bold uppercase" :class="lead.financialRequirement?.loanRequired === 'yes' ? 'text-blue-600' : 'text-slate-600'">{{ lead.financialRequirement?.loanRequired || 'Not Decided' }}</span></div>
-              <div v-if="lead.financialRequirement?.loanRequired === 'yes'" class="flex justify-between"><span class="text-slate-400">Bank & Status:</span><span class="font-medium text-slate-750 dark:text-slate-200">{{ lead.financialRequirement?.preferredBank || 'Bank' }} ({{ (lead.financialRequirement?.loanStatus || 'Pending').replace('_', ' ') }})</span></div>
+              <div v-if="lead.financialRequirement?.loanRequired === 'yes'" class="flex justify-between items-center bg-blue-50/50 dark:bg-blue-950/20 p-2 rounded-lg border border-blue-100 dark:border-blue-900/40">
+                <div>
+                  <span class="text-slate-400 block text-[10px]">Bank & Status:</span>
+                  <span class="font-bold text-slate-800 dark:text-slate-200">{{ lead.financialRequirement?.preferredBank || 'Bank' }} ({{ (lead.financialRequirement?.loanStatus || 'Active').replace('_', ' ') }})</span>
+                </div>
+                <router-link to="/app/loans" class="px-2.5 py-1 bg-blue-600 text-white rounded-md text-[10px] font-bold shadow-xs hover:bg-blue-700 transition">
+                  View Loan Case →
+                </router-link>
+              </div>
               <div v-if="lead.qualification" class="flex justify-between border-t border-default pt-1.5"><span class="text-slate-400">Lead Temperature:</span><span class="font-bold capitalize" :class="lead.qualification.leadTemperature === 'hot' ? 'text-red-500' : 'text-amber-500'">{{ lead.qualification.leadTemperature || 'Warm' }}</span></div>
             </div>
           </div>
@@ -437,6 +511,14 @@
       :asDrawer="true"
       @close="isActivityCenterOpen = false"
     />
+
+    <!-- Customer Profile History Modal -->
+    <CustomerProfileModal
+      :isOpen="isCustomerModalOpen"
+      :customer="leadCustomer"
+      :existingLeads="customerLeads"
+      @close="isCustomerModalOpen = false"
+    />
   </div>
 </template>
 
@@ -458,7 +540,14 @@ import LeadLostModal from '../components/LeadLostModal.vue';
 import LeadClosingModal from '../components/LeadClosingModal.vue';
 import LeadReopenModal from '../components/LeadReopenModal.vue';
 import LeadMergeModal from '../components/LeadMergeModal.vue';
-import { useLeadQuery, useAddLeadNoteMutation, useLogLeadActivityMutation, useAddLeadFollowUpMutation } from '../queries';
+import CustomerProfileModal from '../components/CustomerProfileModal.vue';
+import {
+  useLeadQuery,
+  useCustomerLeadsQuery,
+  useAddLeadNoteMutation,
+  useLogLeadActivityMutation,
+  useAddLeadFollowUpMutation,
+} from '../queries';
 
 const route = useRoute();
 const router = useRouter();
@@ -468,6 +557,35 @@ const leadId = computed(() => route.params.id);
 // Load lead details
 const { data: leadData, isLoading, refetch } = useLeadQuery(leadId);
 const lead = computed(() => leadData.value?.data || null);
+
+// Customer Profile Modal & Linked Leads
+const isCustomerModalOpen = ref(false);
+const customerId = computed(() => lead.value?.customerId?._id || lead.value?.customerId || null);
+
+const { data: customerHistoryData } = useCustomerLeadsQuery(customerId);
+const customerLeads = computed(() => {
+  if (customerHistoryData.value?.data?.leads) {
+    return customerHistoryData.value.data.leads;
+  }
+  return [];
+});
+
+const leadCustomer = computed(() => {
+  if (lead.value?.customerId && typeof lead.value.customerId === 'object') {
+    return lead.value.customerId;
+  }
+  if (lead.value) {
+    return {
+      firstName: lead.value.firstName,
+      lastName: lead.value.lastName,
+      mobile: lead.value.mobile,
+      email: lead.value.email,
+      alternativeMobile: lead.value.alternativeMobile,
+      createdAt: lead.value.createdAt,
+    };
+  }
+  return null;
+});
 
 // Load linked tasks/follow-ups via /tasks?leadId=:id
 const { data: tasksData, refetch: refetchTasks } = useQuery({
@@ -722,6 +840,21 @@ const transferredCPsList = computed(() => {
   }
   return [];
 });
+
+const getLeadStepIndex = (status) => {
+  const map = {
+    new: 0,
+    contacted: 1,
+    qualified: 2,
+    property_shared: 3,
+    site_visit_scheduled: 4,
+    site_visit_completed: 4,
+    negotiation: 5,
+    booked: 6,
+    won: 7,
+  };
+  return map[status] ?? 0;
+};
 
 const transferredCPsCount = computed(() => transferredCPsList.value.length);
 </script>

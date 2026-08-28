@@ -6,13 +6,16 @@
     @close="$emit('close')"
   >
     <form @submit="onSubmit" class="space-y-4 text-xs">
-      <!-- Live Duplicate Detection Warnings -->
+      <!-- Live Duplicate Detection Warnings & Confirmation -->
       <DuplicateDetectionPanel 
         :firstName="firstName"
         :lastName="lastName"
         :mobile="mobile"
         :email="email"
-        @merge="handleMerge"
+        @confirm="handleCustomerConfirm"
+        @viewProfile="handleViewCustomerProfile"
+        @cancel="handleDuplicateCancel"
+        @reset="handleDuplicateReset"
       />
 
       <!-- Section Tabs -->
@@ -445,6 +448,15 @@
       </div>
     </template>
   </AppDrawer>
+
+  <!-- Customer Profile History Modal -->
+  <CustomerProfileModal
+    :isOpen="isCustomerModalOpen"
+    :customer="selectedCustomer"
+    :existingLeads="selectedCustomerLeads"
+    @close="isCustomerModalOpen = false"
+    @confirm="handleCustomerConfirmFromModal"
+  />
 </template>
 
 <script setup>
@@ -455,6 +467,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 import AppDrawer from '@/components/AppDrawer.vue';
 import DuplicateDetectionPanel from './DuplicateDetectionPanel.vue';
+import CustomerProfileModal from './CustomerProfileModal.vue';
 import { useCreateLeadMutation } from '../queries';
 import { useBranchesQuery, useUsersQuery } from '@/modules/settings/queries';
 
@@ -484,6 +497,13 @@ const store = useStore();
 const userRole = computed(() => store.getters['auth/userRole'] || 'agent');
 const showAdminFields = computed(() => ['super_admin', 'org_admin', 'branch_manager'].includes(userRole.value));
 
+// Customer Master Linking State
+const linkedCustomerId = ref('');
+const linkedCustomerName = ref('');
+const isCustomerModalOpen = ref(false);
+const selectedCustomer = ref(null);
+const selectedCustomerLeads = ref([]);
+
 const schema = toTypedSchema(
   zod.object({
     firstName: zod.string().min(2, 'First Name must contain at least 2 characters').max(50),
@@ -493,7 +513,7 @@ const schema = toTypedSchema(
   })
 );
 
-const { errors, handleSubmit } = useForm({
+const { errors, handleSubmit, setFieldValue } = useForm({
   validationSchema: schema,
   initialValues: {
     firstName: '',
@@ -556,11 +576,51 @@ const assignedTo = ref('');
 
 const { mutateAsync: createLead, isPending } = useCreateLeadMutation();
 
+// Existing Customer Linking Handlers
+const handleCustomerConfirm = ({ customer, existingLeads }) => {
+  if (!customer) return;
+  linkedCustomerId.value = customer._id || customer.id || '';
+  linkedCustomerName.value = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.name || 'Existing Customer';
+
+  // Pre-fill contact values if not already entered
+  if (!firstName.value && customer.firstName) setFieldValue('firstName', customer.firstName);
+  if (!lastName.value && customer.lastName) lastName.value = customer.lastName;
+  if (!mobile.value && customer.mobile) setFieldValue('mobile', customer.mobile);
+  if (!email.value && customer.email) setFieldValue('email', customer.email);
+  if (!alternativeMobile.value && customer.alternativeMobile) alternativeMobile.value = customer.alternativeMobile;
+
+  store.dispatch('notifications/triggerToast', {
+    message: `Linked to existing customer: ${linkedCustomerName.value}. You can now configure the new property requirement.`,
+    type: 'info'
+  });
+};
+
+const handleCustomerConfirmFromModal = (customer) => {
+  isCustomerModalOpen.value = false;
+  handleCustomerConfirm({ customer, existingLeads: selectedCustomerLeads.value });
+};
+
+const handleViewCustomerProfile = ({ customer, existingLeads }) => {
+  selectedCustomer.value = customer;
+  selectedCustomerLeads.value = existingLeads || [];
+  isCustomerModalOpen.value = true;
+};
+
+const handleDuplicateCancel = () => {
+  // User opted to not link
+};
+
+const handleDuplicateReset = () => {
+  linkedCustomerId.value = '';
+  linkedCustomerName.value = '';
+};
+
 const onSubmit = handleSubmit(async (values) => {
   const payload = {
     firstName: values.firstName,
     mobile: values.mobile,
     source: values.source,
+    ...(linkedCustomerId.value ? { customerId: linkedCustomerId.value } : {}),
     ...(values.email?.trim() ? { email: values.email.trim() } : {}),
     ...(lastName.value?.trim() ? { lastName: lastName.value.trim() } : {}),
     ...(alternativeMobile.value?.trim() ? { alternativeMobile: alternativeMobile.value.trim() } : {}),
@@ -617,8 +677,11 @@ const onSubmit = handleSubmit(async (values) => {
 
   try {
     await createLead(payload);
+    const successMsg = linkedCustomerId.value
+      ? 'New lead created and linked to existing customer profile.'
+      : 'Real estate lead profile captured successfully.';
     store.dispatch('notifications/triggerToast', {
-      message: 'Real estate lead profile captured successfully.',
+      message: successMsg,
       type: 'success'
     });
     emit('success');

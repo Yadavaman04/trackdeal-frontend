@@ -1,120 +1,340 @@
 <template>
-  <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3">
-    <div class="flex items-center justify-between border-b border-default pb-2">
-      <span class="font-heading text-xs font-bold text-slate-800 dark:text-slate-200">Matching Properties</span>
-      <span class="text-[9px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded">
-        {{ matchedItems.length }} Matches
+  <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3.5">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-default pb-2.5">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-bold text-slate-850 dark:text-slate-100 font-heading">
+          🏡 Matching Portfolio Properties
+        </span>
+        <span 
+          v-if="!isLoading"
+          class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+        >
+          {{ displayList.length }} Available
+        </span>
+      </div>
+
+      <!-- Quick toggle filter -->
+      <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[10px] font-medium">
+        <button 
+          type="button"
+          @click="activeFilter = 'matched'"
+          class="px-2 py-1 rounded-md transition-all"
+          :class="activeFilter === 'matched' ? 'bg-white dark:bg-slate-700 text-primary font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+        >
+          Matched ({{ matchedItems.length }})
+        </button>
+        <button 
+          type="button"
+          @click="activeFilter = 'all'"
+          class="px-2 py-1 rounded-md transition-all"
+          :class="activeFilter === 'all' ? 'bg-white dark:bg-slate-700 text-primary font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+        >
+          All Available ({{ availablePortfolio.length }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Requirements Quick Tag Bar -->
+    <div v-if="leadRequirementSummary.length > 0" class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-600 dark:text-slate-400">
+      <span class="text-slate-400 font-semibold uppercase text-[9px]">Target:</span>
+      <span 
+        v-for="(tag, idx) in leadRequirementSummary" 
+        :key="idx"
+        class="px-2 py-0.5 rounded bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 font-medium"
+      >
+        {{ tag }}
       </span>
     </div>
 
-    <!-- Match list -->
-    <div class="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="py-8 text-center text-slate-400 text-xs animate-pulse">
+      Scanning property portfolio for matches...
+    </div>
+
+    <!-- Properties Match List -->
+    <div v-else class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
       <div 
-        v-for="item in matchedItems" 
-        :key="item.id"
-        class="bg-slate-50 dark:bg-slate-900 border border-default rounded-lg p-2.5 flex items-center justify-between text-xs hover:border-primary/50 transition-colors"
+        v-for="item in displayList" 
+        :key="item._id || item.id"
+        class="bg-slate-50/80 dark:bg-slate-900/80 border border-default rounded-xl p-3 text-xs hover:border-primary/50 transition-all space-y-2"
       >
-        <div class="min-w-0">
-          <h5 class="font-bold text-slate-800 dark:text-slate-100 truncate">{{ item.title }}</h5>
-          <div class="flex items-center space-x-2 text-[9px] text-slate-400 mt-0.5">
-            <span class="capitalize">{{ item.type }}</span>
-            <span>•</span>
-            <span>{{ item.bhk }} BHK</span>
-            <span>•</span>
-            <span>{{ item.location }}</span>
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <router-link 
+                :to="`/app/properties/${item._id || item.id}`"
+                target="_blank"
+                class="font-bold text-slate-900 dark:text-slate-100 hover:text-primary transition-colors truncate block"
+              >
+                {{ item.title }}
+              </router-link>
+              <span 
+                v-if="item.matchScore"
+                class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0"
+              >
+                {{ item.matchScore }}% Match
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2 text-[10px] text-slate-500 mt-1 flex-wrap">
+              <span v-if="item.type" class="capitalize font-semibold text-slate-700 dark:text-slate-300">
+                {{ item.type }}
+              </span>
+              <span v-if="item.bhk">• {{ item.bhk }} BHK</span>
+              <span v-if="item.area?.carpet || item.area?.builtUp">• {{ item.area.carpet || item.area.builtUp }} {{ item.area.unit || 'sqft' }}</span>
+              <span v-if="getLocationText(item)">• 📍 {{ getLocationText(item) }}</span>
+            </div>
           </div>
-          <span class="text-[10px] text-primary font-bold block mt-1.5">{{ formatCurrency(item.price) }}</span>
+
+          <div class="text-right shrink-0">
+            <span class="text-xs font-bold text-primary font-heading block">
+              {{ formatPrice(item.price) }}
+            </span>
+            <span 
+              class="text-[9px] font-bold px-1.5 py-0.5 rounded capitalize inline-block mt-1"
+              :class="getStatusBadgeClass(item.status)"
+            >
+              {{ item.status || 'available' }}
+            </span>
+          </div>
         </div>
 
-        <!-- Reserve trigger -->
-        <div class="flex flex-col items-end space-y-1.5 shrink-0">
-          <span 
-            class="text-[9px] font-bold px-1.5 py-0.5 rounded capitalize"
-            :class="[
-              item.status === 'available'
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
-                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400'
-            ]"
-          >
-            {{ item.status }}
+        <!-- Action bar -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800 text-[10px]">
+          <span v-if="item.project?.name" class="text-slate-400 truncate max-w-[160px]">
+            🏢 {{ item.project.name }}
           </span>
-          <button 
-            @click="handleReserve(item)"
-            class="text-[9px] bg-primary hover:bg-opacity-95 text-white font-bold px-2 py-1 rounded"
-          >
-            Reserve
-          </button>
+          <span v-else class="text-slate-400">Independent Unit</span>
+
+          <div class="flex items-center gap-1.5">
+            <router-link
+              :to="`/app/properties/${item._id || item.id}`"
+              target="_blank"
+              class="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold transition-colors flex items-center gap-0.5"
+            >
+              <span>View</span>
+              <span>↗</span>
+            </router-link>
+            <button 
+              type="button"
+              @click="handleReserve(item)"
+              class="px-2.5 py-1 rounded bg-primary hover:bg-opacity-95 text-white font-bold transition-all shadow-2xs"
+            >
+              Reserve Unit
+            </button>
+          </div>
         </div>
       </div>
 
+      <!-- Empty State -->
       <div 
-        v-if="matchedItems.length === 0" 
-        class="py-8 text-center text-slate-400 text-xs"
+        v-if="displayList.length === 0" 
+        class="py-10 text-center rounded-xl border border-dashed text-slate-400 text-xs space-y-2"
+        style="border-color: hsl(var(--neutral-200));"
       >
-        No properties currently match this lead's requirements.
+        <span class="text-2xl block">🏠</span>
+        <p class="font-medium text-slate-600 dark:text-slate-300">
+          {{ activeFilter === 'matched' ? 'No properties currently match this lead’s specific criteria.' : 'No available properties in portfolio.' }}
+        </p>
+        <p v-if="activeFilter === 'matched' && availablePortfolio.length > 0" class="text-[10px] text-slate-400">
+          Switch to <a href="#" @click.prevent="activeFilter = 'all'" class="text-primary underline font-bold">All Available ({{ availablePortfolio.length }})</a> to view all inventory.
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
+import { usePropertiesQuery } from '@/modules/properties/queries';
 
 const props = defineProps({
-  requirements: { type: Object, default: () => ({}) }
+  lead: { type: Object, default: null },
+  requirements: { type: Object, default: () => ({}) },
+  buyerRequirement: { type: Object, default: () => ({}) },
+  budget: { type: Object, default: () => ({}) }
 });
 
 const store = useStore();
+const activeFilter = ref('matched');
 
-const mockProperties = [
-  { id: 'prop-1', title: 'Prestige Heights - Tower A', type: 'apartment', bhk: 3, price: 15000000, location: 'Mumbai', status: 'available' },
-  { id: 'prop-2', title: 'Skyway Plaza - Unit 802', type: 'apartment', bhk: 2, price: 11000000, location: 'Delhi', status: 'available' },
-  { id: 'prop-3', title: 'Dynamic Greenpark Villa', type: 'villa', bhk: 4, price: 25000000, location: 'Bangalore', status: 'reserved' },
-  { id: 'prop-4', title: 'Prestige Heights - Tower B', type: 'apartment', bhk: 3, price: 14800000, location: 'Mumbai', status: 'available' },
-  { id: 'prop-5', title: 'Skyway Plaza - Unit 504', type: 'apartment', bhk: 3, price: 16200000, location: 'Delhi', status: 'available' }
-];
+// Fetch live properties from user's property portfolio
+const { data: propertiesData, isLoading } = usePropertiesQuery();
 
-const matchedItems = computed(() => {
-  const req = props.requirements;
-  if (!req) return [];
-
-  return mockProperties.filter(prop => {
-    // 1. Property Type match
-    if (req.propertyType?.length > 0 && !req.propertyType.includes(prop.type)) {
-      return false;
-    }
-
-    // 2. BHK match
-    if (req.bhk?.length > 0 && !req.bhk.includes(prop.bhk)) {
-      return false;
-    }
-
-    // 3. Budget match
-    if (req.budget) {
-      if (req.budget.min && prop.price < req.budget.min) return false;
-      if (req.budget.max && prop.price > req.budget.max) return false;
-    }
-
-    // 4. Location match
-    if (req.locations?.length > 0) {
-      const matchLoc = req.locations.some(loc => prop.location.toLowerCase().includes(loc.toLowerCase()));
-      if (!matchLoc) return false;
-    }
-
-    return true;
-  });
+const allPortfolioProperties = computed(() => {
+  const data = propertiesData.value?.data || propertiesData.value;
+  return Array.isArray(data) ? data : [];
 });
+
+const availablePortfolio = computed(() => {
+  return allPortfolioProperties.value.filter(p => p.status === 'available' || !p.status);
+});
+
+// Normalized Requirement Parameters
+const targetPropertyTypes = computed(() => {
+  const req = props.lead?.buyerRequirement || props.buyerRequirement || props.lead?.requirements || props.requirements || {};
+  const types = req.propertyType || [];
+  return Array.isArray(types) ? types.map(t => String(t).toLowerCase()) : [];
+});
+
+const targetBhk = computed(() => {
+  const req = props.lead?.buyerRequirement || props.buyerRequirement || props.lead?.requirements || props.requirements || {};
+  const bhkArr = req.bhk || [];
+  return Array.isArray(bhkArr) 
+    ? bhkArr.map(b => parseInt(String(b).replace(/[^0-9]/g, ''))).filter(Boolean)
+    : [];
+});
+
+const targetBudget = computed(() => {
+  const b = props.lead?.budget || props.budget || props.lead?.requirements?.budget || props.requirements?.budget || {};
+  return {
+    min: b.minBudget || b.min || 0,
+    max: b.maxBudget || b.max || 999999999
+  };
+});
+
+const targetLocation = computed(() => {
+  const req = props.lead?.buyerRequirement || props.buyerRequirement || props.lead?.requirements || props.requirements || {};
+  const loc = req.preferredLocation || req.locality || req.preferredProject || (req.locations ? req.locations.join(' ') : '') || '';
+  return loc.toLowerCase().trim();
+});
+
+const leadRequirementSummary = computed(() => {
+  const tags = [];
+  if (targetPropertyTypes.value.length > 0) {
+    tags.push(targetPropertyTypes.value.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', '));
+  }
+  if (targetBhk.value.length > 0) {
+    tags.push(targetBhk.value.map(b => `${b} BHK`).join(', '));
+  }
+  if (targetBudget.value.min > 0 || (targetBudget.value.max > 0 && targetBudget.value.max < 999999999)) {
+    tags.push(formatBudgetRange(targetBudget.value.min, targetBudget.value.max));
+  }
+  if (targetLocation.value) {
+    tags.push(targetLocation.value);
+  }
+  return tags;
+});
+
+// Matched Properties against the live portfolio
+const matchedItems = computed(() => {
+  if (availablePortfolio.value.length === 0) return [];
+
+  const types = targetPropertyTypes.value;
+  const bhkList = targetBhk.value;
+  const budget = targetBudget.value;
+  const location = targetLocation.value;
+
+  const results = [];
+
+  for (const prop of availablePortfolio.value) {
+    let score = 0;
+    let maxScore = 0;
+
+    // 1. Property Type match (Weight: 35)
+    if (types.length > 0) {
+      maxScore += 35;
+      const propType = (prop.type || '').toLowerCase();
+      if (types.includes(propType)) {
+        score += 35;
+      }
+    }
+
+    // 2. BHK match (Weight: 30)
+    if (bhkList.length > 0) {
+      maxScore += 30;
+      const propBhk = prop.bhk ? parseInt(prop.bhk) : null;
+      if (propBhk && bhkList.includes(propBhk)) {
+        score += 30;
+      }
+    }
+
+    // 3. Budget match (Weight: 25)
+    if (budget.min > 0 || (budget.max > 0 && budget.max < 999999999)) {
+      maxScore += 25;
+      const price = prop.price || 0;
+      const minWithTolerance = budget.min * 0.85;
+      const maxWithTolerance = budget.max * 1.15;
+      if (price >= minWithTolerance && price <= maxWithTolerance) {
+        score += 25;
+      }
+    }
+
+    // 4. Location / Project match (Weight: 10)
+    if (location) {
+      maxScore += 10;
+      const propLoc = `${prop.location?.area || ''} ${prop.location?.city || ''} ${prop.location?.address || ''} ${prop.title || ''} ${prop.project?.name || ''}`.toLowerCase();
+      if (propLoc.includes(location) || location.split(' ').some(w => w.length > 2 && propLoc.includes(w))) {
+        score += 10;
+      }
+    }
+
+    const calculatedMatchPercent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 100;
+
+    // If criteria specified, require at least 50% match score
+    if (maxScore === 0 || calculatedMatchPercent >= 50) {
+      results.push({
+        ...prop,
+        matchScore: maxScore > 0 ? calculatedMatchPercent : null
+      });
+    }
+  }
+
+  // Sort by highest match score first, then price
+  return results.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+});
+
+const displayList = computed(() => {
+  if (activeFilter.value === 'matched') {
+    return matchedItems.value;
+  }
+  return availablePortfolio.value;
+});
+
+const getLocationText = (item) => {
+  if (!item.location) return '';
+  if (typeof item.location === 'string') return item.location;
+  return [item.location.area, item.location.city].filter(Boolean).join(', ') || item.location.address || '';
+};
+
+const formatPrice = (val) => {
+  if (!val && val !== 0) return 'Price On Request';
+  if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
+  if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
+  return `₹${Number(val).toLocaleString('en-IN')}`;
+};
+
+const formatBudgetRange = (min, max) => {
+  const fmt = (v) => {
+    if (v >= 10000000) return `₹${(v / 10000000).toFixed(1)} Cr`;
+    if (v >= 100000) return `₹${(v / 100000).toFixed(1)} L`;
+    return `₹${v.toLocaleString('en-IN')}`;
+  };
+  if (min > 0 && max < 999999999) return `${fmt(min)} - ${fmt(max)}`;
+  if (min > 0) return `Min ${fmt(min)}`;
+  return `Up to ${fmt(max)}`;
+};
+
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case 'available':
+      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200';
+    case 'reserved':
+      return 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-200';
+    case 'sold':
+      return 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-200';
+    default:
+      return 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-200';
+  }
+};
 
 const handleReserve = (item) => {
   store.dispatch('notifications/triggerToast', {
-    message: `Reserving unit ${item.title} initiated.`,
+    message: `Reserving unit '${item.title}' initiated for this customer.`,
     type: 'success'
   });
 };
-
-const formatCurrency = (val) => {
-  if (val === null || val === undefined) return '$0';
-  return '$' + Number(val).toLocaleString();
-};
 </script>
+
