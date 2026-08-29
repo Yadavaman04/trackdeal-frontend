@@ -5,7 +5,7 @@
   >
     <!-- ── Desktop Sidebar ─────────────────────────────────────────────── -->
     <aside
-      class="product-sidebar hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-200 ease-enter overflow-hidden"
+      class="product-sidebar hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-200 ease-enter overflow-hidden print:hidden"
       :class="[sidebarCollapsed ? 'w-[72px]' : 'w-[248px]']"
       style="
         background-color: hsl(var(--bg-surface));
@@ -262,7 +262,7 @@
     >
       <!-- Topbar -->
       <header
-        class="product-topbar h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b"
+        class="product-topbar h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b print:hidden"
         style="
           background-color: hsl(var(--bg-surface));
           border-color: hsl(var(--neutral-100));

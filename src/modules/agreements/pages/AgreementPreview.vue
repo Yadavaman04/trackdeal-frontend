@@ -106,16 +106,34 @@
           class="bg-white text-slate-900 shadow-2xl border border-slate-300 rounded-sm p-8 sm:p-14 font-serif leading-relaxed text-[11pt] mx-auto print:shadow-none print:border-none print:p-0 print:m-0 print:rounded-none"
           :style="getPreviewCanvasStyle()"
         >
-          <!-- Document Clauses Sequence -->
-          <div
-            v-for="(clause, idx) in agreement.clauses"
-            :key="idx"
-            :id="`section-${clause.clauseId || idx}`"
-            class="clause-block mb-6 relative"
-          >
-            <!-- Render Formatted Legal Clause directly without any HTML tags exposed -->
-            <div v-html="clause.content" class="legal-clause-content"></div>
-          </div>
+          <table class="w-full border-collapse legal-print-table">
+            <thead class="hidden print:table-header-group print-page-header">
+              <tr>
+                <td class="h-0 print:h-[20mm] border-none p-0"></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border-none p-0">
+                  <!-- Document Clauses Sequence -->
+                  <div
+                    v-for="(clause, idx) in agreement.clauses"
+                    :key="idx"
+                    :id="`section-${clause.clauseId || idx}`"
+                    class="clause-block mb-6 relative"
+                  >
+                    <!-- Render Formatted Legal Clause directly without any HTML tags exposed -->
+                    <div v-html="clause.content" class="legal-clause-content"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="hidden print:table-footer-group print-page-footer">
+              <tr>
+                <td class="h-0 print:h-[20mm] border-none p-0"></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
     </div>
@@ -214,46 +232,123 @@ const getStatusSelectClass = (st) => {
 </script>
 
 <style>
-/* ── Legal A4 Print Styling ────────────────────────────────────────────────── */
+/* ── Legal Document Screen & Print Styling ─────────────────────────────────── */
 @media print {
+  @page {
+    size: auto;
+    /* margin: 0 strips browser header (date, title) & footer (URL, page #) */
+    margin: 0;
+  }
+
   body {
-    background: #fff !important;
-    color: #000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
+
   #a4-document-canvas {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0.5in !important;
+    min-height: auto !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 20mm !important;
+    padding-right: 20mm !important;
     margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
+
+  .legal-print-table {
+    width: 100% !important;
+    border: none !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .legal-print-table thead.print-page-header {
+    display: table-header-group !important;
+  }
+
+  .legal-print-table thead.print-page-header td {
+    height: 20mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .legal-print-table tfoot.print-page-footer {
+    display: table-footer-group !important;
+  }
+
+  .legal-print-table tfoot.print-page-footer td {
+    height: 20mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
   .clause-block {
     page-break-inside: auto;
+    break-inside: auto;
+    margin-bottom: 14px !important;
   }
-  @page {
-    size: A4 portrait;
-    margin: 15mm;
+
+  .legal-clause-content h1,
+  .legal-clause-content h2,
+  .legal-clause-content h3 {
+    page-break-after: avoid;
+    break-after: avoid;
   }
+
+  .legal-clause-content table,
+  .legal-clause-content .signature-block,
+  .legal-clause-content .witness-block {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+.legal-clause-content {
+  font-family: 'Book Antiqua', 'Times New Roman', Times, Georgia, serif;
+  color: #111827;
 }
 
 .legal-clause-content p {
   text-align: justify;
-  line-height: 1.8;
+  line-height: 1.85;
   margin-bottom: 12px;
+  font-size: 11pt;
 }
 
-.legal-clause-content ol, .legal-clause-content ul {
-  margin-left: 24px;
-  line-height: 1.8;
+.legal-clause-content ol,
+.legal-clause-content ul {
+  margin-left: 28px;
+  line-height: 1.85;
+  margin-bottom: 12px;
 }
 
 .legal-clause-content table {
   width: 100%;
   border-collapse: collapse;
-  margin: 14px 0;
+  margin: 16px 0;
   font-size: 10.5pt;
 }
+
+.legal-clause-content table th,
+.legal-clause-content table td {
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+}
+
+.legal-clause-content table th {
+  background-color: #f9fafb;
+  font-weight: bold;
+}
 </style>
+

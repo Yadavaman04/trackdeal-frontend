@@ -280,28 +280,46 @@
           :style="getCanvasStyle()"
         >
           <!-- Document Content Area (Direct WYSIWYG visual editing) -->
-          <div
-            ref="editorRef"
-            contenteditable="true"
-            @input="handleEditorInput"
-            @blur="handleEditorBlur"
-            class="document-editor-surface min-h-[900px] focus:outline-none select-text"
-            :style="getInnerEditorStyle()"
-          >
-            <!-- Render each clause directly as formatted visual text -->
-            <section
-              v-for="(clause, idx) in editableClauses"
-              :key="idx"
-              :id="`clause-node-${idx}`"
-              class="clause-section mb-6 relative group"
-            >
-              <!-- Clause HTML Content (User clicks and edits directly!) -->
-              <div v-html="clause.content" class="clause-body"></div>
-            </section>
-          </div>
+          <table class="w-full border-collapse legal-print-table">
+            <thead class="hidden print:table-header-group print-page-header">
+              <tr>
+                <td class="h-0 print:h-[20mm] border-none p-0"></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border-none p-0">
+                  <div
+                    ref="editorRef"
+                    contenteditable="true"
+                    @input="handleEditorInput"
+                    @blur="handleEditorBlur"
+                    class="document-editor-surface min-h-[900px] focus:outline-none select-text"
+                    :style="getInnerEditorStyle()"
+                  >
+                    <!-- Render each clause directly as formatted visual text -->
+                    <section
+                      v-for="(clause, idx) in editableClauses"
+                      :key="idx"
+                      :id="`clause-node-${idx}`"
+                      class="clause-section mb-6 relative group"
+                    >
+                      <!-- Clause HTML Content (User clicks and edits directly!) -->
+                      <div v-html="clause.content" class="clause-body"></div>
+                    </section>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="hidden print:table-footer-group print-page-footer">
+              <tr>
+                <td class="h-0 print:h-[20mm] border-none p-0"></td>
+              </tr>
+            </tfoot>
+          </table>
 
-          <!-- Physical Document Footer / Page Indicator -->
-          <div class="border-t border-slate-200 mt-12 pt-4 flex items-center justify-between text-[10px] text-slate-400 font-mono select-none">
+          <!-- Physical Document Footer / Page Indicator (Hidden on Print) -->
+          <div class="border-t border-slate-200 mt-12 pt-4 flex items-center justify-between text-[10px] text-slate-400 font-mono select-none print:hidden">
             <span>TrackDeal Legal Document Engine</span>
             <span>{{ pageSettings.pageSize.toUpperCase() }} • {{ pageSettings.orientation.toUpperCase() }}</span>
             <span>Page 1 of {{ totalPagesEstimated }}</span>
@@ -802,24 +820,77 @@ const formatDate = (d) => {
 
 /* ── Print Exact Styling matching Page Settings ────────────────────────── */
 @media print {
+  @page {
+    size: auto;
+    margin: 0;
+  }
+
   body {
-    background: #fff !important;
-    color: #000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
-  header, aside, button, nav {
+
+  header, aside, button, nav, .print\:hidden, .no-print {
     display: none !important;
   }
+
   .document-canvas {
     box-shadow: none !important;
     border: none !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 20mm !important;
+    padding-right: 20mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-sizing: border-box !important;
+  }
+
+  .legal-print-table {
+    width: 100% !important;
+    border: none !important;
+    border-collapse: collapse !important;
     margin: 0 !important;
     padding: 0 !important;
   }
+
+  .legal-print-table thead.print-page-header {
+    display: table-header-group !important;
+  }
+
+  .legal-print-table thead.print-page-header td {
+    height: 20mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .legal-print-table tfoot.print-page-footer {
+    display: table-footer-group !important;
+  }
+
+  .legal-print-table tfoot.print-page-footer td {
+    height: 20mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .clause-section {
+    break-inside: auto;
+    page-break-inside: auto;
+    margin-bottom: 14px !important;
+  }
+
   .page-break-line {
     page-break-before: always;
+    break-before: page;
     display: none;
   }
 }
