@@ -1207,23 +1207,146 @@
   color: hsl(var(--neutral-300)) !important;
 }
 
-/* Borders */
-.dark .border-slate-200,
-.dark .border-slate-150,
-.dark .border-slate-100 {
-  border-color: hsl(var(--neutral-100)) !important;
-}
 
-/* Standard Inputs fallback */
-.dark input:not([type="submit"]):not([type="button"]),
-.dark select,
-.dark textarea {
-  color: hsl(var(--neutral-900)) !important;
-  background-color: hsl(var(--bg-surface)) !important;
-  border-color: hsl(var(--neutral-100)) !important;
-}
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: hsl(var(--neutral-400)) !important;
+/* ==========================================================================
+   PRINT STYLING FOR LEGAL AGREEMENTS & SYSTEM DOCUMENTS
+   ========================================================================== */
+@media print {
+  @page {
+    /* Setting margin: 0 unconditionally strips browser header (date, title "Track Deal CRM") and footer (URL, page #) */
+    margin: 0;
+    size: auto;
+  }
+
+  /* Reset body and html for multi-page document printing */
+  html,
+  body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset layout shells, wrappers, and containers */
+  #app,
+  .product-shell,
+  .product-workspace,
+  main,
+  .animate-fade-in {
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Completely hide all CRM UI navigation, sidebars, topbars, modals, and actions */
+  .product-sidebar,
+  .product-topbar,
+  aside,
+  header,
+  nav,
+  button,
+  .print\:hidden,
+  .no-print,
+  [role="dialog"],
+  [role="status"],
+  .toast-container,
+  .backdrop-blur-xs {
+    display: none !important;
+  }
+
+  /* Ensure agreement document canvas prints as a pristine legal document */
+  #a4-document-canvas,
+  .document-canvas,
+  .legal-document-canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 20mm !important;
+    padding-right: 20mm !important;
+    box-sizing: border-box !important;
+  }
+
+  .legal-print-table {
+    width: 100% !important;
+    border: none !important;
+    border-collapse: collapse !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .legal-print-table thead.print-page-header {
+    display: table-header-group !important;
+  }
+
+  .legal-print-table thead.print-page-header td {
+    height: 20mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .legal-print-table tfoot.print-page-footer {
+    display: table-footer-group !important;
+  }
+
+  .legal-print-table tfoot.print-page-footer td {
+    height: 20mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .clause-block,
+  .clause-section {
+    break-inside: auto;
+    page-break-inside: auto;
+    margin-bottom: 16px !important;
+  }
+
+  /* Prevent awkward page splits for tables and signature lines */
+  table:not(.legal-print-table),
+  .signature-section,
+  .witness-section,
+  .signature-block,
+  .witness-block,
+  .no-split {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid;
+    page-break-after: avoid;
+    color: #000000 !important;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+    color: #000000 !important;
+  }
 }
 
