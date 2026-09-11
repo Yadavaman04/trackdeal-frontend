@@ -9,6 +9,15 @@
       <span class="font-mono text-xs font-bold text-slate-500">{{ agreement.agreementNumber }} (v{{ agreement.currentVersionNumber || 1 }}.0)</span>
     </div>
 
+    <!-- Executed & Signed Lock Banner -->
+    <div v-if="agreement.status === 'executed'" class="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-3">
+      <PhLockKey :size="24" class="text-amber-600 shrink-0" />
+      <div>
+        <p class="text-sm font-bold">Agreement Executed & Signed (Locked)</p>
+        <p class="font-normal text-amber-700 dark:text-amber-300 mt-0.5">This agreement is legally binding and locked from further edits.</p>
+      </div>
+    </div>
+
     <!-- Header Card -->
     <div class="bg-surface border border-default rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
@@ -136,12 +145,65 @@
           <input v-model="form.property.societyName" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
-          <label class="block font-semibold mb-1">Carpet Area (sq ft)</label>
-          <input v-model.number="form.property.carpetArea" type="number" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Built-up Area (sq ft)</label>
+          <input v-model.number="form.property.builtUpArea" type="number" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Built-up Area (sq mtr)</label>
+          <input v-model.number="form.property.builtUpAreaSqMtr" type="number" step="0.01" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Survey No(s)</label>
+          <input v-model="form.property.surveyNumbers" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Hissa No.</label>
+          <input v-model="form.property.hissaNumber" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Village</label>
+          <input v-model="form.property.village" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Sub-Registrar Office</label>
           <input v-model="form.property.subRegistrarOffice" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+      </div>
+
+      <!-- Chain of title section in Edit Details -->
+      <div class="p-3.5 bg-slate-50 dark:bg-slate-800/40 border border-default rounded-2xl space-y-3">
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Resale Chain of Title History</span>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block font-semibold mb-1">Original Buyer Name</label>
+            <input v-model="form.property.originalBuyerName" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Original Developer Name</label>
+            <input v-model="form.property.originalDeveloperName" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Original Reg. No.</label>
+            <input v-model="form.property.originalRegistrationNumber" type="text" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block font-semibold mb-1">Previous Seller Name</label>
+            <input v-model="form.property.previousSellerName" type="text" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Previous Sale Deed Reg No.</label>
+            <input v-model="form.property.previousRegistrationNumber" type="text" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Previous Sale Deed Date</label>
+            <input v-model="form.property.previousAgreementDate" type="date" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
         </div>
       </div>
     </div>
@@ -150,7 +212,7 @@
     <div class="bg-surface border border-default rounded-3xl p-6 shadow-sm space-y-4">
       <h2 class="text-sm font-bold text-slate-900 dark:text-white border-b border-default pb-3">4. Consideration & Payment Schedule</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
         <div>
           <label class="block font-bold mb-1">Total Consideration Amount (₹) *</label>
           <input v-model.number="form.consideration.totalAmount" type="number" class="w-full font-mono font-bold bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
@@ -159,20 +221,35 @@
           <label class="block font-bold mb-1">Advance Amount (₹)</label>
           <input v-model.number="form.consideration.advanceAmount" type="number" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
+        <div>
+          <label class="block font-bold mb-1">Loan Contingency Period (Days)</label>
+          <input v-model.number="form.consideration.loanContingencyDays" type="number" placeholder="45" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
+        <div>
+          <label class="block font-bold mb-1">Society Transfer Fees Allocation</label>
+          <select v-model="form.consideration.societyTransferFeeRatio" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-primary-500">
+            <option value="equal_50_50">Equal (50:50) Sharing between Transferor & Transferee</option>
+            <option value="transferee_100">100% Borne by Transferee (Buyer)</option>
+            <option value="transferor_100">100% Borne by Transferor (Seller)</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <!-- ── 5. DOCUMENT PAGE SETUP ─────────────────────────────────────────── -->
+    <!-- ── 5. DOCUMENT PAGE SETUP & FONT STYLES ─────────────────────────── -->
     <div class="bg-surface border border-default rounded-3xl p-6 shadow-sm space-y-4">
-      <h2 class="text-sm font-bold text-slate-900 dark:text-white border-b border-default pb-3">5. Document Paper Size & Margins</h2>
+      <h2 class="text-sm font-bold text-slate-900 dark:text-white border-b border-default pb-3">5. Document Paper Size, Margins & Typography</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
         <div>
           <label class="block font-semibold mb-1">Page Size *</label>
           <select v-model="pageSettings.pageSize" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-primary-500">
-            <option value="a4">A4 (210 × 297 mm) - Standard</option>
-            <option value="legal">Legal (8.5 × 14 in / 215.9 × 355.6 mm)</option>
-            <option value="letter">Letter (8.5 × 11 in / 215.9 × 279.4 mm)</option>
+            <option value="a4">A4 (Standard)</option>
+            <option value="legal">Legal Paper</option>
+            <option value="letter">Letter Paper</option>
           </select>
         </div>
 
@@ -187,9 +264,33 @@
         <div>
           <label class="block font-semibold mb-1">Margins</label>
           <select v-model="pageSettings.margins" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-primary-500">
-            <option value="normal">Normal (1 in / 25.4mm)</option>
-            <option value="narrow">Narrow (0.5 in / 12.7mm)</option>
-            <option value="moderate">Moderate (0.75 in / 19mm)</option>
+            <option value="normal">Normal (1.0 in)</option>
+            <option value="narrow">Narrow (0.5 in)</option>
+            <option value="moderate">Moderate (0.75 in)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Font Family *</label>
+          <select v-model="pageSettings.fontFamily" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-primary-500">
+            <option value="book_antiqua">Book Antiqua (Serif - Classic Legal)</option>
+            <option value="times_new_roman">Times New Roman (Serif - Standard)</option>
+            <option value="baskerville">Baskerville (Serif - Premium)</option>
+            <option value="garamond">Garamond (Serif - Elegant)</option>
+            <option value="georgia">Georgia (Serif - Screen Readable)</option>
+            <option value="arial">Arial (Sans-Serif - Clean)</option>
+            <option value="calibri">Calibri (Sans-Serif - Modern)</option>
+            <option value="helvetica">Helvetica (Sans-Serif - Sleek)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Font Size</label>
+          <select v-model.number="pageSettings.fontSize" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-primary-500">
+            <option :value="10">10 pt</option>
+            <option :value="11">11 pt (Standard)</option>
+            <option :value="12">12 pt (Large)</option>
+            <option :value="13">13 pt</option>
           </select>
         </div>
       </div>
@@ -216,7 +317,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { PhArrowLeft, PhFloppyDisk, PhSpinner } from '@phosphor-icons/vue';
+import { PhArrowLeft, PhFloppyDisk, PhSpinner, PhLockKey } from '@phosphor-icons/vue';
 import apiClient from '@/api/client';
 
 const route = useRoute();
@@ -238,6 +339,8 @@ const pageSettings = reactive({
   pageSize: 'a4',
   orientation: 'portrait',
   margins: 'normal',
+  fontFamily: 'book_antiqua',
+  fontSize: 11,
   marginTop: 25.4,
   marginBottom: 25.4,
   marginLeft: 25.4,
@@ -268,6 +371,10 @@ const addTransferee = () => {
 };
 
 const handleSaveDetails = async () => {
+  if (agreement.value?.status === 'executed') {
+    alert('This agreement is Executed & Signed and cannot be modified.');
+    return;
+  }
   isSaving.value = true;
   try {
     await apiClient.put(`/agreements/${agreement.value._id}/details`, {

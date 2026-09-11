@@ -2,6 +2,11 @@
   <div v-if="agreement" class="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-sans pb-16">
     <!-- ── 1. Top Ribbon Header ─────────────────────────────────────────────── -->
     <header class="bg-surface border-b border-default sticky top-0 z-30 shadow-xs">
+      <div v-if="agreement.status === 'executed'" class="bg-amber-50 dark:bg-amber-950/50 border-b border-amber-200 dark:border-amber-800 px-4 py-2 text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2">
+        <PhLockKey :size="16" class="text-amber-600 shrink-0" />
+        <span>Agreement Executed & Signed (Locked from editing)</span>
+      </div>
+
       <!-- Top Row: Title, Status, Action Buttons -->
       <div class="px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-default/60">
         <div class="flex items-center gap-3">
@@ -18,11 +23,17 @@
             <span class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
               v{{ agreement.currentVersionNumber || 1 }}.0
             </span>
+            <span v-if="agreement.status === 'executed'" class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 uppercase">
+              Locked
+            </span>
           </div>
 
           <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 border-l border-default pl-3">
             <span v-if="isAutoSaving" class="flex items-center gap-1 text-amber-600 font-medium">
               <PhSpinner :size="12" class="animate-spin" /> Saving...
+            </span>
+            <span v-else-if="agreement.status === 'executed'" class="flex items-center gap-1 text-amber-600 font-medium">
+              <PhLockKey :size="13" /> Locked
             </span>
             <span v-else class="flex items-center gap-1 text-emerald-600 font-medium">
               <PhCheck :size="13" weight="bold" /> All changes saved
@@ -58,6 +69,7 @@
           </button>
 
           <button
+            v-if="agreement.status !== 'executed'"
             @click="manualSave(false)"
             :disabled="isSaving"
             class="px-4 py-1.5 text-xs font-bold text-white bg-primary hover:bg-opacity-90 active:scale-95 rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
@@ -119,11 +131,15 @@
 
         <!-- 3. Font Family & Size -->
         <div class="flex items-center gap-1 bg-surface border border-default rounded-xl px-2 py-1 shadow-2xs">
-          <select v-model="selectedFontFamily" @change="applyFontFamily" class="bg-transparent text-xs focus:outline-none cursor-pointer">
-            <option value="'Book Antiqua', 'Times New Roman', serif">Book Antiqua (Legal)</option>
-            <option value="'Times New Roman', Times, serif">Times New Roman</option>
-            <option value="Arial, Helvetica, sans-serif">Arial (Modern)</option>
-            <option value="'Courier New', Courier, monospace">Courier (Typewriter)</option>
+          <select v-model="selectedFontFamily" @change="applyFontFamily" class="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer">
+            <option value="'Book Antiqua', 'Times New Roman', serif">Book Antiqua (Classic Legal)</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman (Standard Legal)</option>
+            <option value="Baskerville, 'Baskerville Old Face', Georgia, serif">Baskerville (Premium Legal)</option>
+            <option value="Garamond, 'EB Garamond', Georgia, serif">Garamond (Formal Legal)</option>
+            <option value="Georgia, 'Times New Roman', serif">Georgia (Modern Serif)</option>
+            <option value="Arial, 'Helvetica Neue', Helvetica, sans-serif">Arial (Clean Sans-Serif)</option>
+            <option value="Calibri, 'Carlito', Arial, sans-serif">Calibri (Modern Corporate)</option>
+            <option value="'Helvetica Neue', Helvetica, Arial, sans-serif">Helvetica (Sleek Sans-Serif)</option>
           </select>
         </div>
 
@@ -276,11 +292,19 @@
         <!-- Paper Canvas Container with Dynamic Width/Height based on Page Size -->
         <div
           :class="getCanvasClass()"
-          class="bg-white text-slate-900 shadow-2xl rounded-sm border border-slate-300 transition-all duration-200 relative"
+          class="bg-white text-slate-900 border border-slate-200 shadow-sm rounded-sm transition-all duration-200 relative overflow-hidden"
           :style="getCanvasStyle()"
         >
+          <!-- DRAFT Watermark Overlay -->
+          <div
+            v-if="agreement.status === 'draft' || agreement.status === 'under_review'"
+            class="draft-watermark"
+          >
+            DRAFT
+          </div>
+
           <!-- Document Content Area (Direct WYSIWYG visual editing) -->
-          <table class="w-full border-collapse legal-print-table">
+          <table class="w-full border-collapse legal-print-table relative z-10">
             <thead class="hidden print:table-header-group print-page-header">
               <tr>
                 <td class="h-0 print:h-[20mm] border-none p-0"></td>
@@ -291,7 +315,7 @@
                 <td class="border-none p-0">
                   <div
                     ref="editorRef"
-                    contenteditable="true"
+                    :contenteditable="agreement.status !== 'executed'"
                     @input="handleEditorInput"
                     @blur="handleEditorBlur"
                     class="document-editor-surface min-h-[900px] focus:outline-none select-text"
@@ -427,6 +451,7 @@ import {
   PhFloppyDisk,
   PhSpinner,
   PhCheck,
+  PhLockKey,
   PhArrowUUpLeft,
   PhArrowUUpRight,
   PhTextBolder,
@@ -707,7 +732,7 @@ const stopAutoSaveTimer = () => {
 };
 
 const autoSave = async () => {
-  if (!agreement.value || isSaving.value || isAutoSaving.value) return;
+  if (!agreement.value || agreement.value.status === 'executed' || isSaving.value || isAutoSaving.value) return;
   isAutoSaving.value = true;
   try {
     syncContentFromDOM();
@@ -731,7 +756,7 @@ const autoSave = async () => {
 };
 
 const manualSave = async (silent = false) => {
-  if (!agreement.value) return;
+  if (!agreement.value || agreement.value.status === 'executed') return;
   isSaving.value = true;
   try {
     syncContentFromDOM();
@@ -893,5 +918,32 @@ const formatDate = (d) => {
     break-before: page;
     display: none;
   }
+
+  .draft-watermark {
+    display: block !important;
+    position: fixed !important;
+    top: 45% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) rotate(-35deg) !important;
+    font-size: 120pt !important;
+    color: rgba(148, 163, 184, 0.25) !important;
+  }
+}
+
+.draft-watermark {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-35deg);
+  font-size: 110pt;
+  font-weight: 900;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: rgba(203, 213, 225, 0.28);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  white-space: nowrap;
 }
 </style>

@@ -491,12 +491,11 @@
 
       <!-- Footer -->
       <footer
-        class="h-10 hidden sm:flex items-center justify-between shrink-0 border-t text-[10px] px-4 lg:px-8 select-none"
+        class="h-10 hidden sm:flex items-center justify-between shrink-0 border-t text-[10px] px-4 lg:px-8 select-none print:hidden"
         style="
           background-color: hsl(var(--bg-surface));
           border-color: hsl(var(--neutral-100));
           color: hsl(var(--neutral-400));
-          box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04), 0 -1px 2px rgba(0, 0, 0, 0.02);
           position: relative;
           z-index: 10;
         "
@@ -504,9 +503,6 @@
         <div class="flex items-center gap-1.5 font-medium">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
           <span style="color: hsl(var(--neutral-500)); font-weight: 500;">All systems operational</span>
-        </div>
-        <div class="font-semibold tracking-wider uppercase text-[10px]" style="color: hsl(var(--neutral-500));">
-          trackdeal by swarajyaconsultancy
         </div>
         <div class="flex items-center gap-3 font-medium">
           <a

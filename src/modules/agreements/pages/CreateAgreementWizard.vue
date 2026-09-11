@@ -80,14 +80,14 @@
 
       <!-- Document Page Setup Section -->
       <div class="pt-4 border-t border-default space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Document Page Setup</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Document Page Setup & Font Style</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
           <div>
             <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Page Size *</label>
             <select v-model="pageSettings.pageSize" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-primary-500">
-              <option value="a4">A4 (210 × 297 mm) - Standard</option>
-              <option value="legal">Legal (8.5 × 14 in / 215.9 × 355.6 mm)</option>
-              <option value="letter">Letter (8.5 × 11 in / 215.9 × 279.4 mm)</option>
+              <option value="a4">A4 (Standard)</option>
+              <option value="legal">Legal Paper</option>
+              <option value="letter">Letter Paper</option>
             </select>
           </div>
 
@@ -102,9 +102,33 @@
           <div>
             <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Margins</label>
             <select v-model="pageSettings.margins" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-primary-500">
-              <option value="normal">Normal (1 in / 25.4mm)</option>
-              <option value="narrow">Narrow (0.5 in / 12.7mm)</option>
-              <option value="moderate">Moderate (0.75 in / 19mm)</option>
+              <option value="normal">Normal (1.0 in)</option>
+              <option value="narrow">Narrow (0.5 in)</option>
+              <option value="moderate">Moderate (0.75 in)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Font Family *</label>
+            <select v-model="pageSettings.fontFamily" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-primary-500">
+              <option value="book_antiqua">Book Antiqua (Serif - Classic Legal)</option>
+              <option value="times_new_roman">Times New Roman (Serif - Standard)</option>
+              <option value="baskerville">Baskerville (Serif - Premium)</option>
+              <option value="garamond">Garamond (Serif - Elegant)</option>
+              <option value="georgia">Georgia (Serif - Screen Readable)</option>
+              <option value="arial">Arial (Sans-Serif - Clean)</option>
+              <option value="calibri">Calibri (Sans-Serif - Modern)</option>
+              <option value="helvetica">Helvetica (Sans-Serif - Sleek)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Font Size</label>
+            <select v-model.number="pageSettings.fontSize" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:border-primary-500">
+              <option :value="10">10 pt</option>
+              <option :value="11">11 pt (Standard)</option>
+              <option :value="12">12 pt (Large)</option>
+              <option :value="13">13 pt</option>
             </select>
           </div>
         </div>
@@ -325,30 +349,30 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div>
           <label class="block font-semibold mb-1">Flat / Unit No. *</label>
-          <input v-model="form.property.flatNumber" type="text" placeholder="604" class="w-full font-bold bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.flatNumber" type="text" placeholder="302" class="w-full font-bold bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Floor</label>
-          <input v-model="form.property.floor" type="text" placeholder="6th" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.floor" type="text" placeholder="Third Floor" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Wing</label>
-          <input v-model="form.property.wing" type="text" placeholder="D" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.wing" type="text" placeholder="C-Wing" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
-          <label class="block font-semibold mb-1">Building Name</label>
-          <input v-model="form.property.buildingName" type="text" placeholder="Avenue D Building" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Building / Complex Name</label>
+          <input v-model="form.property.buildingName" type="text" placeholder="Nityanand Shakti Building" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
         <div>
           <label class="block font-semibold mb-1">Society Name *</label>
-          <input v-model="form.property.societyName" type="text" placeholder="River Royale CHS Ltd." class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.societyName" type="text" placeholder="NITYANAND SHAKTI CO-OP HSG SOC LTD" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Society Reg. Number</label>
-          <input v-model="form.property.societyRegistrationNumber" type="text" placeholder="PNA/PNA(2)/HSG/TC/1234" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.societyRegistrationNumber" type="text" placeholder="TNA/VSI/HSG/TC/19137/2007-2008" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Society Reg. Date</label>
@@ -358,50 +382,93 @@
 
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div>
-          <label class="block font-semibold mb-1">Carpet Area (sq ft) *</label>
-          <input v-model.number="form.property.carpetArea" type="number" placeholder="920" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Built-up Area (sq ft) *</label>
+          <input v-model.number="form.property.builtUpArea" type="number" placeholder="495" class="w-full font-mono font-bold bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
-          <label class="block font-semibold mb-1">Built-up Area (sq ft)</label>
-          <input v-model.number="form.property.builtUpArea" type="number" placeholder="1150" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Built-up Area (sq mtr)</label>
+          <input v-model.number="form.property.builtUpAreaSqMtr" type="number" step="0.01" placeholder="46.00" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
-          <label class="block font-semibold mb-1">Survey No(s)</label>
-          <input v-model="form.property.surveyNumbers" type="text" placeholder="48/1A" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Carpet Area (sq ft)</label>
+          <input v-model.number="form.property.carpetArea" type="number" placeholder="410" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
-          <label class="block font-semibold mb-1">CTS No.</label>
-          <input v-model="form.property.ctsNumber" type="text" placeholder="1892" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Landmark / Location</label>
+          <input v-model="form.property.landmark" type="text" placeholder="Near Grandevi Mandir, Nilegaon" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div>
-          <label class="block font-semibold mb-1">Share Certificate No.</label>
-          <input v-model="form.property.shareCertificateNumber" type="text" placeholder="SC-448" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <label class="block font-semibold mb-1">Survey No(s) *</label>
+          <input v-model="form.property.surveyNumbers" type="text" placeholder="SURVEY NO 1" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Hissa No. *</label>
+          <input v-model="form.property.hissaNumber" type="text" placeholder="Hissa No 5 & 6" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Village *</label>
+          <input v-model="form.property.village" type="text" placeholder="Nilemore" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Taluka & District</label>
+          <input v-model="form.property.taluka" type="text" placeholder="Vasai, Dist: Palghar" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+        <div>
+          <label class="block font-semibold mb-1">Share Cert. No.</label>
+          <input v-model="form.property.shareCertificateNumber" type="text" placeholder="SC-12" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Distinctive Shares From</label>
-          <input v-model="form.property.shareNumbersFrom" type="text" placeholder="2161" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.shareNumbersFrom" type="text" placeholder="431" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
         <div>
           <label class="block font-semibold mb-1">Distinctive Shares To</label>
-          <input v-model="form.property.shareNumbersTo" type="text" placeholder="2165" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          <input v-model="form.property.shareNumbersTo" type="text" placeholder="440" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Society Membership No.</label>
+          <input v-model="form.property.membershipNumber" type="text" placeholder="44" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div>
-          <label class="block font-semibold mb-1">Developer / Builder Name</label>
-          <input v-model="form.property.developerName" type="text" placeholder="Godrej Landmark Developers" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+      <!-- Resale Chain of Title Recitals Data -->
+      <div class="p-4 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 rounded-2xl space-y-3">
+        <h3 class="text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider">Chain of Title Recitals (Resale Document History)</h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Original Buyer Name (Developer Sale)</label>
+            <input v-model="form.property.originalBuyerName" type="text" placeholder="SMT. AASHA MANIK PATIL" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Original Developer Name</label>
+            <input v-model="form.property.originalDeveloperName" type="text" placeholder="SHREE SADGURU CONSTRUCTION CO." class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Orig Agreement Reg. No & Date</label>
+            <input v-model="form.property.originalRegistrationNumber" type="text" placeholder="VASAI 3 - 11208/2007 (30/10/2007)" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
         </div>
-        <div>
-          <label class="block font-semibold mb-1">Prev Agreement Date</label>
-          <input v-model="form.property.previousAgreementDate" type="date" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Prev Registration No.</label>
-          <input v-model="form.property.previousRegistrationNumber" type="text" placeholder="HV17-8899/2021" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Previous Seller Name (Transfer Deed)</label>
+            <input v-model="form.property.previousSellerName" type="text" placeholder="SMT. ASHA MANIK PATIL" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Previous Sale Deed Reg. No.</label>
+            <input v-model="form.property.previousRegistrationNumber" type="text" placeholder="5926/2017 at Vasai-3" class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Previous Sale Deed Date</label>
+            <input v-model="form.property.previousAgreementDate" type="date" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500" />
+          </div>
         </div>
       </div>
     </div>
@@ -410,29 +477,53 @@
     <div v-if="currentStep === 6" class="bg-surface border border-default rounded-3xl p-6 shadow-sm space-y-5">
       <div>
         <h2 class="text-sm font-bold text-slate-900 dark:text-white">Consideration & Dynamic Payment Schedule</h2>
-        <p class="text-xs text-slate-500">Define sale price, auto-generated amount in words, and payment tranches</p>
+        <p class="text-xs text-slate-500">Define sale price, auto-generated amount in words, bank loan timeline, and 50:50 society transfer fee sharing</p>
       </div>
 
       <div class="p-4 bg-slate-50/70 dark:bg-slate-800/40 border border-default rounded-2xl space-y-3">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div>
             <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Total Consideration Amount (₹) *</label>
             <input
               v-model.number="form.consideration.totalAmount"
               type="number"
-              placeholder="3275000"
+              placeholder="3350000"
               class="w-full font-mono font-bold text-sm bg-surface border border-default rounded-xl px-3 py-2 focus:outline-none focus:border-primary-500"
             />
           </div>
 
           <div>
-            <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Advance / Token Amount (₹)</label>
+            <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Advance / Token Paid (₹)</label>
             <input
               v-model.number="form.consideration.advanceAmount"
               type="number"
-              placeholder="600000"
+              placeholder="351000"
               class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500"
             />
+          </div>
+
+          <div>
+            <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Loan Period (Days)</label>
+            <input
+              v-model.number="form.consideration.loanContingencyDays"
+              type="number"
+              placeholder="45"
+              class="w-full font-mono bg-surface border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
+          <div>
+            <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Society Transfer Fees Sharing</label>
+            <select v-model="form.consideration.societyTransferFeeRatio" class="w-full bg-surface border border-default rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-primary-500">
+              <option value="equal_50_50">Equal (50:50) Sharing between Transferor & Transferee (Standard)</option>
+              <option value="transferee_100">100% Borne by Transferee (Buyer)</option>
+              <option value="transferor_100">100% Borne by Transferor (Seller)</option>
+            </select>
+          </div>
+          <div class="flex items-center text-[11px] text-slate-500 pt-5">
+            <span>* Transferor authorizes Transferee to pay their 50% share directly out of consideration to society.</span>
           </div>
         </div>
 
@@ -598,6 +689,8 @@ const pageSettings = reactive({
   pageSize: 'a4',
   orientation: 'portrait',
   margins: 'normal',
+  fontFamily: 'book_antiqua',
+  fontSize: 11,
   marginTop: 25.4,
   marginBottom: 25.4,
   marginLeft: 25.4,
@@ -622,38 +715,53 @@ const form = reactive({
     { name: '', age: null, pan: '', occupation: '', address: '', city: 'Pune', state: 'Maharashtra', pin: '' }
   ],
   property: {
-    flatNumber: '',
-    floor: '',
-    wing: '',
-    buildingName: '',
-    projectName: '',
-    societyName: '',
-    societyRegistrationNumber: '',
-    societyRegistrationDate: '',
-    carpetArea: null,
-    builtUpArea: null,
-    surveyNumbers: '',
+    flatNumber: '302',
+    floor: 'Third Floor',
+    wing: 'C-Wing',
+    buildingName: 'NITYANAND SHAKTI CO-OP HSG SOC LTD',
+    projectName: 'NITYANAND SHAKTI',
+    societyName: 'NITYANAND SHAKTI CO-OP HSG SOC LTD',
+    societyRegistrationNumber: 'TNA/VSI/HSG/TC/19137/2007-2008',
+    societyRegistrationDate: '2007-11-29',
+    carpetArea: 410,
+    builtUpArea: 495,
+    builtUpAreaSqMtr: 46.00,
+    surveyNumbers: 'SURVEY NO 1',
+    hissaNumber: 'Hissa No 5 & 6',
     ctsNumber: '',
-    village: 'Mahalunge',
-    taluka: 'Haveli',
-    district: 'Pune',
-    city: 'Pune',
-    subRegistrarOffice: 'Haveli',
-    shareCertificateNumber: '',
-    shareNumbersFrom: '',
-    shareNumbersTo: '',
-    developerName: '',
-    previousAgreementDate: '',
-    previousRegistrationNumber: '',
+    village: 'Nilemore',
+    landmark: 'Near Grandevi Mandir, Nilegaon',
+    taluka: 'Vasai',
+    district: 'Palghar',
+    city: 'Nallasopara',
+    municipalCorporation: 'Vasai Virar City Municipal Corporation',
+    subRegistrarOffice: 'Vasai',
+    shareCertificateNumber: 'SC-44',
+    shareNumbersFrom: '431',
+    shareNumbersTo: '440',
+    membershipNumber: '44',
+    developerName: 'SHREE SADGURU CONSTRUCTION CO.',
+    originalBuyerName: 'SMT. AASHA MANIK PATIL',
+    originalDeveloperName: 'SHREE SADGURU CONSTRUCTION CO.',
+    originalAgreementDate: '2007-10-30',
+    originalRegistrationNumber: 'VASAI 3 - 11208/2007',
+    originalSubRegistrarOffice: 'Vasai-3',
+    previousSellerName: 'SMT. ASHA MANIK PATIL',
+    previousBuyerName: 'MR. SANDEEP N RAWAL',
+    previousAgreementDate: '2017-06-30',
+    previousRegistrationNumber: '5926/2017',
+    previousSubRegistrarOffice: 'Vasai-3',
   },
   agreement: {
     agreementDate: new Date().toISOString().slice(0, 10),
-    agreementPlace: 'Pune',
-    jurisdictionCity: 'Pune',
+    agreementPlace: 'Nallasopara',
+    jurisdictionCity: 'Vasai',
   },
   consideration: {
-    totalAmount: 3500000,
-    advanceAmount: 500000,
+    totalAmount: 3350000,
+    advanceAmount: 351000,
+    loanContingencyDays: 45,
+    societyTransferFeeRatio: 'equal_50_50',
   },
   payments: [
     { date: new Date().toISOString().slice(0, 10), amount: 500000, mode: 'Bank Transfer', bankName: 'HDFC Bank', referenceNumber: 'UTR-001', branch: 'Main Branch' }
