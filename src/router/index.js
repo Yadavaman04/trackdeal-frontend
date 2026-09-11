@@ -1,318 +1,387 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { setupRouterGuards } from './guards';
-import { h } from 'vue';
-import { authRoutes } from '@/modules/auth';
+import { createRouter, createWebHistory } from "vue-router";
+import { setupRouterGuards } from "./guards";
+import { h } from "vue";
+import { authRoutes } from "@/modules/auth";
 
 // Top-Level Layouts
-const AuthLayout = () => import('@/layouts/AuthLayout.vue');
-const AppLayout = () => import('@/layouts/AppLayout.vue');
-const SettingsLayout = () => import('@/layouts/SettingsLayout.vue');
-const ReportLayout = () => import('@/layouts/ReportLayout.vue');
-const Dashboard = () => import('@/modules/dashboards/pages/Dashboard.vue');
+const AuthLayout = () => import("@/layouts/AuthLayout.vue");
+const AppLayout = () => import("@/layouts/AppLayout.vue");
+const SettingsLayout = () => import("@/layouts/SettingsLayout.vue");
+const ReportLayout = () => import("@/layouts/ReportLayout.vue");
+const Dashboard = () => import("@/modules/dashboards/pages/Dashboard.vue");
 
 // Helper function to render a quick placeholder view to keep scaffolding compilable
 const defineMockView = (title) => ({
-  name: `${title.replace(/\s+/g, '')}Placeholder`,
+  name: `${title.replace(/\s+/g, "")}Placeholder`,
   render() {
-    return h('div', { class: 'p-6 bg-surface border border-default rounded-lg shadow-sm' }, [
-      h('h1', { class: 'font-heading text-xl font-bold mb-2' }, `${title} View`),
-      h('p', { class: 'text-slate-600 text-sm' }, `Scaffolding placeholder workspace. Business logic implementation is pending.`)
-    ]);
-  }
+    return h(
+      "div",
+      { class: "p-6 bg-surface border border-default rounded-lg shadow-sm" },
+      [
+        h(
+          "h1",
+          { class: "font-heading text-xl font-bold mb-2" },
+          `${title} View`,
+        ),
+        h(
+          "p",
+          { class: "text-slate-600 text-sm" },
+          `Scaffolding placeholder workspace. Business logic implementation is pending.`,
+        ),
+      ],
+    );
+  },
 });
 
 const routes = [
   {
-    path: '/',
-    redirect: '/login'
+    path: "/",
+    name: "Home",
+    component: () => import("@/modules/marketing/pages/LandingPage.vue"),
+    meta: { public: true },
   },
   {
-    path: '/',
+    path: "/",
     component: AuthLayout,
-    children: authRoutes
+    children: authRoutes,
   },
   {
-    path: '/app',
+    path: "/app",
     component: AppLayout,
     meta: { requiresAuth: true },
     children: [
       {
-        path: '',
-        redirect: '/app/dashboard'
+        path: "",
+        redirect: "/app/dashboard",
       },
       {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: Dashboard
+        path: "dashboard",
+        name: "Dashboard",
+        component: Dashboard,
       },
 
       {
-        path: 'leads',
-        name: 'Leads',
-        component: () => import('@/modules/leads/pages/LeadsList.vue')
+        path: "leads",
+        name: "Leads",
+        component: () => import("@/modules/leads/pages/LeadsList.vue"),
       },
       {
-        path: 'leads/:id',
-        name: 'LeadDetails',
-        component: () => import('@/modules/leads/pages/LeadDetails.vue')
+        path: "leads/:id",
+        name: "LeadDetails",
+        component: () => import("@/modules/leads/pages/LeadDetails.vue"),
       },
       {
-        path: 'agents',
-        name: 'Agents',
-        component: () => import('@/modules/agents/pages/AgentsList.vue')
+        path: "agents",
+        name: "Agents",
+        component: () => import("@/modules/agents/pages/AgentsList.vue"),
       },
       {
-        path: 'agents/:id',
-        name: 'AgentDetails',
-        component: () => import('@/modules/agents/pages/AgentDetails.vue')
+        path: "agents/:id",
+        name: "AgentDetails",
+        component: () => import("@/modules/agents/pages/AgentDetails.vue"),
       },
       {
-        path: 'deals',
-        name: 'Deals',
-        component: () => import('@/modules/deals/pages/DealsList.vue')
+        path: "deals",
+        name: "Deals",
+        component: () => import("@/modules/deals/pages/DealsList.vue"),
       },
       {
-        path: 'deals/:id',
-        name: 'DealDetails',
-        component: () => import('@/modules/deals/pages/DealDetails.vue')
+        path: "deals/:id",
+        name: "DealDetails",
+        component: () => import("@/modules/deals/pages/DealDetails.vue"),
       },
       {
-        path: 'loans',
-        name: 'Loans',
-        component: () => import('@/modules/loans/pages/LoansList.vue')
+        path: "loans",
+        name: "Loans",
+        component: () => import("@/modules/loans/pages/LoansList.vue"),
       },
       {
-        path: 'loans/banks-dsa',
-        name: 'LoanBanksDsa',
-        component: () => import('@/modules/loans/pages/BankDsaDirectory.vue')
+        path: "loans/banks-dsa",
+        name: "LoanBanksDsa",
+        component: () => import("@/modules/loans/pages/BankDsaDirectory.vue"),
       },
       {
-        path: 'loans/:id',
-        name: 'LoanDetails',
-        component: () => import('@/modules/loans/pages/LoanDetails.vue')
+        path: "loans/:id",
+        name: "LoanDetails",
+        component: () => import("@/modules/loans/pages/LoanDetails.vue"),
       },
       {
-        path: 'agreements',
-        name: 'Agreements',
-        component: () => import('@/modules/agreements/pages/AgreementsList.vue')
+        path: "agreements",
+        name: "Agreements",
+        component: () =>
+          import("@/modules/agreements/pages/AgreementsList.vue"),
       },
       {
-        path: 'agreements/new',
-        name: 'CreateAgreement',
-        component: () => import('@/modules/agreements/pages/CreateAgreementWizard.vue')
+        path: "agreements/new",
+        name: "CreateAgreement",
+        component: () =>
+          import("@/modules/agreements/pages/CreateAgreementWizard.vue"),
       },
       {
-        path: 'agreements/templates',
-        name: 'DocumentTemplates',
-        component: () => import('@/modules/agreements/pages/DocumentTemplatesDirectory.vue')
+        path: "agreements/templates",
+        name: "DocumentTemplates",
+        component: () =>
+          import("@/modules/agreements/pages/DocumentTemplatesDirectory.vue"),
       },
       {
-        path: 'agreements/:id',
-        name: 'AgreementPreview',
-        component: () => import('@/modules/agreements/pages/AgreementPreview.vue')
+        path: "agreements/:id",
+        name: "AgreementPreview",
+        component: () =>
+          import("@/modules/agreements/pages/AgreementPreview.vue"),
       },
       {
-        path: 'agreements/:id/edit-details',
-        name: 'EditAgreementDetails',
-        component: () => import('@/modules/agreements/pages/EditAgreementDetails.vue')
+        path: "agreements/:id/edit-details",
+        name: "EditAgreementDetails",
+        component: () =>
+          import("@/modules/agreements/pages/EditAgreementDetails.vue"),
       },
       {
-        path: 'agreements/:id/editor',
-        name: 'AgreementFullEditor',
-        component: () => import('@/modules/agreements/pages/AgreementFullEditor.vue')
+        path: "agreements/:id/editor",
+        name: "AgreementFullEditor",
+        component: () =>
+          import("@/modules/agreements/pages/AgreementFullEditor.vue"),
       },
       {
-        path: 'tasks',
-        name: 'Tasks',
-        component: () => import('@/modules/tasks/pages/TasksList.vue')
+        path: "tasks",
+        name: "Tasks",
+        component: () => import("@/modules/tasks/pages/TasksList.vue"),
       },
       {
-        path: 'projects',
-        name: 'Projects',
-        component: () => import('@/modules/properties/pages/ProjectsList.vue')
+        path: "projects",
+        name: "Projects",
+        component: () => import("@/modules/properties/pages/ProjectsList.vue"),
       },
       {
-        path: 'projects/:id',
-        name: 'ProjectDetails',
-        component: () => import('@/modules/properties/pages/ProjectDetails.vue')
+        path: "projects/:id",
+        name: "ProjectDetails",
+        component: () =>
+          import("@/modules/properties/pages/ProjectDetails.vue"),
       },
       {
-        path: 'projects/:id/analytics',
-        name: 'ProjectAnalytics',
-        component: () => import('@/modules/properties/pages/ProjectAnalytics.vue')
+        path: "projects/:id/analytics",
+        name: "ProjectAnalytics",
+        component: () =>
+          import("@/modules/properties/pages/ProjectAnalytics.vue"),
       },
       {
-        path: 'properties',
-        name: 'Properties',
-        component: () => import('@/modules/properties/pages/PropertiesList.vue')
+        path: "properties",
+        name: "Properties",
+        component: () =>
+          import("@/modules/properties/pages/PropertiesList.vue"),
       },
       {
-        path: 'properties/:id',
-        name: 'PropertyDetails',
-        component: () => import('@/modules/properties/pages/PropertyDetails.vue')
+        path: "properties/:id",
+        name: "PropertyDetails",
+        component: () =>
+          import("@/modules/properties/pages/PropertyDetails.vue"),
       },
       {
-        path: 'builders',
-        name: 'Builders',
-        component: () => import('@/modules/properties/pages/BuildersList.vue')
+        path: "builders",
+        name: "Builders",
+        component: () => import("@/modules/properties/pages/BuildersList.vue"),
       },
       {
-        path: 'builders/:id',
-        name: 'BuilderDetails',
-        component: () => import('@/modules/properties/pages/BuilderDetails.vue')
+        path: "builders/:id",
+        name: "BuilderDetails",
+        component: () =>
+          import("@/modules/properties/pages/BuilderDetails.vue"),
       },
       {
-        path: 'commissions',
-        name: 'CommissionsDashboard',
-        component: () => import('@/modules/commissions/pages/CommissionsDashboard.vue'),
-        meta: { permission: 'commissions.read', featureFlag: 'commissionModule' }
+        path: "commissions",
+        name: "CommissionsDashboard",
+        component: () =>
+          import("@/modules/commissions/pages/CommissionsDashboard.vue"),
+        meta: {
+          permission: "commissions.read",
+          featureFlag: "commissionModule",
+        },
       },
       {
-        path: 'commissions/receivables',
-        name: 'ReceivablesLedger',
-        component: () => import('@/modules/commissions/pages/ReceivablesLedger.vue'),
-        meta: { permission: 'commissions.read', featureFlag: 'commissionModule' }
+        path: "commissions/receivables",
+        name: "ReceivablesLedger",
+        component: () =>
+          import("@/modules/commissions/pages/ReceivablesLedger.vue"),
+        meta: {
+          permission: "commissions.read",
+          featureFlag: "commissionModule",
+        },
       },
       {
-        path: 'commissions/list',
-        name: 'CommissionsList',
-        component: () => import('@/modules/commissions/pages/CommissionsList.vue'),
-        meta: { permission: 'commissions.read', featureFlag: 'commissionModule' }
+        path: "commissions/list",
+        name: "CommissionsList",
+        component: () =>
+          import("@/modules/commissions/pages/CommissionsList.vue"),
+        meta: {
+          permission: "commissions.read",
+          featureFlag: "commissionModule",
+        },
       },
       {
-        path: 'commissions/:id',
-        name: 'CommissionDetails',
-        component: () => import('@/modules/commissions/pages/CommissionDetails.vue'),
-        meta: { permission: 'commissions.read', featureFlag: 'commissionModule' }
+        path: "commissions/:id",
+        name: "CommissionDetails",
+        component: () =>
+          import("@/modules/commissions/pages/CommissionDetails.vue"),
+        meta: {
+          permission: "commissions.read",
+          featureFlag: "commissionModule",
+        },
       },
       {
-        path: 'reports',
+        path: "reports",
         component: ReportLayout,
-        meta: { featureFlag: 'reportsModule' },
+        meta: { featureFlag: "reportsModule" },
         children: [
           {
-            path: '',
-            redirect: '/app/reports/dashboard'
+            path: "",
+            redirect: "/app/reports/dashboard",
           },
           {
-            path: 'dashboard',
-            name: 'ReportsDashboard',
-            component: () => import('@/modules/reports/pages/ReportsDashboard.vue')
+            path: "dashboard",
+            name: "ReportsDashboard",
+            component: () =>
+              import("@/modules/reports/pages/ReportsDashboard.vue"),
           },
           {
-            path: 'builder',
-            name: 'CustomReportBuilder',
-            component: () => import('@/modules/reports/pages/CustomReportBuilder.vue')
+            path: "builder",
+            name: "CustomReportBuilder",
+            component: () =>
+              import("@/modules/reports/pages/CustomReportBuilder.vue"),
           },
           {
-            path: 'export',
-            name: 'ExportCenter',
-            component: () => import('@/modules/reports/pages/ExportCenter.vue')
+            path: "export",
+            name: "ExportCenter",
+            component: () => import("@/modules/reports/pages/ExportCenter.vue"),
           },
           {
-            path: 'viewer/:type',
-            name: 'ReportViewer',
-            component: () => import('@/modules/reports/pages/ReportViewer.vue')
-          }
-        ]
+            path: "viewer/:type",
+            name: "ReportViewer",
+            component: () => import("@/modules/reports/pages/ReportViewer.vue"),
+          },
+        ],
       },
       {
-        path: 'settings',
+        path: "settings",
         component: SettingsLayout,
         children: [
           {
-            path: '',
-            redirect: '/app/settings/org'
+            path: "",
+            redirect: "/app/settings/org",
           },
           {
-            path: 'org',
-            name: 'OrgSettings',
-            component: () => import('@/modules/settings/pages/OrgSettings.vue')
+            path: "org",
+            name: "OrgSettings",
+            component: () => import("@/modules/settings/pages/OrgSettings.vue"),
           },
           {
-            path: 'branches',
-            name: 'BranchSettings',
-            component: () => import('@/modules/settings/pages/BranchSettings.vue'),
-            meta: { requiresOrgType: ['ENTERPRISE_AGENCY'] }
+            path: "branches",
+            name: "BranchSettings",
+            component: () =>
+              import("@/modules/settings/pages/BranchSettings.vue"),
+            meta: { requiresOrgType: ["ENTERPRISE_AGENCY"] },
           },
           {
-            path: 'users',
-            name: 'UserSettings',
-            component: () => import('@/modules/settings/pages/UserSettings.vue'),
-            meta: { requiresOrgType: ['AGENCY', 'ENTERPRISE_AGENCY'] }
+            path: "users",
+            name: "UserSettings",
+            component: () =>
+              import("@/modules/settings/pages/UserSettings.vue"),
+            meta: { requiresOrgType: ["AGENCY", "ENTERPRISE_AGENCY"] },
           },
           {
-            path: 'roles',
-            name: 'RoleSettings',
-            component: () => import('@/modules/settings/pages/RoleSettings.vue'),
-            meta: { requiresOrgType: ['AGENCY', 'ENTERPRISE_AGENCY'] }
-          }
-        ]
-      }
-    ]
+            path: "roles",
+            name: "RoleSettings",
+            component: () =>
+              import("@/modules/settings/pages/RoleSettings.vue"),
+            meta: { requiresOrgType: ["AGENCY", "ENTERPRISE_AGENCY"] },
+          },
+        ],
+      },
+    ],
   },
   {
-    path: '/admin',
-    component: () => import('@/layouts/AdminLayout.vue'),
+    path: "/admin",
+    component: () => import("@/layouts/AdminLayout.vue"),
     meta: { requiresAuth: true, requiresSystemAdmin: true },
     children: [
       {
-        path: '',
-        redirect: '/admin/dashboard'
+        path: "",
+        redirect: "/admin/dashboard",
       },
       {
-        path: 'dashboard',
-        name: 'AdminDashboard',
-        component: () => import('@/modules/admin/views/AdminDashboard.vue')
+        path: "dashboard",
+        name: "AdminDashboard",
+        component: () => import("@/modules/admin/views/AdminDashboard.vue"),
       },
       {
-        path: 'organizations',
-        name: 'AdminOrganizations',
-        component: () => import('@/modules/admin/views/AdminOrganizations.vue')
+        path: "organizations",
+        name: "AdminOrganizations",
+        component: () => import("@/modules/admin/views/AdminOrganizations.vue"),
       },
       {
-        path: 'organizations/:id',
-        name: 'AdminOrganizationDetails',
-        component: () => import('@/modules/admin/views/AdminOrganizationDetails.vue')
+        path: "organizations/:id",
+        name: "AdminOrganizationDetails",
+        component: () =>
+          import("@/modules/admin/views/AdminOrganizationDetails.vue"),
       },
       {
-        path: 'users',
-        name: 'AdminUsers',
-        component: () => import('@/modules/admin/views/AdminUsers.vue')
+        path: "users",
+        name: "AdminUsers",
+        component: () => import("@/modules/admin/views/AdminUsers.vue"),
       },
       {
-        path: 'audit-logs',
-        name: 'AdminAuditLogs',
-        component: () => import('@/modules/admin/views/AdminAuditLogs.vue')
+        path: "audit-logs",
+        name: "AdminAuditLogs",
+        component: () => import("@/modules/admin/views/AdminAuditLogs.vue"),
       },
       {
-        path: 'settings',
-        name: 'AdminSettings',
-        component: () => import('@/modules/admin/views/AdminSettings.vue')
-      }
-    ]
+        path: "settings",
+        name: "AdminSettings",
+        component: () => import("@/modules/admin/views/AdminSettings.vue"),
+      },
+    ],
   },
   {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
     component: {
       render() {
-        return h('div', { class: 'min-h-screen flex items-center justify-center bg-background' }, [
-          h('div', { class: 'text-center' }, [
-            h('h1', { class: 'font-heading text-4xl font-bold text-red-500 mb-2' }, '404'),
-            h('p', { class: 'text-slate-600 mb-4' }, 'The page you requested could not be found.'),
-            h('a', { href: '/app/dashboard', class: 'px-4 py-2 bg-primary text-white rounded font-medium' }, 'Back to Dashboard')
-          ])
-        ]);
-      }
-    }
-  }
+        return h(
+          "div",
+          {
+            class:
+              "min-h-screen flex items-center justify-center bg-background",
+          },
+          [
+            h("div", { class: "text-center" }, [
+              h(
+                "h1",
+                { class: "font-heading text-4xl font-bold text-red-500 mb-2" },
+                "404",
+              ),
+              h(
+                "p",
+                { class: "text-slate-600 mb-4" },
+                "The page you requested could not be found.",
+              ),
+              h(
+                "a",
+                {
+                  href: "/app/dashboard",
+                  class: "px-4 py-2 bg-primary text-white rounded font-medium",
+                },
+                "Back to Dashboard",
+              ),
+            ]),
+          ],
+        );
+      },
+    },
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior: () => ({ top: 0 })
+  scrollBehavior: () => ({ top: 0 }),
 });
 
 setupRouterGuards(router);

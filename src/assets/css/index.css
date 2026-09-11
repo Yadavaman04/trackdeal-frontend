@@ -425,10 +425,27 @@
 }
 
 /* Product shell and reusable composition primitives */
+.skip-link { position: fixed; left: 16px; top: -80px; z-index: 100; padding: 12px 20px; border-radius: 8px; background: hsl(var(--accent-700)); color: white; }
+.skip-link:focus { top: 12px; }
+.workspace-tabbar { display: flex; gap: 4px; padding: 0 16px; overflow-x: auto; border-bottom: 1px solid hsl(var(--neutral-100)); }
+.workspace-tabbar button { flex-shrink: 0; min-height: 48px; padding: 10px 12px; border-bottom: 2px solid transparent; font-size: 12px; color: hsl(var(--neutral-500)); }
+.workspace-tabbar button:hover { color: hsl(var(--neutral-900)); }
+.workspace-tabbar button.active { color: hsl(var(--accent-600)); border-color: hsl(var(--accent-600)); font-weight: 600; }
+.lead-workspace .space-y-6, .lead-workspace .space-y-5 { min-width: 0; }
+.lead-workspace input, .lead-workspace textarea, .lead-workspace select { max-width: 100%; }
+.lead-workspace .text-slate-400 { color: hsl(var(--neutral-500)); }
+@media (max-width: 640px) {
+  .product-canvas { padding-inline: 16px; }
+  .product-topbar button { min-width: 40px; min-height: 40px; }
+  .input-field, .filter-control, .lead-workspace input, .lead-workspace select, .lead-workspace textarea { font-size: 16px; }
+  .btn-sm, .btn-md, .icon-button { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
 .product-shell {
-  background:
-    radial-gradient(circle at 88% -10%, hsl(var(--accent-100) / 0.7), transparent 30rem),
-    hsl(var(--bg-app));
+  background: hsl(var(--bg-app));
+  height: 100dvh;
 }
 
 .product-sidebar {
@@ -453,12 +470,8 @@
 }
 
 .product-canvas {
-  background-image:
-    linear-gradient(hsl(var(--neutral-100) / 0.22) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(var(--neutral-100) / 0.22) 1px, transparent 1px),
-    radial-gradient(circle at 90% 0%, hsl(var(--accent-100) / 0.34), transparent 24rem);
-  background-size: 32px 32px, 32px 32px, auto;
-  background-attachment: local;
+  background: hsl(var(--bg-app));
+  scroll-padding-top: 24px;
 }
 
 .page-header {
@@ -482,7 +495,7 @@
   background-color: hsl(var(--bg-surface) / 0.94);
   border: 1px solid hsl(var(--neutral-100));
   border-radius: 14px;
-  box-shadow: 0 14px 40px rgb(26 22 18 / 0.045);
+  box-shadow: 0 1px 3px rgb(26 22 18 / 0.025);
 }
 
 .icon-button {

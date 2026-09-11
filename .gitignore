@@ -1,6 +1,9 @@
 node_modules
+artifacts/ui/
 package-lock.json
-scripts/
+scripts/*
+!scripts/ui-smoke.cjs
 dist/
 .env
 *.md
+!docs/ui-design.md

@@ -1,17 +1,19 @@
-import store from '@/store';
+import store from "@/store";
 
 let sessionChecked = false;
 
 export function setupRouterGuards(router) {
   router.beforeEach(async (to, from, next) => {
+    // The public landing page must render without waiting for the API.
+    if (to.meta.public) return next();
     // 1. Session Restoration on Application Boot
     if (!sessionChecked) {
       sessionChecked = true;
-      const isAuthenticated = store.getters['auth/isAuthenticated'];
+      const isAuthenticated = store.getters["auth/isAuthenticated"];
       if (!isAuthenticated) {
         try {
           // Attempt silent refresh to restore session via HTTP-only cookie
-          await store.dispatch('auth/refreshUserTokens');
+          await store.dispatch("auth/refreshUserTokens");
         } catch (error) {
           // Silent refresh failed (no valid refresh cookie), ignore and let standard guards handle redirects
         }
@@ -19,66 +21,71 @@ export function setupRouterGuards(router) {
     }
 
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-    const requiresSystemAdmin = to.matched.some((record) => record.meta.requiresSystemAdmin);
-    const isAuthenticated = store.getters['auth/isAuthenticated'];
-    const userRole = store.getters['auth/userRole'];
+    const requiresSystemAdmin = to.matched.some(
+      (record) => record.meta.requiresSystemAdmin,
+    );
+    const isAuthenticated = store.getters["auth/isAuthenticated"];
+    const userRole = store.getters["auth/userRole"];
 
     if (requiresAuth && !isAuthenticated) {
-      store.dispatch('notifications/triggerToast', {
-        message: 'Your session has expired. Please log in to continue.',
-        type: 'error'
+      store.dispatch("notifications/triggerToast", {
+        message: "Your session has expired. Please log in to continue.",
+        type: "error",
       });
-      return next({ path: '/login', query: { redirect: to.fullPath } });
+      return next({ path: "/login", query: { redirect: to.fullPath } });
     }
 
     // System Admin route protection
     if (requiresSystemAdmin) {
-      if (userRole !== 'system_admin') {
-        store.dispatch('notifications/triggerToast', {
-          message: 'Access restricted to TrackDeal System Administrators.',
-          type: 'error'
+      if (userRole !== "system_admin") {
+        store.dispatch("notifications/triggerToast", {
+          message: "Access restricted to TrackDeal System Administrators.",
+          type: "error",
         });
-        return next({ path: '/app/dashboard' });
+        return next({ path: "/app/dashboard" });
       }
     }
 
     // System Admin navigating into standard broker app routes -> redirect to /admin
-    if (userRole === 'system_admin' && to.path.startsWith('/app')) {
-      return next({ path: '/admin' });
+    if (userRole === "system_admin" && to.path.startsWith("/app")) {
+      return next({ path: "/admin" });
     }
 
-    if (to.path === '/login' && isAuthenticated) {
-      if (userRole === 'system_admin') {
-        return next({ path: '/admin' });
+    if (to.path === "/login" && isAuthenticated) {
+      if (userRole === "system_admin") {
+        return next({ path: "/admin" });
       }
-      return next({ path: '/app/dashboard' });
+      return next({ path: "/app/dashboard" });
     }
 
     // 2. Feature Flag Check
     const requiredFeature = to.meta.featureFlag;
     if (requiredFeature) {
-      const isFeatureActive = store.getters['organization/isFeatureEnabled'](requiredFeature);
+      const isFeatureActive =
+        store.getters["organization/isFeatureEnabled"](requiredFeature);
       if (!isFeatureActive) {
-        store.dispatch('notifications/triggerToast', {
-          message: 'Requested module is disabled for your organization.',
-          type: 'warning'
+        store.dispatch("notifications/triggerToast", {
+          message: "Requested module is disabled for your organization.",
+          type: "warning",
         });
-        return next({ path: '/app/dashboard' });
+        return next({ path: "/app/dashboard" });
       }
     }
 
     // 3. RBAC Scopes Check
     const requiredPermission = to.meta.permission;
     if (requiredPermission) {
-      const isSuperAdmin = store.getters['auth/userRole'] === 'super_admin';
+      const isSuperAdmin = store.getters["auth/userRole"] === "super_admin";
       if (!isSuperAdmin) {
-        const hasCapability = store.getters['permissions/hasCapability'](requiredPermission);
+        const hasCapability =
+          store.getters["permissions/hasCapability"](requiredPermission);
         if (!hasCapability) {
-          store.dispatch('notifications/triggerToast', {
-            message: 'Unauthorized: You do not possess access permissions for this route.',
-            type: 'error'
+          store.dispatch("notifications/triggerToast", {
+            message:
+              "Unauthorized: You do not possess access permissions for this route.",
+            type: "error",
           });
-          return next({ path: '/app/dashboard' });
+          return next({ path: "/app/dashboard" });
         }
       }
     }
@@ -86,13 +93,13 @@ export function setupRouterGuards(router) {
     // 4. Org Type Guard (before navigation)
     const requiredOrgTypes = to.meta.requiresOrgType;
     if (requiredOrgTypes && Array.isArray(requiredOrgTypes)) {
-      const orgType = store.getters['organization/organizationType'];
+      const orgType = store.getters["organization/organizationType"];
       if (!requiredOrgTypes.includes(orgType)) {
-        store.dispatch('notifications/triggerToast', {
-          message: 'This feature is not available for your organization type.',
-          type: 'warning'
+        store.dispatch("notifications/triggerToast", {
+          message: "This feature is not available for your organization type.",
+          type: "warning",
         });
-        return next({ path: '/app/dashboard' });
+        return next({ path: "/app/dashboard" });
       }
     }
 

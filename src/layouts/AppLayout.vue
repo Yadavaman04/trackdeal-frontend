@@ -1,8 +1,9 @@
 <template>
   <div
-    class="product-shell h-screen overflow-hidden flex"
+    class="product-shell overflow-hidden flex"
     style="background-color: hsl(var(--bg-app))"
   >
+    <a href="#workspace-main" class="skip-link">Skip to workspace</a>
     <!-- ── Desktop Sidebar ─────────────────────────────────────────────── -->
     <aside
       class="product-sidebar hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-200 ease-enter overflow-hidden print:hidden"
@@ -30,7 +31,10 @@
             >
               Track<span class="text-accent-600">Deal</span>
             </span>
-            <span class="text-[8px] font-semibold tracking-[0.2em] text-slate-400 uppercase">Revenue workspace</span>
+            <span
+              class="text-[8px] font-semibold tracking-[0.2em] text-slate-400 uppercase"
+              >Revenue workspace</span
+            >
           </div>
         </Transition>
       </div>
@@ -272,6 +276,8 @@
         <div class="flex items-center gap-3">
           <button
             @click="mobileMenuOpen = true"
+            aria-label="Open navigation"
+            :aria-expanded="mobileMenuOpen"
             class="lg:hidden w-8 h-8 flex items-center justify-center rounded-[6px] transition-colors duration-80"
             style="color: hsl(var(--neutral-400))"
             @mouseenter="
@@ -479,6 +485,8 @@
 
       <!-- Page Content -->
       <main
+        id="workspace-main"
+        tabindex="-1"
         class="product-canvas flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-8 lg:py-7 pb-12"
         style="background-color: hsl(var(--bg-app))"
       >
@@ -502,7 +510,9 @@
       >
         <div class="flex items-center gap-1.5 font-medium">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-          <span style="color: hsl(var(--neutral-500)); font-weight: 500;">All systems operational</span>
+          <span style="color: hsl(var(--neutral-500)); font-weight: 500"
+            >All systems operational</span
+          >
         </div>
         <div class="flex items-center gap-3 font-medium">
           <a
@@ -510,19 +520,27 @@
             target="_blank"
             rel="noopener noreferrer"
             class="transition-colors duration-80"
-            style="color: hsl(var(--neutral-400));"
-            @mouseenter="e => e.target.style.color = 'hsl(var(--neutral-900))'"
-            @mouseleave="e => e.target.style.color = 'hsl(var(--neutral-400))'"
+            style="color: hsl(var(--neutral-400))"
+            @mouseenter="
+              (e) => (e.target.style.color = 'hsl(var(--neutral-900))')
+            "
+            @mouseleave="
+              (e) => (e.target.style.color = 'hsl(var(--neutral-400))')
+            "
           >
             Documentation
           </a>
-          <span style="color: hsl(var(--neutral-200));">•</span>
+          <span style="color: hsl(var(--neutral-200))">•</span>
           <a
             href="mailto:support@swarajyaconsultancy.com"
             class="transition-colors duration-80"
-            style="color: hsl(var(--neutral-400));"
-            @mouseenter="e => e.target.style.color = 'hsl(var(--neutral-900))'"
-            @mouseleave="e => e.target.style.color = 'hsl(var(--neutral-400))'"
+            style="color: hsl(var(--neutral-400))"
+            @mouseenter="
+              (e) => (e.target.style.color = 'hsl(var(--neutral-900))')
+            "
+            @mouseleave="
+              (e) => (e.target.style.color = 'hsl(var(--neutral-400))')
+            "
           >
             Support
           </a>
@@ -885,7 +903,10 @@
     </div>
 
     <!-- Global Search & Quick Add Modals -->
-    <GlobalSearchModal :isOpen="globalSearchOpen" @close="globalSearchOpen = false" />
+    <GlobalSearchModal
+      :isOpen="globalSearchOpen"
+      @close="globalSearchOpen = false"
+    />
     <QuickAddModal :isOpen="quickAddOpen" @close="quickAddOpen = false" />
   </div>
 </template>
@@ -966,13 +987,16 @@ const userInitials = computed(() => {
 });
 const userRoleName = computed(() => {
   const role = String(store.getters["auth/userRole"] || "").toLowerCase();
-  if (role === "org_admin" || role === "organization_admin") return "Organization Admin";
+  if (role === "org_admin" || role === "organization_admin")
+    return "Organization Admin";
   if (role === "system_admin" || role === "super_admin") return "System Admin";
   if (role === "branch_manager") return "Branch Manager";
   if (role === "manager") return "Manager";
   if (role === "agent") return "Agent";
   if (role === "read_only") return "Read Only";
-  return role ? role.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Agent";
+  return role
+    ? role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Agent";
 });
 
 // ── Page / Route ────────────────────────────────────────────────────────────
@@ -1119,7 +1143,12 @@ const menuGroups = [
 
 const filteredMenuGroups = computed(() => {
   const role = String(store.getters["auth/userRole"] || "").toLowerCase();
-  const isAdmin = ["super_admin", "system_admin", "org_admin", "organization_admin"].includes(role);
+  const isAdmin = [
+    "super_admin",
+    "system_admin",
+    "org_admin",
+    "organization_admin",
+  ].includes(role);
   return menuGroups
     .map((group) => ({
       ...group,
@@ -1261,6 +1290,7 @@ const handleKeyDown = (e) => {
     toggleSearch();
   }
   if (e.key === "Escape" && searchOpen.value) toggleSearch();
+  if (e.key === "Escape") mobileMenuOpen.value = false;
 };
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
@@ -1303,7 +1333,11 @@ const vClickOutside = {
   color: hsl(var(--neutral-900));
 }
 .nav-item-active {
-  background: linear-gradient(90deg, hsl(var(--accent-100) / 0.85), hsl(var(--accent-50) / 0.45));
+  background: linear-gradient(
+    90deg,
+    hsl(var(--accent-100) / 0.85),
+    hsl(var(--accent-50) / 0.45)
+  );
   color: hsl(var(--accent-600));
   box-shadow: inset 0 0 0 1px hsl(var(--accent-200) / 0.55);
 }
