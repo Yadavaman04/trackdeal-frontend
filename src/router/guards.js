@@ -19,7 +19,9 @@ export function setupRouterGuards(router) {
     }
 
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+    const requiresSystemAdmin = to.matched.some((record) => record.meta.requiresSystemAdmin);
     const isAuthenticated = store.getters['auth/isAuthenticated'];
+    const userRole = store.getters['auth/userRole'];
 
     if (requiresAuth && !isAuthenticated) {
       store.dispatch('notifications/triggerToast', {
@@ -29,7 +31,26 @@ export function setupRouterGuards(router) {
       return next({ path: '/login', query: { redirect: to.fullPath } });
     }
 
+    // System Admin route protection
+    if (requiresSystemAdmin) {
+      if (userRole !== 'system_admin') {
+        store.dispatch('notifications/triggerToast', {
+          message: 'Access restricted to TrackDeal System Administrators.',
+          type: 'error'
+        });
+        return next({ path: '/app/dashboard' });
+      }
+    }
+
+    // System Admin navigating into standard broker app routes -> redirect to /admin
+    if (userRole === 'system_admin' && to.path.startsWith('/app')) {
+      return next({ path: '/admin' });
+    }
+
     if (to.path === '/login' && isAuthenticated) {
+      if (userRole === 'system_admin') {
+        return next({ path: '/admin' });
+      }
       return next({ path: '/app/dashboard' });
     }
 

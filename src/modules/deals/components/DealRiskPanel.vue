@@ -13,7 +13,7 @@
     <div class="space-y-2.5">
       <!-- KYC Document Risk -->
       <div class="flex items-start space-x-2.5 bg-yellow-50/50 dark:bg-yellow-950/10 border border-yellow-200 dark:border-yellow-900/50 p-2.5 rounded-lg">
-        <span class="text-sm">📄</span>
+        <AppIcon name="file" :size="15" />
         <div class="space-y-0.5">
           <p class="font-bold text-yellow-800 dark:text-yellow-450">Co-Applicant KYC Incomplete</p>
           <p class="text-[10px] text-slate-500 dark:text-slate-400">
@@ -24,7 +24,7 @@
 
       <!-- Builder Delay Risk -->
       <div class="flex items-start space-x-2.5 bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-900/50 p-2.5 rounded-lg">
-        <span class="text-sm">🏢</span>
+        <AppIcon name="buildings" :size="15" />
         <div class="space-y-0.5">
           <p class="font-bold text-orange-800 dark:text-orange-450">Builder Allotment Delay</p>
           <p class="text-[10px] text-slate-500 dark:text-slate-400">
@@ -35,7 +35,7 @@
 
       <!-- Financial collection Risk -->
       <div class="flex items-start space-x-2.5 bg-blue-50/50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-900/50 p-2.5 rounded-lg">
-        <span class="text-sm">💳</span>
+        <AppIcon name="payment" :size="15" />
         <div class="space-y-0.5">
           <p class="font-bold text-blue-800 dark:text-blue-450">Mortgage Sanction Pending</p>
           <p class="text-[10px] text-slate-500 dark:text-slate-400">

@@ -3,7 +3,7 @@
     <!-- Green Workspace Header -->
     <header class="bg-emerald-600 px-4 py-2.5 flex items-center justify-between text-white shrink-0">
       <div class="flex items-center space-x-2">
-        <span class="text-base">💬</span>
+        <AppIcon name="note" :size="16" />
         <div>
           <h4 class="text-xs font-bold font-heading">WhatsApp Business Workspace</h4>
           <span class="text-[9px] text-emerald-150">Active Chat with {{ leadName }}</span>

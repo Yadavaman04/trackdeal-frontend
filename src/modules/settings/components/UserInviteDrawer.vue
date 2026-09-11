@@ -19,17 +19,17 @@
         <span v-if="errors.name" class="text-[9px] text-red-500 mt-1 block">{{ errors.name }}</span>
       </div>
 
-      <!-- Official Email -->
+      <!-- Official Email Address -->
       <div>
         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Official Email Address *</label>
         <input
           v-model="email"
           type="email"
-          placeholder="e.g. john.doe@company.com"
+          placeholder="e.g. name@company.com or name@gmail.com"
           class="w-full bg-surface border rounded-lg px-3 py-1.5 outline-none focus:border-primary text-slate-800"
           :class="errors.email ? 'border-red-500' : 'border-default'"
         />
-        <p class="text-[9px] text-slate-400 mt-1">Please enter organization domain email only (personal domains like gmail, yahoo, outlook are blocked).</p>
+        <p class="text-[9px] text-slate-400 mt-1">Official or personal email address (Gmail, Outlook, Yahoo, etc.).</p>
         <span v-if="errors.email" class="text-[9px] text-red-500 mt-1 block font-semibold">{{ errors.email }}</span>
       </div>
 
@@ -42,27 +42,11 @@
           :class="errors.role ? 'border-red-500' : 'border-default'"
         >
           <option value="" disabled selected>Select Access Role</option>
-          <option v-for="r in roles" :key="r.id" :value="r.id">
+          <option v-for="r in roles" :key="r.id || r._id" :value="r.id || r._id">
             {{ r.name }}
           </option>
         </select>
         <span v-if="errors.role" class="text-[9px] text-red-500 mt-1 block">{{ errors.role }}</span>
-      </div>
-
-      <!-- Primary Branch Selector -->
-      <div v-if="isEnterprise">
-        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Primary Branch Selector *</label>
-        <select
-          v-model="branch"
-          class="w-full bg-surface border rounded-lg px-3 py-1.5 outline-none focus:border-primary text-slate-800"
-          :class="errors.branch ? 'border-red-500' : 'border-default'"
-        >
-          <option value="" disabled selected>Select Primary Branch</option>
-          <option v-for="b in branches" :key="b.id" :value="b.id">
-            {{ b.name }} ({{ b.code }})
-          </option>
-        </select>
-        <span v-if="errors.branch" class="text-[9px] text-red-500 mt-1 block">{{ errors.branch }}</span>
       </div>
     </form>
 
@@ -97,33 +81,17 @@ import AppDrawer from '@/components/AppDrawer.vue';
 const props = defineProps({
   isOpen: { type: Boolean, required: true },
   roles: { type: Array, required: true },
-  branches: { type: Array, required: true }
+  branches: { type: Array, default: () => [] }
 });
  
 const emit = defineEmits(['close', 'success']);
 const store = useStore();
-const isEnterprise = computed(() => store.getters['organization/isEnterpriseAgency']);
- 
-const personalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com', 'zoho.com', 'yandex.com', 'mail.com'];
  
 const schema = computed(() => toTypedSchema(
   zod.object({
     name: zod.string().min(2, 'Name must contain at least 2 characters').max(100),
-    email: zod.string()
-      .email('Invalid email address')
-      .superRefine((val, ctx) => {
-        const domain = val.split('@')[1]?.toLowerCase();
-        if (domain && personalDomains.includes(domain)) {
-          ctx.addIssue({
-            code: zod.ZodIssueCode.custom,
-            message: 'Official organization email is required (no personal domains like gmail/yahoo allowed)'
-          });
-        }
-      }),
-    role: zod.string().min(1, 'Role selection is required'),
-    branch: isEnterprise.value
-      ? zod.string().min(1, 'Branch selection is required')
-      : zod.string().optional()
+    email: zod.string().min(1, 'Email address is required').email('Invalid email address'),
+    role: zod.string().min(1, 'Role selection is required')
   })
 ));
  
@@ -132,21 +100,23 @@ const { errors, handleSubmit, resetForm } = useForm({
   initialValues: {
     name: '',
     email: '',
-    role: '',
-    branch: ''
+    role: ''
   }
 });
 
 const { value: name } = useField('name');
 const { value: email } = useField('email');
 const { value: role } = useField('role');
-const { value: branch } = useField('branch');
 
 const { mutateAsync: inviteUser, isPending } = useInviteUserMutation();
 
 const onSubmit = handleSubmit(async (values) => {
   try {
-    await inviteUser(values);
+    await inviteUser({
+      name: values.name,
+      email: values.email,
+      role: values.role
+    });
     store.dispatch('notifications/triggerToast', {
       message: `Invitation successfully enqueued for ${values.name} (${values.email}).`,
       type: 'success'
@@ -162,3 +132,4 @@ const onSubmit = handleSubmit(async (values) => {
   }
 });
 </script>
+

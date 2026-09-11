@@ -12,10 +12,13 @@
         <Transition name="modal-scale">
           <div
             v-if="isOpen"
+            ref="panel"
             class="relative border rounded-panel shadow-2xl flex flex-col w-full overflow-hidden"
-            :style="{ maxWidth: maxSize, backgroundColor: 'hsl(var(--bg-surface))', borderColor: 'hsl(var(--neutral-100))' }"
+            :style="{ maxWidth: maxSize, maxHeight: 'calc(100dvh - 2rem)', backgroundColor: 'hsl(var(--bg-surface))', borderColor: 'hsl(var(--neutral-100))' }"
             role="dialog"
+            aria-modal="true"
             :aria-label="title"
+            tabindex="-1"
           >
             <!-- Header -->
             <div
@@ -39,7 +42,7 @@
             </div>
 
             <!-- Content -->
-            <div class="px-6 py-5 text-body flex-1" style="color: hsl(var(--neutral-700));">
+            <div class="px-6 py-5 text-body flex-1 overflow-y-auto" style="color: hsl(var(--neutral-700));">
               <slot />
             </div>
 
@@ -72,9 +75,10 @@
 </template>
 
 <script setup>
+import { nextTick, onUnmounted, ref, watch } from 'vue';
 import { PhX } from '@phosphor-icons/vue';
 
-defineProps({
+const props = defineProps({
   isOpen:       { type: Boolean, required: true },
   title:        { type: String,  default: 'Confirm' },
   subtitle:     { type: String,  default: '' },
@@ -83,7 +87,39 @@ defineProps({
   isDestructive:{ type: Boolean, default: false },
 });
 
-defineEmits(['confirm', 'cancel']);
+const emit = defineEmits(['confirm', 'cancel']);
+const panel = ref(null);
+const previousFocus = ref(null);
+const focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+const handleKeydown = (event) => {
+  if (event.key === 'Escape' && props.isOpen) emit('cancel');
+  if (event.key !== 'Tab' || !panel.value) return;
+  const focusable = [...panel.value.querySelectorAll(focusableSelector)];
+  if (!focusable.length) { event.preventDefault(); panel.value.focus(); return; }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+};
+
+watch(() => props.isOpen, async (isOpen) => {
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+  if (isOpen) {
+    previousFocus.value = document.activeElement;
+    window.addEventListener('keydown', handleKeydown);
+    await nextTick();
+    (panel.value?.querySelector(focusableSelector) || panel.value)?.focus();
+  } else {
+    window.removeEventListener('keydown', handleKeydown);
+    previousFocus.value?.focus?.();
+  }
+}, { immediate: true });
+
+onUnmounted(() => {
+  document.body.style.overflow = '';
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <style scoped>

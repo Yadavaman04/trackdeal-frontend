@@ -7,7 +7,7 @@
   >
     <div class="space-y-4 text-xs">
       <div class="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50 rounded-xl p-3 text-green-800 dark:text-green-400">
-        <h4 class="font-heading font-bold text-sm mb-1">🎉 Win Conversion Summary</h4>
+        <h4 class="font-heading font-bold text-sm mb-1 inline-flex items-center gap-1.5"><AppIcon name="trophy" :size="15" /> Win conversion summary</h4>
         <p class="text-[11px] leading-relaxed">
           You are converting <b>{{ lead.firstName }} {{ lead.lastName || '' }}</b> to a won status. This confirms client acquisition and locks the lead details.
         </p>
@@ -39,7 +39,7 @@
       <!-- Warning info block -->
       <div class="bg-slate-50 dark:bg-slate-900 border border-default rounded-xl p-3 text-slate-500">
         <p class="text-[10px] leading-normal">
-          ⚠️ <b>Note:</b> Once converted, the lead profile becomes read-only for agents. Further transactions (booking form uploads, payment invoices, and commissions) will be managed under the Deals and Customers modules.
+          <AppIcon name="warning" :size="13" class="inline mr-1" /> <b>Note:</b> Once converted, the lead profile becomes read-only for agents. Further transactions (booking form uploads, payment invoices, and commissions) will be managed under the Deals and Customers modules.
         </p>
       </div>
     </div>
@@ -57,7 +57,7 @@
         class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:bg-slate-350 font-semibold flex items-center justify-center min-w-[100px]"
       >
         <span v-if="isPending">Converting...</span>
-        <span v-else>Confirm Win 🎉</span>
+        <span v-else>Confirm win</span>
       </button>
     </template>
   </AppDrawer>

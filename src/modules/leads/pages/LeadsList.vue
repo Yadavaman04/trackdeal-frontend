@@ -74,8 +74,11 @@
             :rows="leadsList"
             :isLoading="isLoading"
             :selectedLeads="selectedRows"
+            :pagination="pagination"
             @selectionChange="handleSelectionChange"
             @sort="handleSort"
+            @pageChange="handlePageChange"
+            @pageSizeChange="handlePageSizeChange"
           />
         </div>
 
@@ -110,12 +113,28 @@
                 <PhStar class="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
                 {{ lead.score }}
               </span>
+              <button
+                @click.stop="openActivityCenter(lead)"
+                class="px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 transition"
+              >
+                <AppIcon name="house" :size="12" /> Visits
+              </button>
             </div>
           </div>
           
           <div v-if="leadsList.length === 0" class="text-center py-12 text-slate-400">
             No prospects found.
           </div>
+
+          <AppPagination
+            class="col-span-full"
+            :page="pagination.page"
+            :page-size="pagination.limit"
+            :total="pagination.total"
+            :total-pages="pagination.totalPages"
+            @page-change="handlePageChange"
+            @page-size-change="handlePageSizeChange"
+          />
         </div>
       </div>
 
@@ -150,7 +169,7 @@
       @success="refetch"
     />
 
-    <LeadConversionDrawer 
+    <LeadClosingModal 
       v-if="activeLead"
       :isOpen="isWonOpen" 
       :lead="activeLead"
@@ -165,6 +184,15 @@
       :leadB="mergeLeadB"
       @close="isMergeOpen = false"
       @success="handleMergeSuccess"
+    />
+
+    <!-- Lead Activity Center Drawer -->
+    <LeadActivityCenter
+      v-if="activityCenterLead"
+      :isOpen="isActivityCenterOpen"
+      :lead="activityCenterLead"
+      :asDrawer="true"
+      @close="isActivityCenterOpen = false; activityCenterLead = null"
     />
   </div>
 </template>
@@ -181,8 +209,9 @@ import LeadStageBadge from '../components/LeadStageBadge.vue';
 import LeadCreateDrawer from '../components/LeadCreateDrawer.vue';
 import LeadAssignModal from '../components/LeadAssignModal.vue';
 import LeadLostModal from '../components/LeadLostModal.vue';
-import LeadConversionDrawer from '../components/LeadConversionDrawer.vue';
+import LeadClosingModal from '../components/LeadClosingModal.vue';
 import LeadMergeModal from '../components/LeadMergeModal.vue';
+import LeadActivityCenter from '../components/LeadActivityCenter.vue';
 import { useLeadsQuery, useChangeLeadStageMutation } from '../queries';
 
 const activeFilters = ref({
@@ -192,7 +221,9 @@ const activeFilters = ref({
   branchId: '',
   assignedTo: '',
   sort: 'createdAt',
-  order: -1
+  order: -1,
+  page: 1,
+  limit: 20
 });
 
 // Load Vue Query
@@ -200,6 +231,13 @@ const { data, isLoading, refetch } = useLeadsQuery(activeFilters);
 
 const leadsList = computed(() => {
   return data.value?.data || [];
+});
+
+const pagination = computed(() => data.value?.pagination || {
+  page: activeFilters.value.page,
+  limit: activeFilters.value.limit,
+  total: leadsList.value.length,
+  totalPages: 1,
 });
 
 const viewMode = ref('table');
@@ -211,13 +249,21 @@ const isWonOpen = ref(false);
 
 const activeLeadId = ref('');
 const targetAssignIds = ref([]);
+const isActivityCenterOpen = ref(false);
+const activityCenterLead = ref(null);
 
 const activeLead = computed(() => {
   return leadsList.value.find(l => (l._id || l.id) === activeLeadId.value) || null;
 });
 
+const openActivityCenter = (lead) => {
+  activityCenterLead.value = lead;
+  isActivityCenterOpen.value = true;
+};
+
 const handleFilterChange = (filters) => {
-  activeFilters.value = { ...activeFilters.value, ...filters };
+  activeFilters.value = { ...activeFilters.value, ...filters, page: 1 };
+  selectedRows.value = [];
 };
 
 const handleSelectionChange = (selection) => {
@@ -227,6 +273,17 @@ const handleSelectionChange = (selection) => {
 const handleSort = ({ field, direction }) => {
   activeFilters.value.sort = field;
   activeFilters.value.order = direction === 'asc' ? 1 : -1;
+  activeFilters.value.page = 1;
+};
+
+const handlePageChange = (page) => {
+  activeFilters.value.page = page;
+  selectedRows.value = [];
+};
+
+const handlePageSizeChange = (limit) => {
+  activeFilters.value = { ...activeFilters.value, page: 1, limit };
+  selectedRows.value = [];
 };
 
 const openBulkAssign = () => {

@@ -65,7 +65,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-default text-slate-655 font-medium">
-            <tr v-for="proj in filteredProjects" :key="proj._id || proj.id" class="hover:bg-slate-50/40">
+            <tr v-for="proj in paginatedProjects" :key="proj._id || proj.id" class="hover:bg-slate-50/40">
               <td class="p-4">
                 <router-link 
                   :to="`/app/projects/${proj._id || proj.id}`" 
@@ -131,16 +131,21 @@
           </tbody>
         </table>
       </div>
+      <AppPagination v-bind="projectPagination" @page-change="setProjectPage" @page-size-change="setProjectPageSize" />
     </div>
 
-    <!-- Create / Edit Project Drawer Modal -->
+    <!-- Add / Edit Project Drawer -->
     <AppDrawer 
       :isOpen="isCreateOpen" 
-      :title="isEditMode ? 'Edit Project Details' : 'Create New Project'" 
-      width="480px"
+      :title="isEditMode ? 'Edit Development Project' : 'Add Development Project'" 
+      width="500px"
       @close="closeDrawer"
     >
       <form @submit.prevent="handleSaveProject" class="space-y-4 text-xs">
+        <div v-if="validationError" class="p-3 rounded bg-red-50 text-red-700 border border-red-200 font-medium">
+          {{ validationError }}
+        </div>
+
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Project Name *</label>
           <input 
@@ -158,21 +163,29 @@
             <input 
               v-model="newProj.code" 
               type="text" 
-              placeholder="e.g. PRESTIGE"
+              placeholder="Auto-generated if empty"
               class="w-full bg-surface border border-default rounded px-3 py-1.5 outline-none focus:border-primary uppercase"
               :disabled="isEditMode"
-              required
             />
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Builder Developer *</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Builder Developer *</label>
+              <button
+                type="button"
+                @click="isBuilderDrawerOpen = true"
+                class="text-[9px] font-bold text-primary hover:underline"
+              >
+                + Add Builder
+              </button>
+            </div>
             <select 
               v-model="newProj.builderId" 
               class="w-full bg-surface border border-default rounded px-3 py-1.5 outline-none focus:border-primary"
               required
             >
               <option value="">Select Builder</option>
-              <option v-for="b in builders" :key="b._id" :value="b._id">
+              <option v-for="b in builders" :key="b._id || b.id" :value="b._id || b.id">
                 {{ b.name }}
               </option>
             </select>
@@ -242,6 +255,12 @@
         </button>
       </template>
     </AppDrawer>
+
+    <BuilderCreateDrawer
+      :isOpen="isBuilderDrawerOpen"
+      @close="isBuilderDrawerOpen = false"
+      @success="handleBuilderSuccess"
+    />
   </div>
 </template>
 
@@ -250,23 +269,27 @@ import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { PhMagnifyingGlass, PhCopy } from '@phosphor-icons/vue';
 import { useProjectsQuery, useUnitsQuery, useCreateProjectMutation, useUpdateProjectMutation } from '../queries';
+import { useClientPagination } from '@/composables/useClientPagination';
 import apiClient from '@/api/client';
 import AppDrawer from '@/components/AppDrawer.vue';
+import BuilderCreateDrawer from '../components/BuilderCreateDrawer.vue';
 
 const store = useStore();
 
 const searchQuery = ref('');
 const filterStatus = ref('');
 const isCreateOpen = ref(false);
+const isBuilderDrawerOpen = ref(false);
 const isSaving = ref(false);
 const isEditMode = ref(false);
 const editingProjectId = ref(null);
+const validationError = ref('');
 
 const newProj = ref({
   name: '',
   code: '',
   builderId: '',
-  city: '',
+  city: 'Mumbai',
   locality: '',
   address: '',
   rera: '',
@@ -291,6 +314,8 @@ const filteredProjects = computed(() => {
     return matchesSearch && matchesStatus;
   });
 });
+
+const { paginatedItems: paginatedProjects, pagination: projectPagination, setPage: setProjectPage, setPageSize: setProjectPageSize } = useClientPagination(filteredProjects);
 
 const projectUnitsStats = computed(() => {
   const stats = {};
@@ -324,6 +349,27 @@ const loadBuilders = async () => {
   try {
     const res = await apiClient.get('/projects/builders');
     builders.value = res.data?.data || [];
+
+    // Auto-create default builder if none exists
+    if (builders.value.length === 0) {
+      try {
+        const defaultBuilderRes = await apiClient.post('/projects/builders', {
+          name: 'TrackDeal Developer Group',
+          code: 'TRACKDEAL_DEV',
+          address: 'Main Office'
+        });
+        if (defaultBuilderRes.data?.data) {
+          builders.value = [defaultBuilderRes.data.data];
+          if (!newProj.value.builderId) {
+            newProj.value.builderId = defaultBuilderRes.data.data._id;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to create default builder:', e);
+      }
+    } else if (!newProj.value.builderId && builders.value.length > 0) {
+      newProj.value.builderId = builders.value[0]._id || builders.value[0].id;
+    }
   } catch (error) {
     console.error('Failed to load builders list for project creation:', error);
   }
@@ -331,17 +377,25 @@ const loadBuilders = async () => {
 
 onMounted(loadBuilders);
 
+const handleBuilderSuccess = async () => {
+  await loadBuilders();
+  if (builders.value.length > 0) {
+    newProj.value.builderId = builders.value[builders.value.length - 1]._id || builders.value[builders.value.length - 1].id;
+  }
+};
+
 const { mutateAsync: createProject } = useCreateProjectMutation();
 const { mutateAsync: updateProject } = useUpdateProjectMutation();
 
 const openEditProject = (proj) => {
   isEditMode.value = true;
   editingProjectId.value = proj._id || proj.id;
+  validationError.value = '';
   newProj.value = {
     name: proj.name,
     code: proj.code,
     builderId: proj.builderId?._id || proj.builderId,
-    city: proj.city,
+    city: proj.city || 'Mumbai',
     locality: proj.locality || '',
     address: proj.address || '',
     rera: proj.rera || '',
@@ -354,11 +408,12 @@ const closeDrawer = () => {
   isCreateOpen.value = false;
   isEditMode.value = false;
   editingProjectId.value = null;
+  validationError.value = '';
   newProj.value = {
     name: '',
     code: '',
-    builderId: '',
-    city: '',
+    builderId: builders.value[0]?._id || '',
+    city: 'Mumbai',
     locality: '',
     address: '',
     rera: '',
@@ -367,7 +422,44 @@ const closeDrawer = () => {
 };
 
 const handleSaveProject = async () => {
-  if (!newProj.value.name || !newProj.value.builderId) return;
+  validationError.value = '';
+
+  if (!newProj.value.name?.trim()) {
+    validationError.value = 'Project Name is mandatory.';
+    return;
+  }
+
+  // Auto-generate code if empty
+  if (!newProj.value.code?.trim()) {
+    newProj.value.code = newProj.value.name
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 8);
+    if (!newProj.value.code) {
+      newProj.value.code = 'PROJ' + Math.floor(1000 + Math.random() * 9000);
+    }
+  }
+
+  // Ensure builder is selected
+  if (!newProj.value.builderId) {
+    if (builders.value.length > 0) {
+      newProj.value.builderId = builders.value[0]._id || builders.value[0].id;
+    } else {
+      await loadBuilders();
+      if (builders.value.length > 0) {
+        newProj.value.builderId = builders.value[0]._id || builders.value[0].id;
+      } else {
+        validationError.value = 'Please select or add a Builder Developer before saving.';
+        return;
+      }
+    }
+  }
+
+  if (!newProj.value.city?.trim()) {
+    newProj.value.city = 'Mumbai';
+  }
+
   isSaving.value = true;
   try {
     if (isEditMode.value) {
@@ -395,8 +487,9 @@ const handleSaveProject = async () => {
     closeDrawer();
     refetch();
   } catch (err) {
+    validationError.value = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Failed to save project.';
     store.dispatch('notifications/triggerToast', {
-      message: err.response?.data?.message || 'Failed to save project.',
+      message: validationError.value,
       type: 'error'
     });
   } finally {

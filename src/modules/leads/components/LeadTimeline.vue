@@ -11,7 +11,7 @@
         class="absolute -left-[35px] top-0.5 w-6 h-6 rounded-full border-2 border-surface flex items-center justify-center text-[10px] shadow-sm"
         :class="getIconBgClass(item.type)"
       >
-        {{ getIconLabel(item.type) }}
+        <AppIcon :name="getIconLabel(item.type)" :size="12" />
       </span>
 
       <!-- Content box -->
@@ -38,7 +38,7 @@
         <div v-if="item.metadata && Object.keys(item.metadata).length > 0" class="mt-2 text-[9px] text-slate-400 space-x-2">
           <span v-if="item.metadata.duration">Duration: {{ formatDuration(item.metadata.duration) }}</span>
           <span v-if="item.metadata.outcome">Outcome: <b class="capitalize text-slate-600">{{ item.metadata.outcome }}</b></span>
-          <span v-if="item.metadata.stageFrom">Transition: <b class="capitalize text-slate-600">{{ item.metadata.stageFrom }} ➔ {{ item.metadata.stageTo }}</b></span>
+          <span v-if="item.metadata.stageFrom" class="inline-flex items-center gap-1">Transition: <b class="capitalize text-slate-600">{{ item.metadata.stageFrom }}</b><AppIcon name="arrowRight" :size="11" /><b class="capitalize text-slate-600">{{ item.metadata.stageTo }}</b></span>
         </div>
 
         <!-- Author / Performed by -->
@@ -111,15 +111,15 @@ const getIconBgClass = (type) => {
 
 const getIconLabel = (type) => {
   switch (type) {
-    case 'call': return '📞';
-    case 'whatsapp': return '💬';
+    case 'call': return 'phone';
+    case 'whatsapp': return 'note';
     case 'meeting':
-    case 'site_visit': return '🤝';
-    case 'email': return '✉️';
-    case 'note': return '📝';
-    case 'stage_change': return '🔄';
-    case 'assignment': return '👤';
-    default: return '📋';
+    case 'site_visit': return 'handshake';
+    case 'email': return 'email';
+    case 'note': return 'note';
+    case 'stage_change': return 'refresh';
+    case 'assignment': return 'user';
+    default: return 'clipboard';
   }
 };
 

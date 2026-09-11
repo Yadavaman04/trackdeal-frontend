@@ -1,311 +1,262 @@
 <template>
-  <div class="space-y-6 text-xs">
-    <!-- Header Block -->
-    <div class="bg-surface border border-default rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
+  <main class="financial-workspace space-y-6">
+    <header class="financial-page-header">
       <div>
-        <h2 class="font-heading text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
-          <PhCoins :size="20" class="text-primary" />
-          <span>Finance Commissions Workspace</span>
-        </h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Executive dashboard tracking accounts receivable invoices, clearing collections, and agent splits payouts.
-        </p>
+        <p class="eyebrow">Financial operations</p>
+        <h1>Commissions</h1>
+        <p>Monitor earned revenue, collection progress, outstanding balances, and payment exceptions.</p>
       </div>
-
-      <!-- Actions -->
-      <div class="flex items-center gap-3 shrink-0 flex-wrap">
-        <router-link 
-          to="/app/commissions/list"
-          class="btn-md btn-primary gap-1.5"
-        >
-          <PhTable :size="14" />
-          <span>View Commissions Directory</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <router-link to="/app/commissions/receivables" class="btn-md btn-secondary">
+          <AppIcon name="chart" :size="16" /> Receivables
         </router-link>
+        <button type="button" class="btn-md btn-primary" :disabled="loadingSummary || loadingCommissions" @click="loadAllData">
+          <AppIcon name="refresh" :size="16" :class="{ 'animate-spin': loadingSummary || loadingCommissions }" /> Refresh
+        </button>
       </div>
-    </div>
+    </header>
 
-    <!-- KPIs Ribbon -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div 
-        v-for="kpi in kpis" 
-        :key="kpi.label" 
-        class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-1.5"
+    <section v-if="loadingSummary" class="grid grid-cols-1 gap-4 lg:grid-cols-12" aria-label="Loading commission summary">
+      <div class="skeleton h-52 rounded-xl lg:col-span-6"></div>
+      <div v-for="item in 3" :key="item" class="skeleton h-52 rounded-xl lg:col-span-2"></div>
+    </section>
+
+    <template v-else>
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-12" aria-label="Commission summary">
+        <article class="financial-hero lg:col-span-6">
+          <div class="relative z-10 flex h-full flex-col justify-between gap-8">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="financial-hero__label">Outstanding commission</p>
+                <p class="financial-hero__value">{{ formatCurrency(summary.totalOutstanding) }}</p>
+                <p class="financial-hero__caption">
+                  {{ formatCurrency(summary.totalOverdue) }} overdue across {{ summary.overdueCount || 0 }} records
+                </p>
+              </div>
+              <span class="financial-hero__icon"><AppIcon name="currency" :size="22" weight="duotone" /></span>
+            </div>
+            <div>
+              <div class="mb-2 flex items-center justify-between text-xs">
+                <span>Collection progress</span>
+                <strong>{{ summary.collectionRate || 0 }}%</strong>
+              </div>
+              <div class="financial-hero__progress"><span :style="{ width: `${Math.min(100, summary.collectionRate || 0)}%` }"></span></div>
+              <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-white/65">
+                <span>{{ formatCurrency(summary.totalCollected) }} collected</span>
+                <span>{{ formatCurrency(summary.totalEarned) }} earned</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <FinancialMetric class="lg:col-span-2" label="Earned" :value="formatCurrency(summary.totalEarned)" :caption="`${summary.totalDeals || 0} commission records`" icon="handshake" />
+        <FinancialMetric class="lg:col-span-2" label="Collected" :value="formatCurrency(summary.totalCollected)" :caption="`${summary.fullyPaidCount || 0} fully paid`" icon="checkCircle" tone="success" />
+        <FinancialMetric class="lg:col-span-2" label="Due this month" :value="formatCurrency(summary.expectedThisMonth)" caption="Expected in current cycle" icon="calendar" tone="info" />
+      </section>
+
+      <section class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <article class="financial-panel xl:col-span-7">
+          <div class="financial-panel__header">
+            <div>
+              <p class="eyebrow">Lifecycle position</p>
+              <h2>Collection state</h2>
+            </div>
+            <span class="financial-panel__meta">{{ summary.totalDeals || 0 }} total records</span>
+          </div>
+          <div class="financial-state-grid">
+            <button type="button" :class="{ 'is-active': filters.paymentStatus === '' }" @click="setPaymentStatus('')">
+              <span>All</span><strong>{{ summary.totalDeals || 0 }}</strong>
+            </button>
+            <button type="button" :class="{ 'is-active': filters.paymentStatus === 'unpaid' }" @click="setPaymentStatus('unpaid')">
+              <span>Unpaid</span><strong>{{ summary.unpaidCount || 0 }}</strong>
+            </button>
+            <button type="button" :class="{ 'is-active': filters.paymentStatus === 'partially_paid' }" @click="setPaymentStatus('partially_paid')">
+              <span>Partially paid</span><strong>{{ summary.partiallyPaidCount || 0 }}</strong>
+            </button>
+            <button type="button" :class="{ 'is-active': filters.paymentStatus === 'fully_paid' }" @click="setPaymentStatus('fully_paid')">
+              <span>Fully paid</span><strong>{{ summary.fullyPaidCount || 0 }}</strong>
+            </button>
+            <button type="button" class="is-risk" :class="{ 'is-active': filters.paymentStatus === 'overdue' }" @click="setPaymentStatus('overdue')">
+              <span>Overdue</span><strong>{{ summary.overdueCount || 0 }}</strong>
+            </button>
+          </div>
+        </article>
+
+        <article class="financial-panel xl:col-span-5">
+          <div class="financial-panel__header">
+            <div><p class="eyebrow">Cash calendar</p><h2>Upcoming collections</h2></div>
+            <router-link to="/app/commissions/receivables" class="financial-link">View ledger <AppIcon name="arrowRight" :size="13" /></router-link>
+          </div>
+          <div v-if="summary.upcomingCollections?.length" class="financial-queue">
+            <router-link v-for="item in summary.upcomingCollections.slice(0, 4)" :key="item.id" :to="`/app/commissions/${item.id}`">
+              <span class="financial-queue__date"><strong>{{ dayOfMonth(item.dueDate) }}</strong>{{ monthName(item.dueDate) }}</span>
+              <span class="min-w-0 flex-1"><strong>{{ item.payablePartyName }}</strong><small>{{ item.commissionNumber }} · {{ item.projectName }}</small></span>
+              <span class="financial-queue__amount">{{ formatCurrency(item.amount) }}</span>
+            </router-link>
+          </div>
+          <div v-else class="financial-inline-empty"><AppIcon name="calendar" :size="20" /><span>No upcoming dated collections.</span></div>
+        </article>
+      </section>
+    </template>
+
+    <section class="financial-panel overflow-hidden">
+      <div class="financial-table-toolbar">
+        <div>
+          <p class="eyebrow">Commission ledger</p>
+          <h2>All commission records</h2>
+        </div>
+        <div class="financial-filter-row">
+          <label class="relative min-w-0 flex-1 sm:min-w-[260px]">
+            <span class="sr-only">Search commissions</span>
+            <AppIcon name="search" :size="16" class="absolute left-3 top-1/2 -translate-y-1/2" style="color: hsl(var(--neutral-300));" />
+            <input v-model="filters.search" class="filter-control !pl-9" type="search" placeholder="Search commission, party or unit" @input="handleSearch" />
+          </label>
+          <label class="min-w-[180px]">
+            <span class="sr-only">Paying party type</span>
+            <select v-model="filters.payablePartyType" class="filter-control" @change="applyFilters">
+              <option value="">All paying parties</option>
+              <option value="builder">Builder / Developer</option>
+              <option value="seller">Property Seller</option>
+              <option value="customer">Customer / Buyer</option>
+              <option value="channel_partner">Channel Partner</option>
+              <option value="broker">Broker</option>
+              <option value="bank">Bank</option>
+              <option value="dsa">DSA</option>
+            </select>
+          </label>
+          <button v-if="hasFilters" type="button" class="btn-md btn-secondary" @click="resetFilters"><AppIcon name="close" :size="14" /> Clear</button>
+        </div>
+      </div>
+
+      <div v-if="listError" class="financial-error">
+        <AppIcon name="warning" :size="20" />
+        <div><strong>Commission ledger could not be loaded</strong><p>Retry the request without losing your current filters.</p></div>
+        <button class="btn-md btn-secondary" @click="loadCommissions">Retry</button>
+      </div>
+
+      <AppTable
+        v-else
+        class="financial-table"
+        :columns="columns"
+        :rows="commissionsList"
+        :pagination="pagination"
+        :is-loading="loadingCommissions"
+        empty-title="No commission records match this view"
+        empty-subtext="Adjust the status, paying-party, or search filters to broaden the ledger."
+        @row-click="openDetails"
+        @page-change="changePage"
+        @page-size-change="changePageSize"
       >
-        <span class="text-[8px] text-slate-450 font-bold uppercase tracking-wider block">{{ kpi.label }}</span>
-        <span class="font-heading font-bold text-base block" :class="kpi.colorClass || 'text-slate-800 dark:text-slate-100'">
-          {{ formatCurrency(kpi.value) }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Charts & Ledgers -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Left: Forecasting Chart -->
-      <div class="lg:col-span-8 space-y-6">
-        <ForecastChart />
-
-        <!-- Agent Payouts Splits Simulator -->
-        <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-4">
-          <div class="border-b border-default pb-2">
-            <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">Internal Agent Payout splits Simulator</h4>
-            <p class="text-[10px] text-slate-450 mt-0.5">Input target deal value to calculate split earnings and withholding tax slabs.</p>
+        <template #cell(commission)="{ row }">
+          <div><router-link :to="`/app/commissions/${row._id}`" class="financial-primary-link" @click.stop>{{ row.commissionNumber || fallbackNumber(row) }}</router-link><small>{{ row.dealId?.dealNumber || formatSource(row.sourceType) }}</small></div>
+        </template>
+        <template #cell(context)="{ row }">
+          <div><strong>{{ customerName(row) }}</strong><small>{{ row.projectId?.name || row.propertyId?.title || row.unitNumber || 'No property context' }}</small></div>
+        </template>
+        <template #cell(party)="{ row }">
+          <div><strong>{{ row.payablePartyName || 'Paying party not set' }}</strong><small>{{ formatPartyType(row.payablePartyType) }}</small></div>
+        </template>
+        <template #cell(expected)="{ row }"><span class="financial-amount">{{ formatCurrency(row.totalCommissionExpected) }}</span><small>{{ Number(row.commissionRate || 0) }}% rate</small></template>
+        <template #cell(collected)="{ row }"><span class="financial-amount financial-amount--positive">{{ formatCurrency(row.totalCommissionCollected) }}</span><small>{{ getCollectionPercentage(row.totalCommissionCollected, row.totalCommissionExpected) }}% collected</small></template>
+        <template #cell(outstanding)="{ row }"><span class="financial-amount" :class="row.paymentStatus === 'overdue' ? 'financial-amount--risk' : 'financial-amount--warning'">{{ formatCurrency(row.totalCommissionOutstanding) }}</span><small>{{ formatDate(row.expectedPaymentDate) }}</small></template>
+        <template #cell(status)="{ row }"><FinancialStatusBadge :status="row.paymentStatus" /></template>
+        <template #cell(actions)="{ row }">
+          <div class="flex justify-end gap-1.5">
+            <button v-if="Number(row.totalCommissionOutstanding) > 0" type="button" class="financial-action financial-action--primary" @click.stop="openPayment(row)"><AppIcon name="payment" :size="14" /> Record</button>
+            <router-link :to="`/app/commissions/${row._id}`" class="financial-action" @click.stop><AppIcon name="eye" :size="14" /> View</router-link>
           </div>
+        </template>
+      </AppTable>
+    </section>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Deal Value (INR) *</label>
-              <input 
-                v-model.number="sim.dealValue" 
-                type="number" 
-                class="w-full bg-slate-55/40 border border-default rounded px-3 py-1.5 outline-none font-semibold"
-              />
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gross Commission Rate (%) *</label>
-              <input 
-                v-model.number="sim.rate" 
-                type="number" 
-                step="0.1"
-                class="w-full bg-slate-55/40 border border-default rounded px-3 py-1.5 outline-none font-semibold"
-              />
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gross Company commission</label>
-              <div class="bg-slate-100 dark:bg-slate-800 border border-default p-2 rounded font-bold text-slate-800 dark:text-slate-100 font-heading">
-                {{ formatCurrency(simGrossComm) }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Splits results -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 font-medium">
-            <div 
-              v-for="split in simSplits" 
-              :key="split.name"
-              class="bg-slate-50 dark:bg-slate-900 border border-default rounded-lg p-3 space-y-1.5"
-            >
-              <span class="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">{{ split.name }} ({{ split.percent }}%)</span>
-              <div class="space-y-0.5 text-[10px]">
-                <p>Gross: <b class="text-slate-700 dark:text-slate-350">{{ formatCurrency(split.gross) }}</b></p>
-                <p class="text-red-500">TDS (5%): -{{ formatCurrency(split.tds) }}</p>
-                <p class="text-emerald-500 font-bold border-t border-dashed border-default pt-1 mt-1">Net: {{ formatCurrency(split.net) }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reconciliation Control center -->
-        <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-4">
-          <div class="border-b border-default pb-2">
-            <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">
-              Commissions Bank Statement Reconciliation
-            </h4>
-            <p class="text-[10px] text-slate-450 mt-0.5">Match incoming bank ledger RTGS clearings to raised invoices.</p>
-          </div>
-
-          <div class="space-y-2.5 font-medium">
-            <div 
-              v-for="reconcile in reconciles" 
-              :key="reconcile.id"
-              class="p-3 border border-default rounded-xl bg-slate-50/30 dark:bg-slate-900/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs"
-            >
-              <div class="space-y-1">
-                <div class="flex items-center space-x-1.5">
-                  <span class="font-mono font-bold text-slate-800 dark:text-slate-250">{{ reconcile.utr }}</span>
-                  <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 text-[8px] font-bold uppercase">Unmatched Clearing</span>
-                </div>
-                <p class="text-[10px] text-slate-500">Bank Entry Date: {{ reconcile.date }} | Source: <b>{{ reconcile.builderName }}</b></p>
-              </div>
-              <div class="flex items-center space-x-3 self-end sm:self-auto">
-                <span class="font-heading font-bold text-emerald-600 text-sm">{{ formatCurrency(reconcile.amount) }}</span>
-                <button 
-                  @click="reconcileClick(reconcile)"
-                  class="btn-sm btn-primary gap-1"
-                >
-                  <PhLightning :size="12" />
-                  <span>Match & Clear</span>
-                </button>
-              </div>
-            </div>
-
-            <div v-if="reconciles.length === 0" class="text-center py-6 text-slate-400 italic">All banking transfers successfully matched and reconciled.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Builder ledger matrix -->
-      <div class="lg:col-span-4 space-y-6">
-        <BuilderLedgerCard :ledger="builderLedger" />
- 
-        <!-- Clawback Exposure widgets summary -->
-        <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-3.5">
-          <div class="border-b border-default pb-1">
-            <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">Clawback Exposure Risk</h4>
-            <p class="text-[9px] text-slate-450 mt-0.5">Outstanding recoveries on cancelled deal files.</p>
-          </div>
- 
-          <div class="bg-red-50/20 dark:bg-red-950/10 border border-red-150 p-3 rounded-lg flex justify-between items-center font-bold">
-            <span class="text-red-655 uppercase text-[9px]">Total Recovery Target:</span>
-            <span class="text-red-655 font-heading text-sm">{{ formatCurrency(clawbackTarget) }}</span>
-          </div>
- 
-          <div class="text-[10px] text-slate-550 space-y-1">
-            <p class="flex items-center gap-1"><PhCheck :size="10" class="text-emerald-500" /><span>Original Commission: {{ formatCurrency(originalClawbackCommission) }}</span></p>
-            <p class="flex items-center gap-1"><PhCheck :size="10" class="text-emerald-500" /><span>Clawback Cleared: {{ formatCurrency(clawbackCleared) }}</span></p>
-            <p class="text-amber-600 font-semibold flex items-center gap-1"><PhWarning :size="10" /><span>Pending Agent Reversals: {{ formatCurrency(clawbackTarget) }}</span></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    <RecordPaymentModal :is-open="paymentModalOpen" :record="activePaymentRecord" :saving="savingPayment" @close="closePayment" @submit="submitPayment" />
+  </main>
 </template>
- 
+
 <script setup>
-import { ref, computed } from 'vue';
-import { useStore } from 'vuex';
-import { PhCoins, PhTable, PhLightning, PhWarning, PhCheck } from '@phosphor-icons/vue';
-import BuilderLedgerCard from '../components/BuilderLedgerCard.vue';
-import ForecastChart from '../components/ForecastChart.vue';
-import { useCommissionsQuery } from '../queries';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import AppTable from '@/components/AppTable.vue';
+import FinancialMetric from '../components/FinancialMetric.vue';
+import FinancialStatusBadge from '../components/FinancialStatusBadge.vue';
+import RecordPaymentModal from '../components/RecordPaymentModal.vue';
+import { fetchCommissionSummary, fetchCommissions, recordCommissionPayment } from '../api/endpoints';
+import { formatCurrency, formatDate, getCollectionPercentage } from '../utils/financialFormat';
 
-const store = useStore();
+const router = useRouter();
+const summary = ref({ totalEarned: 0, totalCollected: 0, totalOutstanding: 0, totalOverdue: 0, expectedThisMonth: 0, fullyPaidCount: 0, partiallyPaidCount: 0, unpaidCount: 0, overdueCount: 0, totalDeals: 0, collectionRate: 0, upcomingCollections: [] });
+const commissionsList = ref([]);
+const pagination = ref({ page: 1, limit: 15, total: 0, pages: 1 });
+const filters = ref({ search: '', paymentStatus: '', payablePartyType: '' });
+const loadingSummary = ref(true);
+const loadingCommissions = ref(true);
+const listError = ref(false);
+const paymentModalOpen = ref(false);
+const activeCommission = ref(null);
+const savingPayment = ref(false);
+let searchTimer;
 
-const { data } = useCommissionsQuery();
+const columns = [
+  { key: 'commission', label: 'Commission' },
+  { key: 'context', label: 'Customer / Asset' },
+  { key: 'party', label: 'Payable by' },
+  { key: 'expected', label: 'Expected', align: 'right' },
+  { key: 'collected', label: 'Collected', align: 'right' },
+  { key: 'outstanding', label: 'Outstanding / Due', align: 'right' },
+  { key: 'status', label: 'Payment status' },
+  { key: 'actions', label: 'Actions', align: 'right' },
+];
 
-const commissionsList = computed(() => {
-  return data.value?.data || data.value || [];
-});
+const hasFilters = computed(() => Boolean(filters.value.search || filters.value.paymentStatus || filters.value.payablePartyType));
+const activePaymentRecord = computed(() => activeCommission.value ? ({
+  id: activeCommission.value._id,
+  commissionNumber: activeCommission.value.commissionNumber,
+  partyName: activeCommission.value.payablePartyName,
+  expected: activeCommission.value.totalCommissionExpected,
+  outstanding: activeCommission.value.totalCommissionOutstanding,
+}) : null);
 
-const expectedRevenue = computed(() => {
-  return commissionsList.value.reduce((sum, item) => sum + (item.totalCommissionExpected || item.grossCommission || 0), 0);
-});
-
-const eligibleRevenue = computed(() => {
-  return commissionsList.value
-    .filter(item => ['eligible', 'invoice_raised', 'invoice_sent'].includes(item.stage || item.status))
-    .reduce((sum, item) => sum + (item.totalCommissionExpected || item.grossCommission || 0), 0);
-});
-
-const outstandingInvoices = computed(() => {
-  return commissionsList.value
-    .filter(item => ['invoice_raised', 'invoice_sent', 'partially_collected'].includes(item.stage || item.status))
-    .reduce((sum, item) => sum + (item.totalCommissionOutstanding || item.netReceivable || 0), 0);
-});
-
-const collectedRevenue = computed(() => {
-  return commissionsList.value.reduce((sum, item) => sum + (item.totalCommissionCollected || 0), 0);
-});
-
-const kpis = computed(() => [
-  { label: 'Expected Revenue', value: expectedRevenue.value, colorClass: 'text-blue-500' },
-  { label: 'Eligible Revenue', value: eligibleRevenue.value, colorClass: 'text-indigo-500' },
-  { label: 'Outstanding Invoices', value: outstandingInvoices.value, colorClass: 'text-amber-500' },
-  { label: 'Collected Revenue MTD', value: collectedRevenue.value, colorClass: 'text-emerald-500' }
-]);
-
-const sim = ref({
-  dealValue: 12000000, // 1.2 Crore
-  rate: 2.5 // 2.5% commission rate
-});
-
-const simGrossComm = computed(() => {
-  return sim.value.dealValue * (sim.value.rate / 100);
-});
-
-const simSplits = computed(() => {
-  const base = simGrossComm.value;
-  const roles = [
-    { name: 'Source Agent', percent: 20 },
-    { name: 'Closing Agent', percent: 30 },
-    { name: 'Team Leader', percent: 10 },
-    { name: 'Referral Partner', percent: 10 }
-  ];
-
-  return roles.map(r => {
-    const gross = base * (r.percent / 100);
-    const tds = gross * 0.05; // 5% TDS slab
-    return {
-      name: r.name,
-      percent: r.percent,
-      gross,
-      tds,
-      net: gross - tds
-    };
-  });
-});
-
-const reconciles = ref([]);
-
-const reconcileClick = (rec) => {
-  reconciles.value = reconciles.value.filter(r => r.id !== rec.id);
-  store.dispatch('notifications/triggerToast', {
-    message: `Bank UTR clearing match cleared successfully. Invoices settled.`,
-    type: 'success'
-  });
+const loadSummary = async () => {
+  loadingSummary.value = true;
+  try { const response = await fetchCommissionSummary(); summary.value = response?.data || summary.value; }
+  catch (error) { console.error('Failed to load commission summary:', error); }
+  finally { loadingSummary.value = false; }
+};
+const loadCommissions = async () => {
+  loadingCommissions.value = true;
+  listError.value = false;
+  try {
+    const response = await fetchCommissions({ page: pagination.value.page, limit: pagination.value.limit, search: filters.value.search.trim() || undefined, paymentStatus: filters.value.paymentStatus || undefined, payablePartyType: filters.value.payablePartyType || undefined });
+    commissionsList.value = response?.data || [];
+    if (response?.pagination) pagination.value = response.pagination;
+  } catch (error) { listError.value = true; console.error('Failed to load commissions:', error); }
+  finally { loadingCommissions.value = false; }
+};
+const loadAllData = () => Promise.all([loadSummary(), loadCommissions()]);
+const applyFilters = () => { pagination.value.page = 1; loadCommissions(); };
+const setPaymentStatus = (status) => { filters.value.paymentStatus = status; applyFilters(); };
+const handleSearch = () => { clearTimeout(searchTimer); searchTimer = setTimeout(applyFilters, 300); };
+const resetFilters = () => { filters.value = { search: '', paymentStatus: '', payablePartyType: '' }; applyFilters(); };
+const changePage = (page) => { pagination.value.page = page; loadCommissions(); };
+const changePageSize = (limit) => { pagination.value = { ...pagination.value, page: 1, limit }; loadCommissions(); };
+const openDetails = row => router.push(`/app/commissions/${row._id}`);
+const openPayment = row => { activeCommission.value = row; paymentModalOpen.value = true; };
+const closePayment = () => { paymentModalOpen.value = false; activeCommission.value = null; };
+const submitPayment = async (form) => {
+  if (!activeCommission.value) return;
+  savingPayment.value = true;
+  try { await recordCommissionPayment({ id: activeCommission.value._id, ...form }); closePayment(); await loadAllData(); }
+  catch (error) { window.alert(error.response?.data?.error?.message || error.message || 'Failed to record payment.'); }
+  finally { savingPayment.value = false; }
 };
 
-const builderLedger = computed(() => {
-  if (commissionsList.value.length === 0) {
-    return {
-      builderName: 'No Active Builder',
-      outstandingAmount: 0,
-      collectedAmount: 0,
-      totalInvoicesCount: 0,
-      clearedInvoicesCount: 0,
-      avgCollectionDays: 0,
-      riskScore: 0,
-      riskLevel: 'Low Risk',
-      delaysCount: 0,
-      bouncesCount: 0,
-      disputesCount: 0,
-      disputes: []
-    };
-  }
+const customerName = row => row.customerId?.name || [row.customerId?.firstName, row.customerId?.lastName].filter(Boolean).join(' ') || 'Customer not linked';
+const formatPartyType = type => ({ builder: 'Builder / Developer', seller: 'Property Seller', customer: 'Customer / Buyer', channel_partner: 'Channel Partner', broker: 'Broker', bank: 'Bank', dsa: 'DSA', financial_institution: 'Financial Institution' }[type] || type || 'Other');
+const formatSource = source => ({ PROPERTY_DEAL: 'Property deal', LOAN: 'Loan case', CHANNEL_PARTNER: 'Channel partner' }[source] || 'Commission source');
+const fallbackNumber = row => `COM-${String(row._id || '').slice(-4).toUpperCase()}`;
+const dayOfMonth = date => new Date(date).toLocaleDateString('en-IN', { day: '2-digit' });
+const monthName = date => new Date(date).toLocaleDateString('en-IN', { month: 'short' });
 
-  const firstComm = commissionsList.value[0];
-  const builderName = firstComm.builderName || firstComm.builder?.name || 'Skyway Builders';
-  const outstandingAmount = commissionsList.value.reduce((sum, c) => sum + (c.totalCommissionOutstanding || 0), 0);
-  const collectedAmount = commissionsList.value.reduce((sum, c) => sum + (c.totalCommissionCollected || 0), 0);
-
-  const invoicedComms = commissionsList.value.filter(c => ['invoice_raised', 'invoice_sent', 'partially_collected', 'fully_collected'].includes(c.stage || c.status));
-  const clearedComms = commissionsList.value.filter(c => (c.stage || c.status) === 'fully_collected');
-
-  return {
-    builderName,
-    outstandingAmount,
-    collectedAmount,
-    totalInvoicesCount: invoicedComms.length,
-    clearedInvoicesCount: clearedComms.length,
-    avgCollectionDays: 30,
-    riskScore: outstandingAmount > 500000 ? 45 : 15,
-    riskLevel: outstandingAmount > 500000 ? 'Medium Risk' : 'Low Risk',
-    delaysCount: outstandingAmount > 500000 ? 5 : 0,
-    bouncesCount: 0,
-    disputesCount: 0,
-    disputes: []
-  };
-});
-
-const clawbackTarget = computed(() => {
-  return commissionsList.value
-    .filter(item => item.stage === 'clawed_back' || item.status === 'clawed_back')
-    .reduce((sum, item) => sum + (item.totalCommissionExpected || item.grossCommission || 0), 0);
-});
-
-const originalClawbackCommission = computed(() => {
-  return clawbackTarget.value;
-});
-
-const clawbackCleared = computed(() => {
-  return 0;
-});
-
-const formatCurrency = (val) => {
-  if (val === undefined || val === null) return '—';
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(val);
-};
+onMounted(loadAllData);
+onBeforeUnmount(() => clearTimeout(searchTimer));
 </script>

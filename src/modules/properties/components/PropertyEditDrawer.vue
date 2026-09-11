@@ -6,7 +6,7 @@
     @close="$emit('close')"
   >
     <div v-if="isSold" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 text-red-650 p-3 rounded-lg text-[10px] font-bold mb-4">
-      ⚠️ This property is already sold. Details cannot be edited.
+      <AppIcon name="warning" :size="15" class="inline mr-1" /> This property is already sold. Details cannot be edited.
     </div>
 
     <form @submit="onSubmit" class="space-y-4 text-xs">
@@ -34,7 +34,7 @@
           :class="errors.basePrice ? 'border-red-500' : 'border-default'"
         />
         <span v-if="!canRevisePrice && !isSold" class="text-[9px] text-slate-400 block mt-1">
-          🔒 You do not have permission to modify prices.
+          <AppIcon name="lock" :size="14" class="inline mr-1" /> You do not have permission to modify prices.
         </span>
         <span v-if="errors.basePrice" class="text-[9px] text-red-500 mt-1 block">{{ errors.basePrice }}</span>
       </div>

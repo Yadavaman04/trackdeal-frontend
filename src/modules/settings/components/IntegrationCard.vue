@@ -84,7 +84,7 @@ const props = defineProps({
   name: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  icon: { type: [String, Object], default: '🔗' },
+  icon: { type: [String, Object], default: '' },
   status: { type: String, default: 'disconnected' }, // connected, disconnected, degraded
   lastSync: { type: String, default: '' },
   type: { type: String, default: 'API Integration' },

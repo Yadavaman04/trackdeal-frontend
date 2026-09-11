@@ -57,21 +57,21 @@
             :class="payoutValue < 50000 ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-50 dark:bg-slate-800 border-default text-slate-400'"
           >
             <span>1. Manager Approval (&lt; ₹50k)</span>
-            <span class="text-[9px] uppercase font-bold">{{ payoutValue < 50000 ? '✓ Active Trigger' : 'Muted' }}</span>
+            <span class="text-[9px] uppercase font-bold">{{ payoutValue < 50000 ? 'Active trigger' : 'Muted' }}</span>
           </div>
           <div 
             class="flex items-center justify-between p-2 rounded-lg border font-bold"
             :class="payoutValue >= 50000 && payoutValue <= 200000 ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-50 dark:bg-slate-800 border-default text-slate-400'"
           >
             <span>2. Finance Approval (₹50k – ₹2L)</span>
-            <span class="text-[9px] uppercase font-bold">{{ payoutValue >= 50000 && payoutValue <= 200000 ? '✓ Active Trigger' : 'Muted' }}</span>
+            <span class="text-[9px] uppercase font-bold">{{ payoutValue >= 50000 && payoutValue <= 200000 ? 'Active trigger' : 'Muted' }}</span>
           </div>
           <div 
             class="flex items-center justify-between p-2 rounded-lg border font-bold"
             :class="payoutValue > 200000 ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-50 dark:bg-slate-800 border-default text-slate-400'"
           >
             <span>3. Org Admin Approval (&gt; ₹2L)</span>
-            <span class="text-[9px] uppercase font-bold">{{ payoutValue > 200000 ? '✓ Active Trigger' : 'Muted' }}</span>
+            <span class="text-[9px] uppercase font-bold">{{ payoutValue > 200000 ? 'Active trigger' : 'Muted' }}</span>
           </div>
         </div>
 

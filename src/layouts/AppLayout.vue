@@ -1,12 +1,12 @@
 <template>
   <div
-    class="h-screen overflow-hidden flex p-0 lg:p-4 lg:gap-4"
+    class="product-shell h-screen overflow-hidden flex"
     style="background-color: hsl(var(--bg-app))"
   >
     <!-- ── Desktop Sidebar ─────────────────────────────────────────────── -->
     <aside
-      class="hidden lg:flex flex-col flex-shrink-0 border lg:rounded-[12px] transition-all duration-200 ease-enter overflow-hidden shadow-xs"
-      :class="[sidebarCollapsed ? 'w-16' : 'w-[220px]']"
+      class="product-sidebar hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-200 ease-enter overflow-hidden print:hidden"
+      :class="[sidebarCollapsed ? 'w-[72px]' : 'w-[248px]']"
       style="
         background-color: hsl(var(--bg-surface));
         border-color: hsl(var(--neutral-100));
@@ -14,22 +14,24 @@
     >
       <!-- Logo -->
       <div
-        class="h-14 flex items-center px-3 shrink-0 border-b"
+        class="h-16 flex items-center px-4 shrink-0 border-b gap-3 overflow-hidden"
         style="border-color: hsl(var(--neutral-100))"
       >
         <div
-          class="w-7 h-7 rounded-lg bg-accent-600 flex items-center justify-center shrink-0"
+          class="brand-mark w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
         >
           <PhBuildings weight="bold" :size="16" class="text-white" />
         </div>
         <Transition name="label-fade">
-          <span
-            v-if="!sidebarCollapsed"
-            class="ml-2.5 font-semibold tracking-tight whitespace-nowrap overflow-hidden"
-            style="font-size: 14px; color: hsl(var(--neutral-900))"
-          >
-            Track Deal
-          </span>
+          <div v-if="!sidebarCollapsed" class="flex flex-col min-w-0">
+            <span
+              class="font-heading font-extrabold tracking-[-0.04em] text-sm"
+              style="color: hsl(var(--neutral-900))"
+            >
+              Track<span class="text-accent-600">Deal</span>
+            </span>
+            <span class="text-[8px] font-semibold tracking-[0.2em] text-slate-400 uppercase">Revenue workspace</span>
+          </div>
         </Transition>
       </div>
 
@@ -252,7 +254,7 @@
 
     <!-- ── Main Content Area ──────────────────────────────────────────── -->
     <div
-      class="flex-1 flex flex-col min-w-0 overflow-hidden border lg:rounded-[12px] shadow-xs"
+      class="product-workspace flex-1 flex flex-col min-w-0 overflow-hidden"
       style="
         background-color: hsl(var(--bg-app));
         border-color: hsl(var(--neutral-100));
@@ -260,7 +262,7 @@
     >
       <!-- Topbar -->
       <header
-        class="h-14 flex items-center justify-between px-4 lg:px-5 shrink-0 border-b"
+        class="product-topbar h-16 flex items-center justify-between px-4 lg:px-6 shrink-0 border-b print:hidden"
         style="
           background-color: hsl(var(--bg-surface));
           border-color: hsl(var(--neutral-100));
@@ -297,9 +299,18 @@
 
         <!-- Right: Actions -->
         <div class="flex items-center gap-1">
+          <!-- + Quick Add Action Button -->
+          <button
+            @click="quickAddOpen = true"
+            class="btn-primary flex items-center gap-1.5 h-9 px-3 sm:px-4 rounded-[8px] text-caption font-semibold transition-all mr-1"
+          >
+            <PhPlus :size="14" weight="bold" />
+            <span class="hidden sm:inline">Add</span>
+          </button>
+
           <!-- Search Trigger (desktop) -->
           <button
-            @click="toggleSearch"
+            @click="globalSearchOpen = true"
             class="hidden md:flex items-center gap-2 h-8 px-3 rounded-[6px] border text-caption transition-colors duration-80"
             style="
               border-color: hsl(var(--neutral-100));
@@ -316,13 +327,13 @@
             "
           >
             <PhMagnifyingGlass :size="14" />
-            <span>Search...</span>
-            <kbd class="kbd">Ctrl K</kbd>
+            <span>Search TrackDeal...</span>
+            <kbd class="kbd">⌘K</kbd>
           </button>
 
           <!-- Search (mobile) -->
           <button
-            @click="toggleSearch"
+            @click="globalSearchOpen = true"
             class="md:hidden w-8 h-8 flex items-center justify-center rounded-[6px] transition-colors duration-80"
             style="color: hsl(var(--neutral-400))"
             @mouseenter="
@@ -468,20 +479,23 @@
 
       <!-- Page Content -->
       <main
-        class="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 pb-12"
+        class="product-canvas flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-8 lg:py-7 pb-12"
         style="background-color: hsl(var(--bg-app))"
       >
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <Transition name="page" mode="out-in">
+            <component :is="Component" :key="route.fullPath" />
+          </Transition>
+        </router-view>
       </main>
 
       <!-- Footer -->
       <footer
-        class="h-11 flex items-center justify-between shrink-0 border-t text-[11px] px-4 lg:px-6 select-none"
+        class="h-10 hidden sm:flex items-center justify-between shrink-0 border-t text-[10px] px-4 lg:px-8 select-none print:hidden"
         style="
           background-color: hsl(var(--bg-surface));
           border-color: hsl(var(--neutral-100));
           color: hsl(var(--neutral-400));
-          box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04), 0 -1px 2px rgba(0, 0, 0, 0.02);
           position: relative;
           z-index: 10;
         "
@@ -489,9 +503,6 @@
         <div class="flex items-center gap-1.5 font-medium">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
           <span style="color: hsl(var(--neutral-500)); font-weight: 500;">All systems operational</span>
-        </div>
-        <div class="font-semibold tracking-wider uppercase text-[10px]" style="color: hsl(var(--neutral-500));">
-          trackdeal by swarajyaconsultancy
         </div>
         <div class="flex items-center gap-3 font-medium">
           <a
@@ -872,6 +883,10 @@
         </div>
       </TransitionGroup>
     </div>
+
+    <!-- Global Search & Quick Add Modals -->
+    <GlobalSearchModal :isOpen="globalSearchOpen" @close="globalSearchOpen = false" />
+    <QuickAddModal :isOpen="quickAddOpen" @close="quickAddOpen = false" />
   </div>
 </template>
 
@@ -880,7 +895,6 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
-// ── Phosphor Icons ──────────────────────────────────────────────────────────
 import {
   PhBuildings,
   PhChartBar,
@@ -905,7 +919,13 @@ import {
   PhXCircle,
   PhWarningCircle,
   PhHardHat,
+  PhReceipt,
+  PhPlus,
+  PhBank,
+  PhScroll,
 } from "@phosphor-icons/vue";
+import GlobalSearchModal from "@/components/GlobalSearchModal.vue";
+import QuickAddModal from "@/components/QuickAddModal.vue";
 
 const store = useStore();
 const route = useRoute();
@@ -914,6 +934,9 @@ const router = useRouter();
 // ── State ───────────────────────────────────────────────────────────────────
 const sidebarCollapsed = computed(() => store.state.ui.sidebarCollapsed);
 const toasts = computed(() => store.state.notifications.toasts);
+
+const globalSearchOpen = ref(false);
+const quickAddOpen = ref(false);
 
 const mobileMenuOpen = ref(false);
 const userMenuOpen = ref(false);
@@ -941,7 +964,16 @@ const userInitials = computed(() => {
     .join("")
     .toUpperCase();
 });
-const userRoleName = computed(() => store.getters["auth/userRole"] || "Agent");
+const userRoleName = computed(() => {
+  const role = String(store.getters["auth/userRole"] || "").toLowerCase();
+  if (role === "org_admin" || role === "organization_admin") return "Organization Admin";
+  if (role === "system_admin" || role === "super_admin") return "System Admin";
+  if (role === "branch_manager") return "Branch Manager";
+  if (role === "manager") return "Manager";
+  if (role === "agent") return "Agent";
+  if (role === "read_only") return "Read Only";
+  return role ? role.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Agent";
+});
 
 // ── Page / Route ────────────────────────────────────────────────────────────
 const activePageName = computed(() => {
@@ -963,7 +995,7 @@ const toggleSidebar = () => store.commit("ui/TOGGLE_SIDEBAR");
 // ── Navigation Menu ─────────────────────────────────────────────────────────
 const menuGroups = [
   {
-    title: "Main",
+    title: "Overview",
     items: [{ name: "Dashboard", to: "/app/dashboard", icon: PhChartBar }],
   },
   {
@@ -976,10 +1008,16 @@ const menuGroups = [
         permission: "leads:read",
       },
       {
-        name: "Tasks",
+        name: "Tasks & Follow-ups",
         to: "/app/tasks",
         icon: PhCheckSquare,
         permission: "tasks:read",
+      },
+      {
+        name: "Channel Partners",
+        to: "/app/agents",
+        icon: PhHandshake,
+        permission: "agents:read",
       },
     ],
   },
@@ -987,16 +1025,16 @@ const menuGroups = [
     title: "Portfolio",
     items: [
       {
-        name: "Projects",
-        to: "/app/projects",
-        icon: PhBuildings,
-        permission: "projects:read",
-      },
-      {
         name: "Properties",
         to: "/app/properties",
         icon: PhHouseLine,
         permission: "properties:read",
+      },
+      {
+        name: "Projects",
+        to: "/app/projects",
+        icon: PhBuildings,
+        permission: "projects:read",
       },
       {
         name: "Builders",
@@ -1004,11 +1042,28 @@ const menuGroups = [
         icon: PhHardHat,
         permission: "projects:read",
       },
+    ],
+  },
+  {
+    title: "Business",
+    items: [
       {
         name: "Deals",
         to: "/app/deals",
         icon: PhHandshake,
         permission: "deals:read",
+      },
+      {
+        name: "Loans",
+        to: "/app/loans",
+        icon: PhBank,
+        permission: "loans:read",
+      },
+      {
+        name: "Agreements",
+        to: "/app/agreements",
+        icon: PhScroll,
+        permission: "agreements:read",
       },
     ],
   },
@@ -1023,6 +1078,18 @@ const menuGroups = [
         featureFlag: "commissionModule",
       },
       {
+        name: "Receivables",
+        to: "/app/commissions/receivables",
+        icon: PhReceipt,
+        permission: "commissions:read",
+        featureFlag: "commissionModule",
+      },
+    ],
+  },
+  {
+    title: "Analytics",
+    items: [
+      {
         name: "Reports",
         to: "/app/reports",
         icon: PhTrendUp,
@@ -1035,6 +1102,12 @@ const menuGroups = [
     title: "Admin",
     items: [
       {
+        name: "Team",
+        to: "/app/settings/users",
+        icon: PhUsersThree,
+        permission: "users:read",
+      },
+      {
         name: "Settings",
         to: "/app/settings",
         icon: PhGearSix,
@@ -1045,7 +1118,8 @@ const menuGroups = [
 ];
 
 const filteredMenuGroups = computed(() => {
-  const isSuperAdmin = store.getters["auth/userRole"] === "super_admin";
+  const role = String(store.getters["auth/userRole"] || "").toLowerCase();
+  const isAdmin = ["super_admin", "system_admin", "org_admin", "organization_admin"].includes(role);
   return menuGroups
     .map((group) => ({
       ...group,
@@ -1057,7 +1131,7 @@ const filteredMenuGroups = computed(() => {
           return false;
         if (
           item.permission &&
-          !isSuperAdmin &&
+          !isAdmin &&
           !store.getters["permissions/hasCapability"](item.permission)
         )
           return false;
@@ -1114,15 +1188,8 @@ const searchResults = computed(() => {
       category: "Projects",
     },
     {
-      name: "Skyway Tower",
-      desc: "Project",
-      route: "/app/projects",
-      icon: PhBuildings,
-      category: "Projects",
-    },
-    {
-      name: "Anand Mehta",
-      desc: "Lead",
+      name: "Leads",
+      desc: "Directory",
       route: "/app/leads",
       icon: PhUsersThree,
       category: "Leads",
@@ -1156,29 +1223,7 @@ const commandNavUp = () => {
 const commandSelect = () => {};
 
 // ── Notifications ────────────────────────────────────────────────────────────
-const mockNotifications = ref([
-  {
-    id: "1",
-    title: "New Lead Assigned",
-    message: "Anand Mehta has been assigned to you.",
-    time: "2m ago",
-    read: false,
-  },
-  {
-    id: "2",
-    title: "Deal Approved",
-    message: "Compliance approved Deal #3320.",
-    time: "1h ago",
-    read: false,
-  },
-  {
-    id: "3",
-    title: "Commission Processed",
-    message: "Your payout of ₹2,40,000 has been cleared.",
-    time: "1d ago",
-    read: true,
-  },
-]);
+const mockNotifications = ref([]);
 const unreadCount = computed(
   () => mockNotifications.value.filter((n) => !n.read).length,
 );
@@ -1254,12 +1299,13 @@ const vClickOutside = {
   color: hsl(var(--neutral-500));
 }
 .nav-item-default:hover {
-  background-color: hsl(var(--neutral-100));
+  background-color: hsl(var(--neutral-50));
   color: hsl(var(--neutral-900));
 }
 .nav-item-active {
-  background-color: hsl(var(--accent-50));
+  background: linear-gradient(90deg, hsl(var(--accent-100) / 0.85), hsl(var(--accent-50) / 0.45));
   color: hsl(var(--accent-600));
+  box-shadow: inset 0 0 0 1px hsl(var(--accent-200) / 0.55);
 }
 .dark .nav-item-active {
   background-color: hsl(var(--accent-100));
@@ -1268,10 +1314,11 @@ const vClickOutside = {
 .nav-item-active::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
+  left: 5px;
+  top: 50%;
+  width: 3px;
+  height: 14px;
+  transform: translateY(-50%);
   border-radius: 999px;
   background-color: hsl(var(--accent-500));
 }

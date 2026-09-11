@@ -4,6 +4,8 @@ import router from './router';
 import store from './store';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import { injectStore } from '@/api/client';
+import AppIcon from '@/components/AppIcon.vue';
+import AppPagination from '@/components/AppPagination.vue';
 
 // Import Tailwind CSS layer configurations
 import './assets/css/index.css';
@@ -12,6 +14,10 @@ import './assets/css/index.css';
 injectStore(store);
 
 const app = createApp(App);
+
+// Semantic icon primitive used across legacy and modernized screens.
+app.component('AppIcon', AppIcon);
+app.component('AppPagination', AppPagination);
 
 // 1. Configure TanStack Query plugin defaults (staleTime set to 0 for real-time consistency)
 app.use(VueQueryPlugin, {

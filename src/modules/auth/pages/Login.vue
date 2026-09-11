@@ -10,7 +10,7 @@
         @click="errorMessage = ''"
         class="font-bold opacity-80 hover:opacity-100"
       >
-        ✕
+        <AppIcon name="close" :size="14" weight="bold" />
       </button>
     </div>
 
