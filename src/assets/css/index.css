@@ -9,30 +9,30 @@
 
 /* ── CSS Custom Properties ─────────────────────────────────────────────────── */
 :root {
-  /* Verdigris accent: distinctive, trustworthy, and restrained */
-  --accent-50:  164 48% 96%;
-  --accent-100: 164 46% 90%;
-  --accent-200: 164 43% 78%;
-  --accent-500: 164 70% 36%;
-  --accent-600: 164 76% 29%;
-  --accent-700: 164 78% 23%;
+  /* Shared with the public landing page: quiet paper surfaces and forest green actions. */
+  --accent-50:  105 30% 95%;
+  --accent-100: 112 27% 88%;
+  --accent-200: 120 23% 75%;
+  --accent-500: 145 34% 37%;
+  --accent-600: 150 34% 23%;
+  --accent-700: 151 42% 17%;
   --accent-foreground: 0 0% 100%;
 
   --highlight-100: 39 74% 91%;
   --highlight-500: 36 68% 50%;
 
   /* Neutral Scale — Light Mode */
-  --neutral-0:   42 24% 98%;
-  --neutral-25:  40 18% 96%;
-  --neutral-50:  38 13% 93%;
-  --neutral-100: 36 10% 87%;
-  --neutral-200: 35  8% 78%;
-  --neutral-300: 32  6% 64%;
-  --neutral-400: 28  5% 48%;
-  --neutral-500: 24  6% 35%;
-  --neutral-700: 20 10% 20%;
-  --neutral-900: 18 15% 10%;
-  --neutral-950: 18 20%  6%;
+  --neutral-0:   45 25% 97%;
+  --neutral-25:  45 20% 96%;
+  --neutral-50:  42 16% 92%;
+  --neutral-100: 40 13% 87%;
+  --neutral-200: 35  9% 78%;
+  --neutral-300: 32  7% 64%;
+  --neutral-400: 150  5% 48%;
+  --neutral-500: 150  5% 39%;
+  --neutral-700: 150  9% 25%;
+  --neutral-900: 155 18% 15%;
+  --neutral-950: 155 22%  9%;
 
   /* Surface Layers */
   --bg-app:      var(--neutral-0);
@@ -496,6 +496,185 @@
   border: 1px solid hsl(var(--neutral-100));
   border-radius: 14px;
   box-shadow: 0 1px 3px rgb(26 22 18 / 0.025);
+}
+
+/* Calm, task-first workspace pattern. Used by the education experience and
+   available to every module so screens can share the landing page's restraint. */
+.workspace-page {
+  width: min(100%, 76rem);
+  margin-inline: auto;
+  display: grid;
+  gap: 1.5rem;
+}
+.workspace-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 0 0.5rem;
+}
+.workspace-page-header__copy { max-width: 42rem; }
+.workspace-page-header__title {
+  margin-top: 0.3rem;
+  color: hsl(var(--neutral-900));
+  font-family: Manrope, Inter, system-ui, sans-serif;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+.workspace-page-header__description {
+  margin-top: 0.55rem;
+  color: hsl(var(--neutral-500));
+  font-size: 13px;
+  line-height: 1.55;
+}
+.workspace-panel {
+  overflow: hidden;
+  border: 1px solid hsl(var(--neutral-100));
+  border-radius: 12px;
+  background: hsl(var(--bg-surface));
+  box-shadow: 0 1px 2px rgb(26 22 18 / 0.025);
+}
+.workspace-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border: 1px solid hsl(var(--neutral-100));
+  border-radius: 12px;
+  background: hsl(var(--bg-surface) / 0.78);
+}
+.workspace-filter-input {
+  min-width: min(100%, 18rem);
+  height: 2.5rem;
+  padding: 0 0.875rem;
+  border: 1px solid hsl(var(--neutral-100));
+  border-radius: 8px;
+  background: hsl(var(--neutral-25));
+  color: hsl(var(--neutral-700));
+  font-size: 12px;
+  outline: none;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+.workspace-filter-input:hover { border-color: hsl(var(--neutral-200)); }
+.workspace-filter-input:focus {
+  border-color: hsl(var(--accent-500));
+  background: hsl(var(--bg-surface));
+  box-shadow: 0 0 0 3px hsl(var(--accent-100) / 0.72);
+}
+.workspace-table { width: 100%; border-collapse: collapse; color: hsl(var(--neutral-700)); font-size: 12px; }
+.workspace-table th {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid hsl(var(--neutral-100));
+  background: hsl(var(--neutral-25));
+  color: hsl(var(--neutral-500));
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workspace-table td { padding: 0.9rem 1rem; border-bottom: 1px solid hsl(var(--neutral-50)); vertical-align: middle; }
+.workspace-table tbody tr:last-child td { border-bottom: 0; }
+.workspace-table tbody tr:not(.workspace-table-empty):hover { background: hsl(var(--neutral-25) / 0.72); }
+.workspace-table-primary { color: hsl(var(--neutral-900)); font-weight: 700; }
+.workspace-table-link { color: hsl(var(--accent-700)); font-weight: 700; }
+.workspace-table-link:hover { text-decoration: underline; }
+.workspace-table-muted { margin-top: 0.15rem; color: hsl(var(--neutral-400)); font-size: 11px; }
+.workspace-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0 0.55rem;
+  border: 1px solid hsl(var(--accent-200));
+  border-radius: 999px;
+  background: hsl(var(--accent-50));
+  color: hsl(var(--accent-700));
+  font-size: 10px;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.workspace-dialog-backdrop { background: rgb(21 39 30 / 0.45); backdrop-filter: blur(3px); }
+.workspace-dialog { box-shadow: 0 24px 70px rgb(26 41 31 / 0.2); }
+.workspace-form-label { display: grid; gap: 0.35rem; color: hsl(var(--neutral-700)); font-size: 11px; font-weight: 650; }
+.workspace-form-input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid hsl(var(--neutral-100));
+  border-radius: 8px;
+  background: hsl(var(--bg-surface));
+  color: hsl(var(--neutral-700));
+  font-size: 12px;
+  outline: none;
+}
+.workspace-form-input:focus { border-color: hsl(var(--accent-500)); box-shadow: 0 0 0 3px hsl(var(--accent-100) / 0.72); }
+.workspace-dialog input, .workspace-dialog select, .workspace-dialog textarea {
+  min-height: 2.5rem;
+  border-color: hsl(var(--neutral-100)) !important;
+  border-radius: 8px !important;
+  background: hsl(var(--bg-surface));
+  color: hsl(var(--neutral-700));
+  outline: none;
+}
+.workspace-dialog input:focus, .workspace-dialog select:focus, .workspace-dialog textarea:focus { border-color: hsl(var(--accent-500)) !important; box-shadow: 0 0 0 3px hsl(var(--accent-100) / 0.72); }
+
+/* Education lists retain their feature-specific markup but inherit the same
+   deliberately simple hierarchy, filters, tables, and dialogs. */
+.education-list > div:first-child > div > h1 {
+  margin-top: 0.25rem;
+  color: hsl(var(--neutral-900));
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+.education-list > div:first-child > div > p { color: hsl(var(--neutral-500)); font-size: 13px; line-height: 1.55; margin-top: 0.55rem; }
+.education-list > div:nth-child(2) {
+  padding: 0.875rem;
+  border-color: hsl(var(--neutral-100));
+  border-radius: 12px;
+  background: hsl(var(--bg-surface) / 0.78);
+  box-shadow: none;
+}
+.education-list > div:nth-child(2) input,
+.education-list > div:nth-child(2) select {
+  min-height: 2.5rem;
+  border-color: hsl(var(--neutral-100));
+  border-radius: 8px;
+  background: hsl(var(--neutral-25));
+  color: hsl(var(--neutral-700));
+  outline: none;
+}
+.education-list > div:nth-child(2) input:focus,
+.education-list > div:nth-child(2) select:focus { border-color: hsl(var(--accent-500)); background: hsl(var(--bg-surface)); box-shadow: 0 0 0 3px hsl(var(--accent-100) / 0.72); }
+.education-list > div:nth-child(3) {
+  border-color: hsl(var(--neutral-100));
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(26 22 18 / 0.025);
+}
+.education-list table { color: hsl(var(--neutral-700)); }
+.education-list table thead { background: hsl(var(--neutral-25)) !important; color: hsl(var(--neutral-500)) !important; }
+.education-list table th { padding-top: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid hsl(var(--neutral-100)); font-size: 9px; letter-spacing: 0.1em; }
+.education-list table td { padding-top: 0.9rem; padding-bottom: 0.9rem; border-color: hsl(var(--neutral-50)) !important; }
+.education-list table tbody tr:hover { background: hsl(var(--neutral-25) / 0.72); }
+.education-list table a, .education-list table button:not(.btn) { color: hsl(var(--accent-700)) !important; }
+.education-list [class*="bg-black"] { background: rgb(21 39 30 / 0.45) !important; backdrop-filter: blur(3px); }
+.education-list form.bg-surface { border-radius: 12px; box-shadow: 0 24px 70px rgb(26 41 31 / 0.2); }
+.education-list form label { color: hsl(var(--neutral-700)); font-weight: 600; }
+.education-list form input, .education-list form select {
+  min-height: 2.5rem;
+  border-color: hsl(var(--neutral-100)) !important;
+  border-radius: 8px !important;
+  background: hsl(var(--bg-surface));
+  color: hsl(var(--neutral-700));
+}
+.education-list form input:focus, .education-list form select:focus { border-color: hsl(var(--accent-500)) !important; box-shadow: 0 0 0 3px hsl(var(--accent-100) / 0.72); outline: none; }
+
+@media (max-width: 640px) {
+  .workspace-page-header { align-items: flex-start; flex-direction: column; }
+  .workspace-page-header > .btn { width: 100%; }
+  .workspace-filter-input { width: 100%; }
+  .workspace-table { min-width: 42rem; }
 }
 
 .icon-button {

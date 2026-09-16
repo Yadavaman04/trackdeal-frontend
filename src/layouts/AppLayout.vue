@@ -68,13 +68,13 @@
               sidebarCollapsed
                 ? 'h-9 w-9 mx-auto justify-center'
                 : 'h-9 px-2.5 gap-2.5',
-              isActiveRoute(item.to) ? 'nav-item-active' : 'nav-item-default',
+              isActiveRoute(item) ? 'nav-item-active' : 'nav-item-default',
             ]"
           >
             <component
               :is="item.icon"
               :size="18"
-              :weight="isActiveRoute(item.to) ? 'bold' : 'regular'"
+              :weight="isActiveRoute(item) ? 'bold' : 'regular'"
               class="shrink-0 transition-all duration-80"
             />
             <span v-if="!sidebarCollapsed" class="truncate">{{
@@ -238,7 +238,7 @@
                 @click="mobileMenuOpen = false"
                 class="flex items-center h-9 px-2.5 gap-2.5 rounded-[6px] text-body font-medium transition-colors duration-80 relative"
                 :class="
-                  isActiveRoute(item.to)
+                  isActiveRoute(item)
                     ? 'nav-item-active'
                     : 'nav-item-default'
                 "
@@ -246,7 +246,7 @@
                 <component
                   :is="item.icon"
                   :size="18"
-                  :weight="isActiveRoute(item.to) ? 'bold' : 'regular'"
+                  :weight="isActiveRoute(item) ? 'bold' : 'regular'"
                   class="shrink-0"
                 />
                 <span class="truncate">{{ item.name }}</span>
@@ -1011,7 +1011,21 @@ const activePageName = computed(() => {
     .trim();
 });
 
-const isActiveRoute = (to) => route.path.startsWith(to);
+// A top-level item may share a route family with a more specific destination.
+// Team owns `/app/settings/users`; Settings must not look selected for it.
+const isActiveRoute = (item) => {
+  const to = typeof item === "string" ? item : item.to;
+  if (!to) return false;
+  if (
+    item?.activeExcludes?.some(
+      (excludedPath) =>
+        route.path === excludedPath || route.path.startsWith(`${excludedPath}/`),
+    )
+  ) {
+    return false;
+  }
+  return route.path === to || route.path.startsWith(`${to}/`);
+};
 
 // ── Theme ───────────────────────────────────────────────────────────────────
 const isDarkMode = computed(() => store.state.ui.activeThemeMode === "dark");
@@ -1157,6 +1171,7 @@ const realEstateMenuGroups = [
         icon: PhGearSix,
         permission: "settings:read",
         module: "settings",
+        activeExcludes: ["/app/settings/users"],
       },
     ],
   },
@@ -1229,6 +1244,7 @@ const educationMenuGroups = [
         icon: PhGearSix,
         permission: "settings:read",
         module: "settings",
+        activeExcludes: ["/app/settings/users"],
       },
     ],
   },

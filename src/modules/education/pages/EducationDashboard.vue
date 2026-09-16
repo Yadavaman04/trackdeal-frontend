@@ -1,33 +1,33 @@
 <template>
-  <div class="space-y-6">
-    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Education</p>
-        <h1 class="font-heading text-2xl font-extrabold text-slate-900 dark:text-white">Admissions overview</h1>
-        <p class="text-sm text-slate-500 mt-1">Student leads, enrolled students, and classes for this institute.</p>
+  <div class="workspace-page">
+    <header class="workspace-page-header">
+      <div class="workspace-page-header__copy">
+        <p class="eyebrow">Education workspace</p>
+        <h1 class="workspace-page-header__title">Admissions, with room to focus.</h1>
+        <p class="workspace-page-header__description">A clear view of your inquiries, enrolled students, and classes.</p>
       </div>
-      <router-link to="/app/leads" class="btn btn-primary btn-sm h-9 text-xs font-semibold self-start">
+      <router-link to="/app/leads" class="btn btn-primary btn-sm self-start sm:self-auto">
         Add student lead
       </router-link>
     </header>
 
-    <div v-if="loading" class="py-20 text-center text-sm text-slate-500">Loading education metrics...</div>
-    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="p-5 rounded-2xl bg-surface border border-default shadow-sm">
-        <div class="text-[10px] uppercase font-bold text-slate-400">Student leads</div>
-        <div class="text-3xl font-black mt-2">{{ summary.totalLeads || 0 }}</div>
+    <div v-if="loading" class="workspace-panel py-20 text-center text-sm text-text-muted">Loading your admissions overview…</div>
+    <div v-else class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="workspace-panel p-5">
+        <div class="eyebrow">Student leads</div>
+        <div class="mt-3 font-heading text-3xl font-bold tracking-[-0.05em] text-text-primary">{{ summary.totalLeads || 0 }}</div>
       </div>
-      <div class="p-5 rounded-2xl bg-surface border border-default shadow-sm">
-        <div class="text-[10px] uppercase font-bold text-slate-400">Enrolled students</div>
-        <div class="text-3xl font-black mt-2">{{ summary.totalStudents || 0 }}</div>
+      <div class="workspace-panel p-5">
+        <div class="eyebrow">Enrolled students</div>
+        <div class="mt-3 font-heading text-3xl font-bold tracking-[-0.05em] text-text-primary">{{ summary.totalStudents || 0 }}</div>
       </div>
-      <div class="p-5 rounded-2xl bg-surface border border-default shadow-sm">
-        <div class="text-[10px] uppercase font-bold text-slate-400">Classes</div>
-        <div class="text-3xl font-black mt-2">{{ summary.totalClasses || 0 }}</div>
+      <div class="workspace-panel p-5">
+        <div class="eyebrow">Classes</div>
+        <div class="mt-3 font-heading text-3xl font-bold tracking-[-0.05em] text-text-primary">{{ summary.totalClasses || 0 }}</div>
       </div>
-      <div class="p-5 rounded-2xl bg-surface border border-default shadow-sm">
-        <div class="text-[10px] uppercase font-bold text-slate-400">Leads enrolled</div>
-        <div class="text-3xl font-black mt-2">{{ summary.enrolledLeads || 0 }}</div>
+      <div class="workspace-panel p-5">
+        <div class="eyebrow">Leads enrolled</div>
+        <div class="mt-3 font-heading text-3xl font-bold tracking-[-0.05em] text-text-primary">{{ summary.enrolledLeads || 0 }}</div>
       </div>
     </div>
   </div>

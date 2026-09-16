@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="workspace-page education-list">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="font-heading text-xl font-extrabold">Student leads</h1>
@@ -60,8 +60,8 @@
     </div>
 
     <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" @click.self="showModal = false">
-        <form class="bg-surface border border-default rounded-2xl w-full max-w-lg p-6 space-y-4" @submit.prevent="save">
+      <div v-if="showModal" class="workspace-dialog-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4" @click.self="showModal = false">
+        <form class="workspace-dialog bg-surface border border-default rounded-xl w-full max-w-lg p-6 space-y-4" @submit.prevent="save">
           <h2 class="font-bold">Add student lead</h2>
           <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
           <div class="grid grid-cols-2 gap-3 text-xs">
@@ -106,8 +106,8 @@
     </Teleport>
 
     <Teleport to="body">
-      <div v-if="enrollLead" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" @click.self="enrollLead = null">
-        <form class="bg-surface border border-default rounded-2xl w-full max-w-md p-6 space-y-4" @submit.prevent="enroll">
+      <div v-if="enrollLead" class="workspace-dialog-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4" @click.self="enrollLead = null">
+        <form class="workspace-dialog bg-surface border border-default rounded-xl w-full max-w-md p-6 space-y-4" @submit.prevent="enroll">
           <h2 class="font-bold">Enroll {{ enrollLead.firstName }}</h2>
           <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
           <label class="space-y-1 text-xs block">Class *

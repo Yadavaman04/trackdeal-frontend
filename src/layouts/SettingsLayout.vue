@@ -1,34 +1,29 @@
 <template>
-  <div class="w-full">
-    <div class="flex flex-col md:flex-row gap-6 min-h-full">
+  <div class="settings-workspace">
+    <nav class="settings-subnav" aria-label="Workspace settings">
+      <div class="settings-subnav__intro">
+        <p class="eyebrow">Workspace settings</p>
+        <p>Configure your organization, access, and policies.</p>
+      </div>
+      <div class="settings-subnav__items" role="tablist" aria-label="Settings sections">
+        <router-link
+          v-for="item in filteredSettingsMenu"
+          :key="item.name"
+          :to="item.to"
+          class="settings-subnav__item"
+          :class="{ 'is-active': isActive(item.to) }"
+          role="tab"
+          :aria-selected="isActive(item.to)"
+        >
+          <component :is="item.icon" :size="16" :weight="isActive(item.to) ? 'bold' : 'regular'" />
+          <span>{{ item.name }}</span>
+        </router-link>
+      </div>
+    </nav>
 
-      <!-- Settings Left Navigation -->
-      <aside
-        class="md:w-52 shrink-0 bg-surface border border-default rounded-xl p-2.5 self-start shadow-sm"
-      >
-        <p class="text-label font-semibold uppercase tracking-wider px-2 pt-1 pb-2" style="color: hsl(var(--neutral-400));">
-          Settings
-        </p>
-        <nav class="space-y-0.5">
-          <router-link
-            v-for="item in filteredSettingsMenu"
-            :key="item.name"
-            :to="item.to"
-            class="flex items-center gap-2.5 h-9 px-2.5 rounded-[6px] text-body-sm font-medium transition-colors duration-80 relative"
-            :class="activeRoute.startsWith(item.to) ? 'nav-item-active' : 'nav-item-default'"
-          >
-            <component :is="item.icon" :size="16" :weight="activeRoute.startsWith(item.to) ? 'bold' : 'regular'" class="shrink-0" />
-            <span class="truncate">{{ item.name }}</span>
-          </router-link>
-        </nav>
-      </aside>
-
-      <!-- Settings Content Canvas -->
-      <section class="flex-1 min-w-0 space-y-6">
-        <router-view />
-      </section>
-
-    </div>
+    <section class="settings-content">
+      <router-view />
+    </section>
   </div>
 </template>
 
@@ -38,19 +33,19 @@ import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import {
   PhBuildings, PhMapPin, PhUsersThree,
-  PhShieldCheck, PhGearSix,
+  PhShieldCheck,
 } from '@phosphor-icons/vue';
 
 const store = useStore();
 const route = useRoute();
-const activeRoute = computed(() => route.path);
-
 const settingsMenu = [
   { name: 'Organization',      to: '/app/settings/org',      icon: PhBuildings,   permission: 'settings.org'    },
   { name: 'Branches',          to: '/app/settings/branches', icon: PhMapPin,      permission: 'settings.branch' },
   { name: 'Users',             to: '/app/settings/users',    icon: PhUsersThree,  permission: 'settings.users'  },
   { name: 'Roles & Permissions', to: '/app/settings/roles', icon: PhShieldCheck, permission: 'settings.roles'  },
 ];
+
+const isActive = (to) => route.path === to || route.path.startsWith(`${to}/`);
 
 const filteredSettingsMenu = computed(() => {
   const isSuperAdmin = store.getters['auth/userRole'] === 'super_admin';
@@ -68,3 +63,16 @@ const filteredSettingsMenu = computed(() => {
   });
 });
 </script>
+
+<style scoped>
+.settings-workspace { width: min(100%, 88rem); margin-inline: auto; display: grid; gap: 1.5rem; }
+.settings-subnav { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1rem 1.125rem; border: 1px solid hsl(var(--neutral-100)); border-radius: 12px; background: hsl(var(--bg-surface) / 0.86); box-shadow: 0 1px 2px rgb(26 22 18 / 0.025); }
+.settings-subnav__intro { flex: 0 0 auto; }
+.settings-subnav__intro > p:last-child { margin-top: 0.25rem; color: hsl(var(--neutral-400)); font-size: 11px; }
+.settings-subnav__items { display: flex; align-items: center; gap: 0.25rem; min-width: 0; padding: 0.25rem; border: 1px solid hsl(var(--neutral-100)); border-radius: 9px; background: hsl(var(--neutral-25)); }
+.settings-subnav__item { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2rem; padding: 0 0.65rem; border-radius: 6px; color: hsl(var(--neutral-500)); font-size: 11px; font-weight: 600; white-space: nowrap; transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease; }
+.settings-subnav__item:hover { color: hsl(var(--neutral-900)); background: hsl(var(--bg-surface)); }
+.settings-subnav__item.is-active { color: hsl(var(--accent-700)); background: hsl(var(--bg-surface)); box-shadow: 0 1px 2px rgb(26 22 18 / 0.08); }
+.settings-content { min-width: 0; }
+@media (max-width: 900px) { .settings-subnav { align-items: stretch; flex-direction: column; } .settings-subnav__items { width: 100%; overflow-x: auto; } }
+</style>

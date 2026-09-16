@@ -43,7 +43,7 @@
         >
           <option value="" disabled selected>Select Access Role</option>
           <option v-for="r in roles" :key="r.id || r._id" :value="r.id || r._id">
-            {{ r.name }}
+            {{ roleDisplayName(r) }}
           </option>
         </select>
         <span v-if="errors.role" class="text-[9px] text-red-500 mt-1 block">{{ errors.role }}</span>
@@ -86,6 +86,16 @@ const props = defineProps({
  
 const emit = defineEmits(['close', 'success']);
 const store = useStore();
+const isEducationWorkspace = computed(
+  () => store.getters['organization/isEducationTenant']
+);
+
+// Keep the stored role code unchanged; education teams simply use the more
+// natural “Staff” vocabulary in the invitation experience.
+function roleDisplayName(roleOption) {
+  const name = roleOption?.name || roleOption?.code || '';
+  return isEducationWorkspace.value ? name.replace(/agent/gi, 'Staff') : name;
+}
  
 const schema = computed(() => toTypedSchema(
   zod.object({
