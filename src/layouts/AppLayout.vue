@@ -33,8 +33,9 @@
             </span>
             <span
               class="text-[8px] font-semibold tracking-[0.2em] text-slate-400 uppercase"
-              >Revenue workspace</span
             >
+              {{ isEducationWorkspace ? "Education workspace" : "Revenue workspace" }}
+            </span>
           </div>
         </Transition>
       </div>
@@ -492,7 +493,7 @@
       >
         <router-view v-slot="{ Component }">
           <Transition name="page" mode="out-in">
-            <component :is="Component" :key="route.fullPath" />
+            <component :is="Component" :key="route?.fullPath || 'workspace'" />
           </Transition>
         </router-view>
       </main>
@@ -944,6 +945,8 @@ import {
   PhPlus,
   PhBank,
   PhScroll,
+  PhStudent,
+  PhChalkboardTeacher,
 } from "@phosphor-icons/vue";
 import GlobalSearchModal from "@/components/GlobalSearchModal.vue";
 import QuickAddModal from "@/components/QuickAddModal.vue";
@@ -1016,8 +1019,12 @@ const toggleTheme = () =>
   store.commit("ui/SET_THEME_MODE", isDarkMode.value ? "light" : "dark");
 const toggleSidebar = () => store.commit("ui/TOGGLE_SIDEBAR");
 
+const isEducationWorkspace = computed(
+  () => store.getters["organization/isEducationTenant"]
+);
+
 // ── Navigation Menu ─────────────────────────────────────────────────────────
-const menuGroups = [
+const realEstateMenuGroups = [
   {
     title: "Overview",
     items: [{ name: "Dashboard", to: "/app/dashboard", icon: PhChartBar }],
@@ -1030,18 +1037,21 @@ const menuGroups = [
         to: "/app/leads",
         icon: PhUsersThree,
         permission: "leads:read",
+        module: "leads",
       },
       {
         name: "Tasks & Follow-ups",
         to: "/app/tasks",
         icon: PhCheckSquare,
         permission: "tasks:read",
+        module: "tasks",
       },
       {
         name: "Channel Partners",
         to: "/app/agents",
         icon: PhHandshake,
         permission: "agents:read",
+        module: "agents",
       },
     ],
   },
@@ -1053,18 +1063,21 @@ const menuGroups = [
         to: "/app/properties",
         icon: PhHouseLine,
         permission: "properties:read",
+        module: "properties",
       },
       {
         name: "Projects",
         to: "/app/projects",
         icon: PhBuildings,
         permission: "projects:read",
+        module: "projects",
       },
       {
         name: "Builders",
         to: "/app/builders",
         icon: PhHardHat,
         permission: "projects:read",
+        module: "projects",
       },
     ],
   },
@@ -1076,18 +1089,21 @@ const menuGroups = [
         to: "/app/deals",
         icon: PhHandshake,
         permission: "deals:read",
+        module: "deals",
       },
       {
         name: "Loans",
         to: "/app/loans",
         icon: PhBank,
         permission: "loans:read",
+        module: "loans",
       },
       {
         name: "Agreements",
         to: "/app/agreements",
         icon: PhScroll,
         permission: "agreements:read",
+        module: "agreements",
       },
     ],
   },
@@ -1100,6 +1116,7 @@ const menuGroups = [
         icon: PhCurrencyInr,
         permission: "commissions:read",
         featureFlag: "commissionModule",
+        module: "commissions",
       },
       {
         name: "Receivables",
@@ -1107,6 +1124,7 @@ const menuGroups = [
         icon: PhReceipt,
         permission: "commissions:read",
         featureFlag: "commissionModule",
+        module: "commissions",
       },
     ],
   },
@@ -1119,6 +1137,7 @@ const menuGroups = [
         icon: PhTrendUp,
         permission: "reports:read",
         featureFlag: "reportsModule",
+        module: "reports",
       },
     ],
   },
@@ -1130,16 +1149,94 @@ const menuGroups = [
         to: "/app/settings/users",
         icon: PhUsersThree,
         permission: "users:read",
+        module: "settings",
       },
       {
         name: "Settings",
         to: "/app/settings",
         icon: PhGearSix,
         permission: "settings:read",
+        module: "settings",
       },
     ],
   },
 ];
+
+const educationMenuGroups = [
+  {
+    title: "Overview",
+    items: [{ name: "Dashboard", to: "/app/dashboard", icon: PhChartBar }],
+  },
+  {
+    title: "Admissions",
+    items: [
+      {
+        name: "Student Leads",
+        to: "/app/leads",
+        icon: PhUsersThree,
+        permission: "leads:read",
+        module: "leads",
+      },
+      {
+        name: "Students",
+        to: "/app/students",
+        icon: PhStudent,
+        permission: "leads:read",
+        module: "students",
+      },
+      {
+        name: "Classes",
+        to: "/app/classes",
+        icon: PhChalkboardTeacher,
+        permission: "leads:read",
+        module: "classes",
+      },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      {
+        name: "Tasks & Follow-ups",
+        to: "/app/tasks",
+        icon: PhCheckSquare,
+        permission: "tasks:read",
+        module: "tasks",
+      },
+      {
+        name: "Reports",
+        to: "/app/reports",
+        icon: PhTrendUp,
+        permission: "reports:read",
+        featureFlag: "reportsModule",
+        module: "reports",
+      },
+    ],
+  },
+  {
+    title: "Admin",
+    items: [
+      {
+        name: "Team",
+        to: "/app/settings/users",
+        icon: PhUsersThree,
+        permission: "users:read",
+        module: "settings",
+      },
+      {
+        name: "Settings",
+        to: "/app/settings",
+        icon: PhGearSix,
+        permission: "settings:read",
+        module: "settings",
+      },
+    ],
+  },
+];
+
+const menuGroups = computed(() =>
+  isEducationWorkspace.value ? educationMenuGroups : realEstateMenuGroups
+);
 
 const filteredMenuGroups = computed(() => {
   const role = String(store.getters["auth/userRole"] || "").toLowerCase();
@@ -1149,10 +1246,15 @@ const filteredMenuGroups = computed(() => {
     "org_admin",
     "organization_admin",
   ].includes(role);
-  return menuGroups
+  return menuGroups.value
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => {
+        if (
+          item.module &&
+          !store.getters["organization/isFeatureEnabled"](item.module)
+        )
+          return false;
         if (
           item.featureFlag &&
           !store.getters["organization/isFeatureEnabled"](item.featureFlag)

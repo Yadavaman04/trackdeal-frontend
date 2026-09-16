@@ -14,7 +14,7 @@
         <div
           class="brand-mark w-9 h-9 rounded-[11px] flex items-center justify-center"
         >
-          <PhBuildings :size="18" weight="duotone" />
+          <PhGraduationCap :size="18" weight="duotone" />
         </div>
         <span
           class="font-heading font-extrabold text-slate-100 tracking-[-0.04em] text-lg"
@@ -28,17 +28,16 @@
           class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-500/10 border border-accent-500/20 text-[10px] uppercase tracking-[0.14em] font-bold text-emerald-300"
         >
           <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-          Revenue operations workspace
+          Institute operations workspace
         </div>
         <h1
           class="font-heading text-4xl xl:text-5xl font-bold text-white tracking-[-0.045em] leading-[1.08]"
         >
-          Every deal, from first signal to final payout.
+          Every inquiry, from first counselling call to confirmed seat.
         </h1>
         <p class="text-slate-400 text-sm leading-6 max-w-lg">
-          Track deals, calculate agent payouts, automate communication rules,
-          and run executive commission analytics inside one unified premium
-          workspace.
+          Track student leads, place them in the right class, follow up on
+          admissions, and keep your institute team aligned in one workspace.
         </p>
 
         <!-- Mock dashboard visualization card -->
@@ -46,7 +45,7 @@
           <div class="flex items-center justify-between">
             <span
               class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider"
-              >Eligible Revenue</span
+              >Active inquiries</span
             >
             <span
               class="text-[9px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"
@@ -54,7 +53,7 @@
             >
           </div>
           <div class="text-2xl font-bold font-mono text-slate-100">
-            ₹24,85,900
+            76 this week
           </div>
           <div class="flex space-x-2 pt-1">
             <span class="w-full h-1 bg-accent-600 rounded-full"></span>
@@ -96,7 +95,7 @@
           <div
             class="brand-mark w-10 h-10 rounded-[12px] flex items-center justify-center mb-3"
           >
-            <PhBuildings :size="20" weight="duotone" />
+            <PhGraduationCap :size="20" weight="duotone" />
           </div>
           <h2
             class="text-2xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tight"
@@ -114,7 +113,7 @@
 <script setup>
 import { computed } from "vue";
 import { useStore } from "vuex";
-import { PhSun, PhMoon, PhBuildings } from "@phosphor-icons/vue";
+import { PhSun, PhMoon, PhGraduationCap } from "@phosphor-icons/vue";
 
 const store = useStore();
 const activeTheme = computed(() => store.state.ui.activeThemeMode);

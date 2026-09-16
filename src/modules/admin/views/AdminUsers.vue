@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="font-heading text-xl sm:text-2xl font-black text-white">Platform Users Directory</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Manage user accounts, roles, security status, and tenant organization mapping across the platform.</p>
+        <h1 class="font-heading text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Platform Users Directory</h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Manage user accounts, roles, security status, and tenant organization mapping across the platform.</p>
       </div>
       <button
         @click="openCreateUserModal"
@@ -16,20 +16,20 @@
     </div>
 
     <!-- Filters & Toolbar -->
-    <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+    <div class="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
       <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
         <input
           v-model="searchQuery"
           @input="handleSearch"
           type="text"
           placeholder="Search name, email, mobile..."
-          class="bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-full sm:w-64"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-full sm:w-64"
         />
 
         <select
           v-model="selectedOrgId"
           @change="loadUsers"
-          class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
         >
           <option value="">All Organizations</option>
           <option v-for="org in orgList" :key="org._id" :value="org._id">{{ org.name }}</option>
@@ -38,7 +38,7 @@
         <select
           v-model="statusFilter"
           @change="loadUsers"
-          class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
         >
           <option value="">All Statuses</option>
           <option value="active">Active</option>
@@ -47,16 +47,16 @@
         </select>
       </div>
 
-      <div class="text-xs text-slate-400 self-end sm:self-auto">
-        Total: <span class="font-bold text-white">{{ pagination.total || 0 }}</span> users
+      <div class="text-xs text-slate-500 dark:text-slate-400 self-end sm:self-auto">
+        Total: <span class="font-bold text-slate-900 dark:text-white">{{ pagination.total || 0 }}</span> users
       </div>
     </div>
 
     <!-- Users Table -->
-    <div class="rounded-2xl bg-slate-900/80 border border-slate-800 shadow-lg overflow-hidden">
+    <div class="rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
-          <thead class="text-[10px] font-bold uppercase text-slate-400 bg-slate-800/60 border-b border-slate-800">
+          <thead class="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th class="py-3 px-4">User</th>
               <th class="py-3 px-4">Organization</th>
@@ -66,45 +66,51 @@
               <th class="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-800/60">
-            <tr v-for="u in users" :key="u._id" class="hover:bg-slate-800/40 transition">
+          <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60">
+            <tr v-for="u in users" :key="u._id" class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
               <td class="py-3.5 px-4">
-                <div class="font-bold text-slate-100">{{ u.firstName }} {{ u.lastName }}</div>
-                <div class="text-[10px] font-mono text-slate-400">{{ u.email }} <span v-if="u.mobile">• {{ u.mobile }}</span></div>
+                <div class="font-bold text-slate-900 dark:text-slate-100">{{ u.firstName }} {{ u.lastName }}</div>
+                <div class="text-[10px] font-mono text-slate-500 dark:text-slate-400">{{ u.email }} <span v-if="u.mobile">• {{ u.mobile }}</span></div>
               </td>
               <td class="py-3.5 px-4">
-                <div v-if="u.organizationId" class="font-semibold text-slate-200">
+                <div v-if="u.organizationId" class="font-semibold text-slate-800 dark:text-slate-200">
                   {{ u.organizationId.name }}
                 </div>
                 <div v-else class="text-slate-500 italic">Platform Root</div>
               </td>
               <td class="py-3.5 px-4">
-                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {{ u.roleId?.code || u.roleId?.name || 'Agent' }}
                 </span>
               </td>
               <td class="py-3.5 px-4">
                 <span
                   class="px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize"
-                  :class="u.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'"
+                  :class="u.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'"
                 >
                   {{ u.status }}
                 </span>
               </td>
-              <td class="py-3.5 px-4 text-slate-400">{{ formatDate(u.createdAt) }}</td>
+              <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ formatDate(u.createdAt) }}</td>
               <td class="py-3.5 px-4 text-right">
                 <div class="flex items-center justify-end gap-1.5">
                   <button
+                    type="button"
+                    title="Edit user"
+                    aria-label="Edit user"
                     @click="openEditModal(u)"
-                    class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold transition text-[11px]"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition"
                   >
-                    Edit
+                    <AppIcon name="note" :size="15" />
                   </button>
                   <button
+                    type="button"
+                    title="Move organization"
+                    aria-label="Move organization"
                     @click="openMoveModal(u)"
-                    class="px-2.5 py-1 rounded-lg border border-slate-700 hover:border-indigo-500 text-slate-400 hover:text-indigo-300 font-semibold transition text-[11px]"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition"
                   >
-                    Move Org
+                    <AppIcon name="move" :size="15" />
                   </button>
                 </div>
               </td>
@@ -135,16 +141,16 @@
         class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4"
         @click.self="showCreateModal = false"
       >
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h2 class="text-sm font-bold text-white">Create User Account</h2>
-            <button @click="showCreateModal = false" class="text-slate-400 hover:text-white p-1" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">Create User Account</h2>
+            <button @click="showCreateModal = false" class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
           </div>
 
           <form @submit.prevent="handleCreateUser" class="space-y-3 text-xs">
             <div class="space-y-1">
-              <label class="font-bold text-slate-300">Tenant Organization *</label>
-              <select v-model="createForm.organizationId" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+              <label class="font-bold text-slate-600 dark:text-slate-300">Tenant Organization *</label>
+              <select v-model="createForm.organizationId" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
                 <option value="" disabled>-- Select Organization --</option>
                 <option v-for="org in orgList" :key="org._id" :value="org._id">{{ org.name }}</option>
               </select>
@@ -152,30 +158,30 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">First Name *</label>
-                <input v-model="createForm.firstName" type="text" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500" />
+                <label class="font-bold text-slate-600 dark:text-slate-300">First Name *</label>
+                <input v-model="createForm.firstName" type="text" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500" />
               </div>
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">Last Name</label>
-                <input v-model="createForm.lastName" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="font-bold text-slate-300">Email Address *</label>
-                <input v-model="createForm.email" type="email" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500" />
-              </div>
-              <div class="space-y-1">
-                <label class="font-bold text-slate-300">Mobile</label>
-                <input v-model="createForm.mobile" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500" />
+                <label class="font-bold text-slate-600 dark:text-slate-300">Last Name</label>
+                <input v-model="createForm.lastName" type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500" />
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">Role *</label>
-                <select v-model="createForm.role" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                <label class="font-bold text-slate-600 dark:text-slate-300">Email Address *</label>
+                <input v-model="createForm.email" type="email" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 dark:text-slate-300">Mobile</label>
+                <input v-model="createForm.mobile" type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="font-bold text-slate-600 dark:text-slate-300">Role *</label>
+                <select v-model="createForm.role" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
                   <option value="org_admin">Organization Admin (ORG_ADMIN)</option>
                   <option value="branch_manager">Branch Manager (BRANCH_MANAGER)</option>
                   <option value="manager">Manager (MANAGER)</option>
@@ -184,13 +190,13 @@
                 </select>
               </div>
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">Initial Password</label>
-                <input v-model="createForm.password" type="text" placeholder="TrackDeal@123" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500" />
+                <label class="font-bold text-slate-600 dark:text-slate-300">Initial Password</label>
+                <input v-model="createForm.password" type="text" placeholder="TrackDeal@123" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500" />
               </div>
             </div>
 
-            <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-              <button type="button" @click="showCreateModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
+            <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+              <button type="button" @click="showCreateModal = false" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Cancel</button>
               <button type="submit" :disabled="saving" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white">Create User</button>
             </div>
           </form>
@@ -205,25 +211,25 @@
         class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4"
         @click.self="showEditModal = false"
       >
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-          <h2 class="text-sm font-bold text-white">Edit User: {{ selectedUser?.email }}</h2>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">Edit User: {{ selectedUser?.email }}</h2>
 
           <form @submit.prevent="handleUpdateUser" class="space-y-3 text-xs">
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">First Name</label>
-                <input v-model="editForm.firstName" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200" />
+                <label class="font-bold text-slate-600 dark:text-slate-300">First Name</label>
+                <input v-model="editForm.firstName" type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200" />
               </div>
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">Last Name</label>
-                <input v-model="editForm.lastName" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200" />
+                <label class="font-bold text-slate-600 dark:text-slate-300">Last Name</label>
+                <input v-model="editForm.lastName" type="text" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200" />
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">Role</label>
-                <select v-model="editForm.role" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200">
+                <label class="font-bold text-slate-600 dark:text-slate-300">Role</label>
+                <select v-model="editForm.role" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200">
                   <option value="org_admin">Organization Admin (ORG_ADMIN)</option>
                   <option value="branch_manager">Branch Manager (BRANCH_MANAGER)</option>
                   <option value="manager">Manager (MANAGER)</option>
@@ -232,8 +238,8 @@
                 </select>
               </div>
               <div class="space-y-1">
-                <label class="font-bold text-slate-300">Status</label>
-                <select v-model="editForm.status" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200">
+                <label class="font-bold text-slate-600 dark:text-slate-300">Status</label>
+                <select v-model="editForm.status" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200">
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
@@ -241,12 +247,12 @@
             </div>
 
             <div class="space-y-1">
-              <label class="font-bold text-slate-300">Reset Password (Optional)</label>
-              <input v-model="editForm.password" type="text" placeholder="Leave empty to keep unchanged" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200" />
+              <label class="font-bold text-slate-600 dark:text-slate-300">Reset Password (Optional)</label>
+              <input v-model="editForm.password" type="text" placeholder="Leave empty to keep unchanged" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200" />
             </div>
 
-            <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-              <button type="button" @click="showEditModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
+            <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+              <button type="button" @click="showEditModal = false" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Cancel</button>
               <button type="submit" :disabled="saving" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white">Save Changes</button>
             </div>
           </form>
@@ -261,22 +267,22 @@
         class="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4"
         @click.self="showMoveModal = false"
       >
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-          <h2 class="text-sm font-bold text-white">Move User Organization</h2>
-          <p class="text-xs text-slate-400">
-            Transfer user <strong class="text-slate-200">{{ selectedUser?.email }}</strong> to a different tenant organization.
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">Move User Organization</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Transfer user <strong class="text-slate-800 dark:text-slate-200">{{ selectedUser?.email }}</strong> to a different tenant organization.
           </p>
 
           <div class="space-y-2 text-xs">
             <label class="font-bold text-slate-300">Target Organization *</label>
-            <select v-model="targetMoveOrgId" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+            <select v-model="targetMoveOrgId" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500">
               <option value="" disabled>-- Select Target Organization --</option>
               <option v-for="org in orgList" :key="org._id" :value="org._id">{{ org.name }}</option>
             </select>
           </div>
 
-          <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2 text-xs">
-            <button @click="showMoveModal = false" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300">Cancel</button>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 text-xs">
+            <button @click="showMoveModal = false" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Cancel</button>
             <button @click="executeMoveUser" :disabled="!targetMoveOrgId || saving" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white">
               Confirm Move
             </button>

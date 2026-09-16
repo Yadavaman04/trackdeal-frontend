@@ -8,7 +8,7 @@
     <div class="preview-body">
       <aside class="preview-sidebar" aria-label="Preview sections">
         <div class="preview-brand">
-          <AppIcon name="buildings" :size="20" /> <strong>TrackDeal</strong>
+          <AppIcon name="graduation" :size="20" /> <strong>TrackDeal</strong>
         </div>
         <span class="preview-section-label">WORKSPACE</span>
         <button
@@ -28,7 +28,7 @@
         </button>
         <div class="preview-user">
           <span>JD</span>
-          <div><strong>Jordan Davis</strong><small>Workspace owner</small></div>
+          <div><strong>Jordan Davis</strong><small>Institute owner</small></div>
         </div>
       </aside>
       <div class="preview-content">
@@ -41,7 +41,7 @@
         </div>
         <div class="preview-heading">
           <div>
-            <p>Your business, at a glance</p>
+            <p>Your institute, at a glance</p>
             <h3>{{ currentTitle }}</h3>
           </div>
           <span class="preview-date">September overview</span>
@@ -57,8 +57,8 @@
           <div class="preview-panels">
             <section class="preview-chart">
               <div class="preview-panel-title">
-                <h4>Sales pipeline</h4>
-                <span>76 opportunities</span>
+                <h4>Admissions pipeline</h4>
+                <span>76 inquiries</span>
               </div>
               <PipelineChart :items="pipeline" />
             </section>
@@ -85,15 +85,12 @@
             ><AppIcon name="checkCircle" :size="17" />
           </div>
         </template>
-        <template v-else-if="active === 'properties'">
+        <template v-else-if="active === 'classes'">
           <p class="preview-description">
-            A considered shortlist for every buyer.
+            A considered batch for every student.
           </p>
           <div class="preview-property-grid">
-            <article
-              v-for="(property, index) in properties"
-              :key="property.name"
-            >
+            <article v-for="(batch, index) in classes" :key="batch.name">
               <div
                 class="property-art"
                 :class="`property-art-${index}`"
@@ -103,36 +100,36 @@
                 <div></div>
                 <div></div>
               </div>
-              <span class="property-status">Available</span>
-              <h4>{{ property.name }}</h4>
-              <p>{{ property.detail }}</p>
-              <strong>{{ property.price }}</strong>
+              <span class="property-status">{{ batch.status }}</span>
+              <h4>{{ batch.name }}</h4>
+              <p>{{ batch.detail }}</p>
+              <strong>{{ batch.seats }}</strong>
             </article>
           </div>
         </template>
         <template v-else>
           <div class="preview-metrics">
             <div>
-              <span>Commission earned</span><strong>₹18.4 L</strong
-              ><small>Across 12 closed deals</small>
+              <span>Enrolled students</span><strong>248</strong
+              ><small>Across 12 active batches</small>
             </div>
             <div>
-              <span>Collected</span><strong>₹14.2 L</strong
-              ><small>Payments received</small>
+              <span>Fees collected</span><strong>₹14.2 L</strong
+              ><small>This term</small>
             </div>
             <div>
-              <span>Outstanding</span><strong>₹4.2 L</strong
-              ><small>Receivables to follow up</small>
+              <span>Pending follow-ups</span><strong>18</strong
+              ><small>Inquiries to close</small>
             </div>
           </div>
           <section class="preview-chart revenue-chart">
             <div class="preview-panel-title">
-              <h4>Monthly collections</h4>
-              <span>₹ in lakhs</span>
+              <h4>Monthly enrollments</h4>
+              <span>New students</span>
             </div>
             <PipelineChart
-              label="Illustrative monthly collections in lakhs"
-              :items="revenue"
+              label="Illustrative monthly enrollments"
+              :items="enrollments"
             />
           </section>
         </template>
@@ -148,67 +145,78 @@ import PipelineChart from "@/components/ui/PipelineChart.vue";
 const active = ref("pipeline");
 const sections = [
   { value: "pipeline", label: "Overview", icon: "chart" },
-  { value: "properties", label: "Properties", icon: "house" },
-  { value: "revenue", label: "Revenue", icon: "currency" },
+  { value: "classes", label: "Classes", icon: "chalkboard" },
+  { value: "enrollments", label: "Enrollments", icon: "graduation" },
 ];
 const currentTitle = computed(
   () =>
     ({
       pipeline: "A little clarity. A lot of possibility.",
-      properties: "Find their next place.",
-      revenue: "Good relationships. Real returns.",
+      classes: "Find their next class.",
+      enrollments: "Good counselling. Real enrollments.",
     })[active.value],
 );
 const metrics = [
   {
-    label: "Active pipeline",
-    value: "₹8.6 Cr",
-    detail: "From first hello to final handshake",
+    label: "Active inquiries",
+    value: "76",
+    detail: "From first call to confirmed seat",
   },
-  { label: "Open leads", value: "76", detail: "Relationships in the making" },
-  { label: "Site visits", value: "12", detail: "Scheduled this week" },
+  { label: "Open students", value: "248", detail: "Learning with your team" },
+  { label: "Demo classes", value: "12", detail: "Scheduled this week" },
 ];
 const pipeline = [
   { label: "New", value: 28 },
-  { label: "Qualified", value: 22 },
-  { label: "Site visit", value: 16 },
-  { label: "Negotiation", value: 10 },
+  { label: "Counselling", value: 22 },
+  { label: "Demo class", value: 16 },
+  { label: "Enrolled", value: 10 },
 ];
-const revenue = [
-  { label: "Apr", value: 1.4 },
-  { label: "May", value: 1.8 },
-  { label: "Jun", value: 2.1 },
-  { label: "Jul", value: 2.5 },
-  { label: "Aug", value: 2.9 },
-  { label: "Sep", value: 3.5 },
+const enrollments = [
+  { label: "Apr", value: 14 },
+  { label: "May", value: 18 },
+  { label: "Jun", value: 21 },
+  { label: "Jul", value: 25 },
+  { label: "Aug", value: 29 },
+  { label: "Sep", value: 35 },
 ];
 const tasks = [
   {
     name: "Aarav Mehta",
-    detail: "Site visit · The Palm Residences",
+    detail: "Demo class · Foundation Batch",
     time: "10:30",
-    icon: "house",
+    icon: "chalkboard",
   },
   {
     name: "Priya Shah",
-    detail: "Follow-up · 2 BHK in Bandra",
+    detail: "Follow-up · Class 10 Science",
     time: "12:00",
     icon: "phone",
   },
   {
     name: "Rohan Kapoor",
-    detail: "Booking discussion",
+    detail: "Admission discussion",
     time: "14:30",
-    icon: "handshake",
+    icon: "graduation",
   },
 ];
-const properties = [
+const classes = [
   {
-    name: "The Palm Residences",
-    detail: "Bandra West · 3 BHK",
-    price: "₹2.4 Cr",
+    name: "Foundation Batch",
+    detail: "Grade 10 · Mon–Fri 6–8 pm",
+    seats: "12 seats left",
+    status: "Open",
   },
-  { name: "Parkside Living", detail: "Powai · 2 BHK", price: "₹1.6 Cr" },
-  { name: "The Courtyard", detail: "Thane · 2 BHK", price: "₹95 L" },
+  {
+    name: "JEE Intensive",
+    detail: "Grade 12 · Weekend",
+    seats: "4 seats left",
+    status: "Filling",
+  },
+  {
+    name: "Spoken English",
+    detail: "Adults · Evening",
+    seats: "Seats open",
+    status: "Open",
+  },
 ];
 </script>

@@ -64,3 +64,38 @@ export async function searchAdminGlobal(q) {
   const res = await apiClient.get('/admin/search', { params: { q } });
   return res.data;
 }
+
+export async function fetchTenants(params = {}) {
+  const res = await apiClient.get('/tenants', { params });
+  return res.data;
+}
+
+export async function fetchTenantModules(vertical) {
+  const res = await apiClient.get('/tenants/modules', { params: vertical ? { vertical } : {} });
+  return res.data;
+}
+
+export async function createTenant(data) {
+  const res = await apiClient.post('/tenants', data);
+  return res.data;
+}
+
+export async function updateTenant(id, data) {
+  const res = await apiClient.put(`/tenants/${id}`, data);
+  return res.data;
+}
+
+export async function suspendTenant(id) {
+  const res = await apiClient.post(`/tenants/${id}/suspend`);
+  return res.data;
+}
+
+export async function activateTenant(id) {
+  const res = await apiClient.post(`/tenants/${id}/activate`);
+  return res.data;
+}
+
+export async function fetchTenantById(id) {
+  const res = await apiClient.get(`/tenants/${id}`);
+  return res.data;
+}

@@ -3,7 +3,7 @@
     <a href="#main-content" class="skip-link">Skip to content</a>
     <header class="landing-nav landing-container">
       <router-link to="/" class="landing-brand" aria-label="TrackDeal home"
-        ><span><AppIcon name="buildings" :size="21" weight="bold" /></span
+        ><span><AppIcon name="graduation" :size="21" weight="bold" /></span
         >TrackDeal<span class="brand-period">.</span></router-link
       >
       <nav class="landing-links" aria-label="Main navigation">
@@ -47,14 +47,14 @@
       <section class="landing-hero landing-container">
         <div class="hero-intro">
           <span class="hero-kicker"
-            ><i></i> A clearer way to work in real estate</span
+            ><i></i> Built for institutes, coaching centres, and tutors</span
           >
-          <h1>Great relationships.<br />Even better <em>deals.</em></h1>
+          <h1>Great counselling.<br />Even better <em>admissions.</em></h1>
           <p>
-            From the first conversation to the final signature.<br
+            From the first inquiry to a confirmed seat.<br
               class="desktop-break"
             />
-            Bring your leads, properties, and team together in one calm
+            Bring student leads, classes, and your team together in one calm
             workspace.
           </p>
           <div class="hero-actions">
@@ -68,25 +68,26 @@
             >
           </div>
           <span class="hero-footnote"
-            >Built for brokers, channel partners, and teams that care.</span
+            >Made for independent tutors, coaching institutes, and campus
+            teams.</span
           >
         </div>
         <div class="hero-margin-note" aria-hidden="true">
-          <span>LESS BUSYWORK</span>
+          <span>LESS CHASING</span>
           <div></div>
-          <span>MORE POSSIBILITY</span>
+          <span>MORE LEARNING</span>
         </div>
         <div id="preview" class="hero-preview"><ProductPreview /></div>
         <div class="platform-strip">
           <p>
             One connected workspace.<br /><strong
-              >Your entire deal journey.</strong
+              >Your entire admissions journey.</strong
             >
           </p>
-          <span><AppIcon name="users" :size="20" /> Leads & relationships</span
-          ><span><AppIcon name="house" :size="20" /> Property portfolio</span
+          <span><AppIcon name="users" :size="20" /> Student inquiries</span
+          ><span><AppIcon name="chalkboard" :size="20" /> Classes & batches</span
           ><span
-            ><AppIcon name="handshake" :size="20" /> Deals & commissions</span
+            ><AppIcon name="graduation" :size="20" /> Students & follow-ups</span
           >
         </div>
       </section>
@@ -98,64 +99,67 @@
             <h2>Everything you need.<br /><em>Space to do your best.</em></h2>
           </div>
           <p>
-            A thoughtful home for the details, decisions, and people behind
-            every property deal.
+            A thoughtful home for the inquiries, batches, and people behind
+            every admission.
           </p>
         </div>
         <div class="landing-bento">
           <BentoCard class="feature-leads"
             ><div class="feature-icon"><AppIcon name="users" :size="22" /></div>
-            <h3>See the person.<br />Know the next step.</h3>
+            <h3>See the student.<br />Know the next step.</h3>
             <p>
-              Keep preferences, conversations, and follow-ups together. Pick up
-              every relationship right where you left it.
+              Keep course interest, counselling notes, and follow-ups together.
+              Pick up every inquiry right where you left it.
             </p>
             <div class="feature-contact">
               <span class="contact-avatar">PS</span>
               <div>
                 <strong>Priya Shah</strong
-                ><span>Looking for a place to call home</span>
+                ><span>Interested in Class 10 Science</span>
               </div>
-              <span class="contact-status">Qualified</span>
+              <span class="contact-status">Counselling</span>
             </div>
             <div class="feature-reminder">
               <AppIcon name="calendar" :size="16" /><span
-                >Next up: a visit to Parkside Living</span
+                >Next up: demo class for Foundation Batch</span
               ><AppIcon name="checkCircle" :size="17" /></div
           ></BentoCard>
           <BentoCard
-            ><div class="feature-icon"><AppIcon name="house" :size="22" /></div>
-            <h3>The right place.<br />For the right person.</h3>
+            ><div class="feature-icon">
+              <AppIcon name="chalkboard" :size="22" />
+            </div>
+            <h3>The right class.<br />For the right student.</h3>
             <p>
-              Connect buyer requirements to available properties. Keep your
-              portfolio organized and your shortlists relevant.
+              Match inquiries to batches with seats, timings, and faculty. Keep
+              your timetable organized and your shortlists relevant.
             </p>
             <div class="feature-tags">
-              <span>2 BHK</span><span>Ready to move</span
-              ><span>Within budget</span>
+              <span>Grade 10</span><span>Evening batch</span
+              ><span>Seats open</span>
             </div>
             <div class="feature-match">
               <AppIcon name="checkCircle" :size="20" /><span
-                >A more considered shortlist.</span
+                >A more considered class match.</span
               >
             </div></BentoCard
           >
           <BentoCard
             ><div class="feature-icon">
-              <AppIcon name="currency" :size="22" />
+              <AppIcon name="graduation" :size="22" />
             </div>
-            <h3>Clarity, all the way<br />to collection.</h3>
+            <h3>Clarity, all the way<br />to enrollment.</h3>
             <p>
-              Follow bookings, home loans, and commissions with a clear view of
+              Follow admissions, fee reminders, and tasks with a clear view of
               what is moving and what needs attention.
             </p>
             <div class="feature-progress">
               <div>
-                <span>Deal journey</span><AppIcon name="handshake" :size="18" />
+                <span>Admission journey</span
+                ><AppIcon name="handshake" :size="18" />
               </div>
               <span class="feature-progress-line"></span>
               <div>
-                <span>First conversation</span><span>Final signature</span>
+                <span>First inquiry</span><span>Confirmed seat</span>
               </div>
             </div></BentoCard
           >
@@ -166,10 +170,10 @@
         <div class="landing-container workflow-inner">
           <div>
             <span class="landing-eyebrow">A NATURAL FLOW</span>
-            <h2>Less chasing.<br /><em>More closing.</em></h2>
+            <h2>Less chasing.<br /><em>More teaching.</em></h2>
             <p>
-              Give every opportunity a clear path forward, from first interest
-              to a lasting relationship.
+              Give every inquiry a clear path forward, from first interest to a
+              lasting student relationship.
             </p>
             <router-link to="/login" class="workflow-link"
               >Find your flow <AppIcon name="arrowRight" :size="18"
@@ -204,9 +208,9 @@
       </section>
 
       <section class="landing-cta landing-container">
-        <div class="cta-mark"><AppIcon name="buildings" :size="30" /></div>
+        <div class="cta-mark"><AppIcon name="graduation" :size="30" /></div>
         <span class="landing-eyebrow">YOUR NEXT CHAPTER</span>
-        <h2>Make room for<br /><em>your next great deal.</em></h2>
+        <h2>Make room for<br /><em>your next great class.</em></h2>
         <router-link to="/login" class="landing-button landing-button-primary"
           >Go to your workspace <AppIcon name="arrowRight" :size="17"
         /></router-link>
@@ -215,10 +219,10 @@
     </main>
     <footer class="landing-footer landing-container">
       <router-link to="/" class="landing-brand"
-        ><span><AppIcon name="buildings" :size="18" weight="bold" /></span
+        ><span><AppIcon name="graduation" :size="18" weight="bold" /></span
         >TrackDeal<span class="brand-period">.</span></router-link
       >
-      <p>Thoughtfully built for real estate.</p>
+      <p>Thoughtfully built for education.</p>
       <span>© {{ new Date().getFullYear() }} TrackDeal</span
       ><a href="#main-content">Back to top ↑</a>
     </footer>
@@ -241,44 +245,44 @@ const steps = [
     number: "01",
     title: "Start with a conversation",
     description:
-      "Capture every lead, understand their needs, and give your team the full picture.",
+      "Capture every student inquiry, understand their course needs, and give your team the full picture.",
     icon: "users",
   },
   {
     number: "02",
-    title: "Turn interest into opportunity",
+    title: "Place them in the right class",
     description:
-      "Match properties, coordinate visits, and keep the next follow-up in sight.",
-    icon: "house",
+      "Match students to batches, coordinate demo classes, and keep the next follow-up in sight.",
+    icon: "chalkboard",
   },
   {
     number: "03",
     title: "Bring it all together",
     description:
-      "Move from booking to agreement, and stay on top of commissions and collections.",
-    icon: "handshake",
+      "Move from counselling to enrollment, and stay on top of tasks, attendance, and fee follow-ups.",
+    icon: "graduation",
   },
 ];
 const faqs = [
   {
     question: "Who is TrackDeal built for?",
     answer:
-      "TrackDeal brings leads, properties, deals, and financial workflows together for real estate brokers, channel partners, and their teams.",
+      "TrackDeal brings student inquiries, classes, enrollments, and follow-ups together for independent tutors, coaching institutes, and multi-campus teams.",
   },
   {
-    question: "Can I use it when I’m out on a site visit?",
+    question: "Can I use it between counselling sessions?",
     answer:
-      "Yes. The workspace adapts to mobile screens so you can review lead details, find properties, and keep track of follow-ups on the go.",
+      "Yes. The workspace adapts to mobile screens so you can review student details, check class seats, and keep track of follow-ups on the go.",
   },
   {
     question: "What can I manage in one workspace?",
     answer:
-      "Manage leads, property inventory, tasks, deals, agreements, home loans, and commissions. Available modules depend on your organization’s settings and your role.",
+      "Manage student leads, classes and batches, enrolled students, tasks, and reports. Available modules depend on your organization’s settings and your role.",
   },
   {
-    question: "How do I access my team’s workspace?",
+    question: "How do I access my institute’s workspace?",
     answer:
-      "Sign in with your existing account. If you are joining a team, ask your workspace administrator for an invitation and use the invitation link to set up your account.",
+      "Sign in with your organization name and existing account. If you are joining a team, ask your workspace administrator for an invitation and use the invitation link to set up your account.",
   },
 ];
 </script>

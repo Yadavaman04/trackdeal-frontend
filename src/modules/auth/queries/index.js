@@ -21,7 +21,7 @@ export function useLoginMutation() {
         message: "Successfully logged in. Welcome back!",
         type: "success",
       });
-      if (payload.user?.role === 'system_admin') {
+      if (['system_admin', 'super_admin'].includes(payload.user?.role)) {
         router.push("/admin");
       } else {
         router.push("/app/dashboard");

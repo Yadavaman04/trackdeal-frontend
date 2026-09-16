@@ -8,7 +8,6 @@ const AuthLayout = () => import("@/layouts/AuthLayout.vue");
 const AppLayout = () => import("@/layouts/AppLayout.vue");
 const SettingsLayout = () => import("@/layouts/SettingsLayout.vue");
 const ReportLayout = () => import("@/layouts/ReportLayout.vue");
-const Dashboard = () => import("@/modules/dashboards/pages/Dashboard.vue");
 
 // Helper function to render a quick placeholder view to keep scaffolding compilable
 const defineMockView = (title) => ({
@@ -57,134 +56,169 @@ const routes = [
       {
         path: "dashboard",
         name: "Dashboard",
-        component: Dashboard,
+        component: () => import("@/modules/dashboards/pages/WorkspaceDashboard.vue"),
       },
 
       {
         path: "leads",
         name: "Leads",
-        component: () => import("@/modules/leads/pages/LeadsList.vue"),
+        component: () => import("@/modules/leads/pages/LeadWorkspace.vue"),
+        meta: { module: "leads" },
       },
       {
         path: "leads/:id",
         name: "LeadDetails",
-        component: () => import("@/modules/leads/pages/LeadDetails.vue"),
+        component: () => import("@/modules/leads/pages/LeadDetailsWorkspace.vue"),
+        meta: { module: "leads" },
+      },
+      {
+        path: "students",
+        name: "Students",
+        component: () => import("@/modules/education/pages/StudentsList.vue"),
+        meta: { module: "students", vertical: "education" },
+      },
+      {
+        path: "classes",
+        name: "Classes",
+        component: () => import("@/modules/education/pages/ClassesList.vue"),
+        meta: { module: "classes", vertical: "education" },
       },
       {
         path: "agents",
         name: "Agents",
         component: () => import("@/modules/agents/pages/AgentsList.vue"),
+        meta: { module: "agents" },
       },
       {
         path: "agents/:id",
         name: "AgentDetails",
         component: () => import("@/modules/agents/pages/AgentDetails.vue"),
+        meta: { module: "agents" },
       },
       {
         path: "deals",
         name: "Deals",
         component: () => import("@/modules/deals/pages/DealsList.vue"),
+        meta: { module: "deals" },
       },
       {
         path: "deals/:id",
         name: "DealDetails",
         component: () => import("@/modules/deals/pages/DealDetails.vue"),
+        meta: { module: "deals" },
       },
       {
         path: "loans",
         name: "Loans",
         component: () => import("@/modules/loans/pages/LoansList.vue"),
+        meta: { module: "loans" },
       },
       {
         path: "loans/banks-dsa",
         name: "LoanBanksDsa",
         component: () => import("@/modules/loans/pages/BankDsaDirectory.vue"),
+        meta: { module: "loans" },
       },
       {
         path: "loans/:id",
         name: "LoanDetails",
         component: () => import("@/modules/loans/pages/LoanDetails.vue"),
+        meta: { module: "loans" },
       },
       {
         path: "agreements",
         name: "Agreements",
         component: () =>
           import("@/modules/agreements/pages/AgreementsList.vue"),
+        meta: { module: "agreements" },
       },
       {
         path: "agreements/new",
         name: "CreateAgreement",
         component: () =>
           import("@/modules/agreements/pages/CreateAgreementWizard.vue"),
+        meta: { module: "agreements" },
       },
       {
         path: "agreements/templates",
         name: "DocumentTemplates",
         component: () =>
           import("@/modules/agreements/pages/DocumentTemplatesDirectory.vue"),
+        meta: { module: "agreements" },
       },
       {
         path: "agreements/:id",
         name: "AgreementPreview",
         component: () =>
           import("@/modules/agreements/pages/AgreementPreview.vue"),
+        meta: { module: "agreements" },
       },
       {
         path: "agreements/:id/edit-details",
         name: "EditAgreementDetails",
         component: () =>
           import("@/modules/agreements/pages/EditAgreementDetails.vue"),
+        meta: { module: "agreements" },
       },
       {
         path: "agreements/:id/editor",
         name: "AgreementFullEditor",
         component: () =>
           import("@/modules/agreements/pages/AgreementFullEditor.vue"),
+        meta: { module: "agreements" },
       },
       {
         path: "tasks",
         name: "Tasks",
         component: () => import("@/modules/tasks/pages/TasksList.vue"),
+        meta: { module: "tasks" },
       },
       {
         path: "projects",
         name: "Projects",
         component: () => import("@/modules/properties/pages/ProjectsList.vue"),
+        meta: { module: "projects" },
       },
       {
         path: "projects/:id",
         name: "ProjectDetails",
         component: () =>
           import("@/modules/properties/pages/ProjectDetails.vue"),
+        meta: { module: "projects" },
       },
       {
         path: "projects/:id/analytics",
         name: "ProjectAnalytics",
         component: () =>
           import("@/modules/properties/pages/ProjectAnalytics.vue"),
+        meta: { module: "projects" },
       },
       {
         path: "properties",
         name: "Properties",
         component: () =>
           import("@/modules/properties/pages/PropertiesList.vue"),
+        meta: { module: "properties" },
       },
       {
         path: "properties/:id",
         name: "PropertyDetails",
         component: () =>
           import("@/modules/properties/pages/PropertyDetails.vue"),
+        meta: { module: "properties" },
       },
       {
         path: "builders",
         name: "Builders",
         component: () => import("@/modules/properties/pages/BuildersList.vue"),
+        meta: { module: "projects" },
       },
       {
         path: "builders/:id",
         name: "BuilderDetails",
         component: () =>
           import("@/modules/properties/pages/BuilderDetails.vue"),
+        meta: { module: "projects" },
       },
       {
         path: "commissions",
@@ -194,6 +228,7 @@ const routes = [
         meta: {
           permission: "commissions.read",
           featureFlag: "commissionModule",
+          module: "commissions",
         },
       },
       {
@@ -204,6 +239,7 @@ const routes = [
         meta: {
           permission: "commissions.read",
           featureFlag: "commissionModule",
+          module: "commissions",
         },
       },
       {
@@ -214,6 +250,7 @@ const routes = [
         meta: {
           permission: "commissions.read",
           featureFlag: "commissionModule",
+          module: "commissions",
         },
       },
       {
@@ -224,12 +261,13 @@ const routes = [
         meta: {
           permission: "commissions.read",
           featureFlag: "commissionModule",
+          module: "commissions",
         },
       },
       {
         path: "reports",
         component: ReportLayout,
-        meta: { featureFlag: "reportsModule" },
+        meta: { featureFlag: "reportsModule", module: "reports" },
         children: [
           {
             path: "",
@@ -262,6 +300,7 @@ const routes = [
       {
         path: "settings",
         component: SettingsLayout,
+        meta: { module: "settings" },
         children: [
           {
             path: "",
@@ -310,6 +349,11 @@ const routes = [
         path: "dashboard",
         name: "AdminDashboard",
         component: () => import("@/modules/admin/views/AdminDashboard.vue"),
+      },
+      {
+        path: "tenants",
+        name: "AdminTenants",
+        component: () => import("@/modules/admin/views/AdminTenants.vue"),
       },
       {
         path: "organizations",

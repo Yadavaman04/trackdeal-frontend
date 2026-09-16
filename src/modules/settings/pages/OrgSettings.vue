@@ -528,6 +528,25 @@
           </div>
         </div>
       </div>
+
+      <div v-if="activeTab === 'tenant' && canSuspendTenant" class="bg-surface border border-rose-200 dark:border-rose-900 rounded-xl p-6 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-rose-700 dark:text-rose-300">Suspend tenant</h3>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+            Organization admins can suspend this tenant. Users will be blocked from signing in until a Super Admin reactivates it.
+          </p>
+        </div>
+        <div v-if="suspendError" class="text-[11px] text-rose-500">{{ suspendError }}</div>
+        <div v-if="suspendSuccess" class="text-[11px] text-emerald-600">{{ suspendSuccess }}</div>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold disabled:opacity-50"
+          :disabled="isSuspending || !tenantId"
+          @click="handleSuspendTenant"
+        >
+          {{ isSuspending ? 'Suspending...' : 'Suspend this tenant' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -538,16 +557,51 @@ import { useStore } from 'vuex';
 import { PhFloppyDisk, PhCreditCard, PhFileText, PhLightning, PhDownload, PhWarning, PhArrowRight } from '@phosphor-icons/vue';
 import { useOrgSettingsQuery, useUpdateOrgSettingsMutation } from '../queries';
 import FeatureFlagCard from '../components/FeatureFlagCard.vue';
+import { suspendTenant } from '@/modules/admin/api/endpoints';
 
 const store = useStore();
+const canSuspendTenant = computed(() =>
+  ['org_admin', 'organization_admin', 'super_admin', 'system_admin'].includes(
+    String(store.getters['auth/userRole'] || '').toLowerCase()
+  )
+);
+const tenantId = computed(() => store.state.organization?.tenantId || store.state.auth?.currentUser?.tenantId);
+const isSuspending = ref(false);
+const suspendError = ref('');
+const suspendSuccess = ref('');
 
-const tabs = [
-  { label: 'Profile Metadata', value: 'profile' },
-  { label: 'Feature Flags', value: 'features' },
-  { label: 'Theme Branding', value: 'branding' },
-  { label: 'Subscription & Billing', value: 'billing' },
-  { label: 'Data Center', value: 'datacenter' }
-];
+async function handleSuspendTenant() {
+  if (!tenantId.value) {
+    suspendError.value = 'Tenant is not linked to this session. Sign in again with your tenant name.';
+    return;
+  }
+  if (!window.confirm('Suspend this tenant? Users will not be able to sign in until Super Admin reactivates it.')) return;
+  isSuspending.value = true;
+  suspendError.value = '';
+  suspendSuccess.value = '';
+  try {
+    await suspendTenant(tenantId.value);
+    suspendSuccess.value = 'Tenant suspended. Users will be blocked on their next request.';
+  } catch (err) {
+    suspendError.value = err.data?.message || 'Unable to suspend tenant.';
+  } finally {
+    isSuspending.value = false;
+  }
+}
+
+const tabs = computed(() => {
+  const items = [
+    { label: 'Profile Metadata', value: 'profile' },
+    { label: 'Feature Flags', value: 'features' },
+    { label: 'Theme Branding', value: 'branding' },
+    { label: 'Subscription & Billing', value: 'billing' },
+    { label: 'Data Center', value: 'datacenter' },
+  ];
+  if (canSuspendTenant.value) {
+    items.push({ label: 'Tenant', value: 'tenant' });
+  }
+  return items;
+});
 
 const activeTab = ref('profile');
 

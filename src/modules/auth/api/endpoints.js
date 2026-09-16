@@ -1,7 +1,12 @@
 import apiClient from '@/api/client';
 
-export async function login({ email, password }) {
-  const response = await apiClient.post('/auth/login', { email, password });
+export async function login({ organization, tenant, email, password }) {
+  const payload = { email, password };
+  const orgName = organization || tenant;
+  if (orgName && String(orgName).trim()) {
+    payload.organization = String(orgName).trim();
+  }
+  const response = await apiClient.post('/auth/login', payload);
   return response.data;
 }
 

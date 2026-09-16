@@ -510,36 +510,42 @@
   height: 130px;
   background: #dfe7d6;
   display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: flex-end;
   overflow: hidden;
   border-radius: 4px;
   margin-bottom: 10px;
+  padding: 16px 12px 18px;
 }
 .property-art div {
-  width: 25%;
-  height: 65%;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 10px, #34523e35 10px 12px),
-    repeating-linear-gradient(90deg, #afbea1 0 10px, #d8dfcd 10px 15px);
-  transform: skewY(-8deg);
-  box-shadow: 5px 0 0 #849778;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    90deg,
+    #afbea1 0 28px,
+    #d8dfcd 28px 36px
+  );
+  transform: none;
+  box-shadow: none;
 }
 .property-art div:nth-child(2) {
-  height: 90%;
+  height: 10px;
+  width: 78%;
 }
 .property-art-1 {
   background: #e9e3d4;
 }
 .property-art-1 div {
-  filter: sepia(0.4);
+  filter: none;
 }
 .property-art-2 {
   background: #e0e8e6;
 }
-.property-art-2 div {
-  height: 45%;
+.property-art-2 div:nth-child(3) {
+  width: 62%;
 }
 .revenue-chart {
   margin-top: 22px;

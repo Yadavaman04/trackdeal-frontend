@@ -26,6 +26,7 @@ export function setupRouterGuards(router) {
     );
     const isAuthenticated = store.getters["auth/isAuthenticated"];
     const userRole = store.getters["auth/userRole"];
+    const isPlatformAdmin = ["system_admin", "super_admin"].includes(userRole);
 
     if (requiresAuth && !isAuthenticated) {
       store.dispatch("notifications/triggerToast", {
@@ -37,24 +38,46 @@ export function setupRouterGuards(router) {
 
     // System Admin route protection
     if (requiresSystemAdmin) {
-      if (userRole !== "system_admin") {
+      if (!isPlatformAdmin) {
         store.dispatch("notifications/triggerToast", {
-          message: "Access restricted to TrackDeal System Administrators.",
+          message: "Access restricted to TrackDeal Super Administrators.",
           type: "error",
         });
         return next({ path: "/app/dashboard" });
       }
     }
 
-    // System Admin navigating into standard broker app routes -> redirect to /admin
-    if (userRole === "system_admin" && to.path.startsWith("/app")) {
+    if (isPlatformAdmin && to.path.startsWith("/app")) {
       return next({ path: "/admin" });
     }
 
     if (to.path === "/login" && isAuthenticated) {
-      if (userRole === "system_admin") {
+      if (isPlatformAdmin) {
         return next({ path: "/admin" });
       }
+      return next({ path: "/app/dashboard" });
+    }
+
+    const requiredModule = to.meta.module;
+    if (requiredModule) {
+      const isFeatureActive =
+        store.getters["organization/isFeatureEnabled"](requiredModule);
+      if (!isFeatureActive) {
+        store.dispatch("notifications/triggerToast", {
+          message: "This module is not enabled for your tenant.",
+          type: "warning",
+        });
+        return next({ path: "/app/dashboard" });
+      }
+    }
+
+    const tenantVertical = store.getters["organization/tenantVertical"] || "realEstate";
+    const requiredVertical = to.meta.vertical;
+    if (requiredVertical && requiredVertical !== tenantVertical) {
+      store.dispatch("notifications/triggerToast", {
+        message: "This screen is not available for your tenant vertical.",
+        type: "warning",
+      });
       return next({ path: "/app/dashboard" });
     }
 
@@ -75,7 +98,9 @@ export function setupRouterGuards(router) {
     // 3. RBAC Scopes Check
     const requiredPermission = to.meta.permission;
     if (requiredPermission) {
-      const isSuperAdmin = store.getters["auth/userRole"] === "super_admin";
+      const isSuperAdmin = ["super_admin", "system_admin"].includes(
+        store.getters["auth/userRole"],
+      );
       if (!isSuperAdmin) {
         const hasCapability =
           store.getters["permissions/hasCapability"](requiredPermission);

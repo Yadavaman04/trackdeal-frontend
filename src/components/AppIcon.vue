@@ -11,12 +11,12 @@
 <script setup>
 import { computed } from 'vue';
 import {
-  PhArrowRight, PhArrowsClockwise, PhBank, PhBuildings, PhCalendarBlank,
-  PhChartBar, PhCheck, PhCheckCircle, PhCircle, PhClipboardText,
+  PhArrowRight, PhArrowsClockwise, PhArrowsLeftRight, PhBank, PhBuildings, PhCalendarBlank,
+  PhChalkboardTeacher, PhChartBar, PhCheck, PhCheckCircle, PhCircle, PhClipboardText,
   PhCreditCard, PhCurrencyInr, PhDownloadSimple, PhEnvelopeSimple,
-  PhEye, PhFileText, PhFlame, PhGearSix, PhHandshake, PhHouseLine, PhKey, PhLightbulb,
-  PhLightning, PhLockKey, PhMagnifyingGlass, PhMapPin, PhNotePencil,
-  PhPenNib, PhPhone, PhPlus, PhPrinter, PhScroll,
+  PhEye, PhFileText, PhFlame, PhGearSix, PhGraduationCap, PhHandshake, PhHouseLine, PhKey, PhLightbulb,
+  PhLightning, PhLockKey, PhMagnifyingGlass, PhMapPin, PhNotePencil, PhPause, PhPlay,
+  PhPenNib, PhPhone, PhPlus, PhPrinter, PhScroll, PhSquaresFour,
   PhShieldWarning, PhSignOut, PhSnowflake, PhStar, PhTarget, PhTrendUp,
   PhTrophy, PhUploadSimple, PhUser, PhUsersThree, PhWarning, PhX,
 } from '@phosphor-icons/vue';
@@ -29,11 +29,12 @@ const props = defineProps({
 
 const icons = {
   add: PhPlus, agreements: PhScroll, arrowRight: PhArrowRight, bank: PhBank,
-  buildings: PhBuildings, calendar: PhCalendarBlank, chart: PhChartBar,
+  buildings: PhBuildings, calendar: PhCalendarBlank, chalkboard: PhChalkboardTeacher, chart: PhChartBar,
   check: PhCheck, checkCircle: PhCheckCircle, clipboard: PhClipboardText, close: PhX,
+  modules: PhSquaresFour, move: PhArrowsLeftRight, pause: PhPause, play: PhPlay,
   creditCard: PhCreditCard, currency: PhCurrencyInr,
   download: PhDownloadSimple, email: PhEnvelopeSimple, eye: PhEye, file: PhFileText,
-  flame: PhFlame, settings: PhGearSix, handshake: PhHandshake, house: PhHouseLine, key: PhKey,
+  flame: PhFlame, settings: PhGearSix, graduation: PhGraduationCap, handshake: PhHandshake, house: PhHouseLine, key: PhKey,
   lightbulb: PhLightbulb, lightning: PhLightning, lock: PhLockKey,
   mapPin: PhMapPin, note: PhNotePencil, payment: PhCreditCard, pen: PhPenNib,
   phone: PhPhone, printer: PhPrinter, refresh: PhArrowsClockwise,
