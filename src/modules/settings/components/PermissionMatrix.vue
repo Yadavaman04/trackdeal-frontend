@@ -161,6 +161,7 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
+import { useStore } from "vuex";
 import { PhFloppyDisk } from "@phosphor-icons/vue";
 
 const props = defineProps({
@@ -171,27 +172,43 @@ const props = defineProps({
 
 const emit = defineEmits(["save", "update:modelValue"]);
 
-const scopes = [
-  { key: "leads", label: "Leads" },
-  { key: "deals", label: "Deals" },
-  { key: "commissions", label: "Commissions" },
-  { key: "properties", label: "Properties" },
-  { key: "reports", label: "Reports" },
-];
+const store = useStore();
+const isEducation = computed(() => store.getters["organization/isEducationTenant"]);
+
+const scopes = computed(() => {
+  if (isEducation.value) {
+    return [
+      { key: "leads", label: "Student Leads (Admissions)" },
+      { key: "students", label: "Students Directory" },
+      { key: "classes", label: "Classes & Batches" },
+      { key: "tasks", label: "Tasks & Counseling Follow-ups" },
+      { key: "admissions", label: "Enrollment & Fees" },
+      { key: "settings", label: "Workspace Settings" },
+    ];
+  }
+  return [
+    { key: "leads", label: "Sales Leads" },
+    { key: "deals", label: "Property Deals" },
+    { key: "properties", label: "Properties & Inventory" },
+    { key: "commissions", label: "Commissions & Payouts" },
+    { key: "tasks", label: "Tasks & Activities" },
+    { key: "reports", label: "Reports & Analytics" },
+    { key: "settings", label: "Workspace Settings" },
+  ];
+});
 
 const actions = ["create", "read", "update", "delete"];
 
 function createEmptyMatrix() {
   return Object.fromEntries(
-    scopes.map((scope) => [
+    scopes.value.map((scope) => [
       scope.key,
       Object.fromEntries(actions.map((action) => [action, false])),
     ]),
   );
 }
 
-// Keep a complete matrix shape from the first render. The roles query is
-// asynchronous, so the template can render before role permissions are loaded.
+// Keep a complete matrix shape from the first render.
 const matrix = ref(createEmptyMatrix());
 
 const selectedRoleId = computed({
@@ -217,9 +234,8 @@ function loadRolePermissions() {
     return;
   }
 
-  scopes.forEach((scope) => {
+  scopes.value.forEach((scope) => {
     actions.forEach((action) => {
-      // Set value based on current role configuration. Super admins have full access.
       tempMatrix[scope.key][action] =
         isSuperAdmin.value || role.permissions?.[scope.key]?.[action] === true;
     });

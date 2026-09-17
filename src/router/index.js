@@ -87,138 +87,138 @@ const routes = [
         path: "agents",
         name: "Agents",
         component: () => import("@/modules/agents/pages/AgentsList.vue"),
-        meta: { module: "agents" },
+        meta: { module: "agents", vertical: "realEstate" },
       },
       {
         path: "agents/:id",
         name: "AgentDetails",
         component: () => import("@/modules/agents/pages/AgentDetails.vue"),
-        meta: { module: "agents" },
+        meta: { module: "agents", vertical: "realEstate" },
       },
       {
         path: "deals",
         name: "Deals",
         component: () => import("@/modules/deals/pages/DealsList.vue"),
-        meta: { module: "deals" },
+        meta: { module: "deals", vertical: "realEstate" },
       },
       {
         path: "deals/:id",
         name: "DealDetails",
         component: () => import("@/modules/deals/pages/DealDetails.vue"),
-        meta: { module: "deals" },
+        meta: { module: "deals", vertical: "realEstate" },
       },
       {
         path: "loans",
         name: "Loans",
         component: () => import("@/modules/loans/pages/LoansList.vue"),
-        meta: { module: "loans" },
+        meta: { module: "loans", vertical: "realEstate" },
       },
       {
         path: "loans/banks-dsa",
         name: "LoanBanksDsa",
         component: () => import("@/modules/loans/pages/BankDsaDirectory.vue"),
-        meta: { module: "loans" },
+        meta: { module: "loans", vertical: "realEstate" },
       },
       {
         path: "loans/:id",
         name: "LoanDetails",
         component: () => import("@/modules/loans/pages/LoanDetails.vue"),
-        meta: { module: "loans" },
+        meta: { module: "loans", vertical: "realEstate" },
       },
       {
         path: "agreements",
         name: "Agreements",
         component: () =>
           import("@/modules/agreements/pages/AgreementsList.vue"),
-        meta: { module: "agreements" },
+        meta: { module: "agreements", vertical: "realEstate" },
       },
       {
         path: "agreements/new",
         name: "CreateAgreement",
         component: () =>
           import("@/modules/agreements/pages/CreateAgreementWizard.vue"),
-        meta: { module: "agreements" },
+        meta: { module: "agreements", vertical: "realEstate" },
       },
       {
         path: "agreements/templates",
         name: "DocumentTemplates",
         component: () =>
           import("@/modules/agreements/pages/DocumentTemplatesDirectory.vue"),
-        meta: { module: "agreements" },
+        meta: { module: "agreements", vertical: "realEstate" },
       },
       {
         path: "agreements/:id",
         name: "AgreementPreview",
         component: () =>
           import("@/modules/agreements/pages/AgreementPreview.vue"),
-        meta: { module: "agreements" },
+        meta: { module: "agreements", vertical: "realEstate" },
       },
       {
         path: "agreements/:id/edit-details",
         name: "EditAgreementDetails",
         component: () =>
           import("@/modules/agreements/pages/EditAgreementDetails.vue"),
-        meta: { module: "agreements" },
+        meta: { module: "agreements", vertical: "realEstate" },
       },
       {
         path: "agreements/:id/editor",
         name: "AgreementFullEditor",
         component: () =>
           import("@/modules/agreements/pages/AgreementFullEditor.vue"),
-        meta: { module: "agreements" },
+        meta: { module: "agreements", vertical: "realEstate" },
       },
       {
         path: "tasks",
         name: "Tasks",
         component: () => import("@/modules/tasks/pages/TasksList.vue"),
-        meta: { module: "tasks" },
+        meta: { module: "tasks", permission: "tasks:read" },
       },
       {
         path: "projects",
         name: "Projects",
         component: () => import("@/modules/properties/pages/ProjectsList.vue"),
-        meta: { module: "projects" },
+        meta: { module: "projects", vertical: "realEstate" },
       },
       {
         path: "projects/:id",
         name: "ProjectDetails",
         component: () =>
           import("@/modules/properties/pages/ProjectDetails.vue"),
-        meta: { module: "projects" },
+        meta: { module: "projects", vertical: "realEstate" },
       },
       {
         path: "projects/:id/analytics",
         name: "ProjectAnalytics",
         component: () =>
           import("@/modules/properties/pages/ProjectAnalytics.vue"),
-        meta: { module: "projects" },
+        meta: { module: "projects", vertical: "realEstate" },
       },
       {
         path: "properties",
         name: "Properties",
         component: () =>
           import("@/modules/properties/pages/PropertiesList.vue"),
-        meta: { module: "properties" },
+        meta: { module: "properties", vertical: "realEstate" },
       },
       {
         path: "properties/:id",
         name: "PropertyDetails",
         component: () =>
           import("@/modules/properties/pages/PropertyDetails.vue"),
-        meta: { module: "properties" },
+        meta: { module: "properties", vertical: "realEstate" },
       },
       {
         path: "builders",
         name: "Builders",
         component: () => import("@/modules/properties/pages/BuildersList.vue"),
-        meta: { module: "projects" },
+        meta: { module: "projects", vertical: "realEstate" },
       },
       {
         path: "builders/:id",
         name: "BuilderDetails",
         component: () =>
           import("@/modules/properties/pages/BuilderDetails.vue"),
-        meta: { module: "projects" },
+        meta: { module: "projects", vertical: "realEstate" },
       },
       {
         path: "commissions",
@@ -229,6 +229,7 @@ const routes = [
           permission: "commissions.read",
           featureFlag: "commissionModule",
           module: "commissions",
+          vertical: "realEstate",
         },
       },
       {
@@ -240,6 +241,7 @@ const routes = [
           permission: "commissions.read",
           featureFlag: "commissionModule",
           module: "commissions",
+          vertical: "realEstate",
         },
       },
       {
@@ -251,6 +253,7 @@ const routes = [
           permission: "commissions.read",
           featureFlag: "commissionModule",
           module: "commissions",
+          vertical: "realEstate",
         },
       },
       {
@@ -262,6 +265,7 @@ const routes = [
           permission: "commissions.read",
           featureFlag: "commissionModule",
           module: "commissions",
+          vertical: "realEstate",
         },
       },
       {

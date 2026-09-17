@@ -157,6 +157,7 @@ import FinancialStatusBadge from '../components/FinancialStatusBadge.vue';
 import RecordPaymentModal from '../components/RecordPaymentModal.vue';
 import { fetchCommissionSummary, fetchReceivables, recordCommissionPayment } from '../api/endpoints';
 import { formatCurrency, formatDate, getCollectionPercentage, getDaysPastDue } from '../utils/financialFormat';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const loading = ref(true);
@@ -236,7 +237,7 @@ const submitPayment = async form => {
   if (!activeReceivable.value) return;
   savingPayment.value = true;
   try { await recordCommissionPayment({ id: activeReceivable.value.id, ...form }); closePayment(); await loadData(); }
-  catch (error) { window.alert(error.response?.data?.error?.message || error.message || 'Failed to record payment.'); }
+  catch (error) { Swal.fire({ text: error.response?.data?.error?.message || error.message || 'Failed to record payment.', icon: 'error' }); }
   finally { savingPayment.value = false; }
 };
 const formatPartyType = type => ({ builder: 'Builder / Developer', seller: 'Property Seller', customer: 'Customer / Buyer', channel_partner: 'Channel Partner', broker: 'Broker', bank: 'Bank', dsa: 'DSA', financial_institution: 'Financial Institution' }[type] || type || 'Other');

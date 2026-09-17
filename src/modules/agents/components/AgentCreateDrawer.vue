@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="drawer">
-      <div v-if="open" class="fixed inset-0 z-50 overflow-hidden flex justify-end">
+      <div v-if="open" class="fixed inset-0 z-[1000] overflow-hidden flex justify-end">
         <!-- Backdrop -->
         <div
           class="fixed inset-0 transition-opacity"

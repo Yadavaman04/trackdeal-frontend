@@ -302,6 +302,7 @@ import {
   PhCaretDown, PhCaretRight, PhBuilding, PhBuildings, 
   PhHouseLine, PhMagnifyingGlass 
 } from '@phosphor-icons/vue';
+import Swal from 'sweetalert2';
 
 const store = useStore();
 
@@ -379,12 +380,12 @@ const handlePageSizeChange = (limit) => {
   selectedRows.value = [];
 };
 
-const handleBoardStatusChange = ({ item, oldStatus, newStatus, isLocked }) => {
+const handleBoardStatusChange = async ({ item, oldStatus, newStatus, isLocked }) => {
   selectedProperty.value = item;
   
   if (isLocked) {
     // Prompt justification and password if Sold status reversal is triggered
-    if (confirm('Reverting a sold property booking requires Admin privileges. Verify credentials to unlock?')) {
+    const result = await Swal.fire({ title: 'Confirm', text: 'Reverting a sold property booking requires Admin privileges. Verify credentials to unlock?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' }); if (result.isConfirmed) {
       isReleaseOpen.value = true;
     }
     return;

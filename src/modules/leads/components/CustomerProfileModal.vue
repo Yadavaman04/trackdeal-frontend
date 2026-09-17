@@ -1,17 +1,15 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal-fade">
+    <Transition name="drawer-slide">
       <div 
         v-if="isOpen" 
-        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"
-        style="background-color: rgba(9, 14, 26, 0.65); backdrop-filter: blur(4px);"
+        class="fixed inset-0 z-[1000] flex justify-end overflow-hidden"
+        style="background-color: rgba(9, 14, 26, 0.55); backdrop-filter: blur(3px);"
+        @click.self="$emit('close')"
       >
-        <!-- Modal Backdrop click to close -->
-        <div class="fixed inset-0" @click="$emit('close')"></div>
-
-        <!-- Modal Content Container -->
+        <!-- Modal Content Container (Right-Side Drawer) -->
         <div 
-          class="relative w-full max-w-2xl bg-surface rounded-2xl shadow-2xl border border-default overflow-hidden z-10 flex flex-col max-h-[90vh] text-slate-800 dark:text-slate-100"
+          class="relative w-full max-w-2xl h-full bg-surface shadow-2xl border-l border-default overflow-hidden z-10 flex flex-col text-slate-800 dark:text-slate-100"
           style="background-color: hsl(var(--bg-surface)); border-color: hsl(var(--neutral-100));"
         >
           <!-- Header -->
@@ -270,12 +268,7 @@ const getStageBadgeClass = (stage) => {
 </script>
 
 <style scoped>
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
 </style>

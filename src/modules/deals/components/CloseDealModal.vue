@@ -1,29 +1,31 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden transition-all text-xs">
-      <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50">
-        <div>
-          <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <AppIcon name="handshake" :size="18" weight="duotone" />
-            </span>
-            <span>Close Deal & Setup Commission</span>
-          </h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-            Mark this deal as Closed Won and automatically generate the financial commission & receivables record.
-          </p>
-        </div>
-        <button 
-          @click="close"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors"
-        >
-          <AppIcon name="close" :size="15" weight="bold" />
-        </button>
-      </div>
+  <Teleport to="body">
+    <Transition name="drawer-slide">
+      <div v-if="isOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="close">
+        <div class="bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full h-full flex flex-col overflow-hidden transition-all text-xs">
+          <!-- Modal Header -->
+          <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50 shrink-0">
+            <div>
+              <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <AppIcon name="handshake" :size="18" weight="duotone" />
+                </span>
+                <span>Close Deal & Setup Commission</span>
+              </h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Mark this deal as Closed Won and automatically generate the financial commission & receivables record.
+              </p>
+            </div>
+            <button 
+              @click="close"
+              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition-colors"
+            >
+              <AppIcon name="close" :size="15" weight="bold" />
+            </button>
+          </div>
 
-      <!-- Modal Body Form -->
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          <!-- Modal Body Form -->
+          <form @submit.prevent="handleSubmit" class="p-6 space-y-5 flex-1 overflow-y-auto">
         <!-- Deal Information Section -->
         <div class="space-y-3">
           <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[10px] text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
@@ -214,9 +216,11 @@
             <span>Confirm & Close Won Deal</span>
           </button>
         </div>
-      </form>
-    </div>
-  </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>

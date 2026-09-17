@@ -4,8 +4,7 @@
     <Transition name="backdrop">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-40"
-        style="background-color: rgba(9, 14, 26, 0.45); backdrop-filter: blur(2px);"
+        class="fixed inset-0 z-[1000] premium-backdrop"
         @click="$emit('close')"
       />
     </Transition>
@@ -15,7 +14,7 @@
       <div
         v-if="isOpen"
         ref="panel"
-        class="fixed right-0 top-0 z-50 h-full max-w-[calc(100vw-12px)] flex flex-col border-l shadow-2xl"
+        class="fixed right-0 top-0 z-[1010] h-full max-w-[calc(100vw-12px)] flex flex-col border-l premium-drawer"
         :style="{ width, borderColor: 'hsl(var(--neutral-100))', backgroundColor: 'hsl(var(--bg-surface))' }"
         role="dialog"
         aria-modal="true"
@@ -32,16 +31,12 @@
             <p v-if="subtitle" class="text-body-sm mt-0.5" style="color: hsl(var(--neutral-400));">{{ subtitle }}</p>
           </div>
 
-          <!-- Close Button -->
           <button
             @click="$emit('close')"
-            class="w-7 h-7 flex items-center justify-center rounded-[6px] shrink-0 transition-colors duration-80 mt-0.5"
-            style="color: hsl(var(--neutral-400));"
-            @mouseenter="(e) => { e.currentTarget.style.backgroundColor = 'hsl(var(--neutral-100))'; e.currentTarget.style.color = 'hsl(var(--neutral-700))'; }"
-            @mouseleave="(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = 'hsl(var(--neutral-400))'; }"
+            class="w-8 h-8 flex items-center justify-center rounded-[8px] shrink-0 transition-colors duration-80 mt-0.5 btn-icon"
             aria-label="Close"
           >
-            <PhX :size="15" weight="bold" />
+            <PhX :size="16" weight="bold" />
           </button>
         </header>
 

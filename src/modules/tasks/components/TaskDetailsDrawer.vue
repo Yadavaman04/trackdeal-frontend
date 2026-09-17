@@ -194,6 +194,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useStore } from 'vuex';
+import { useQueryClient } from '@tanstack/vue-query';
+import Swal from 'sweetalert2';
 import AppDrawer from '@/components/AppDrawer.vue';
 import { useDeleteTaskMutation } from '../queries';
 import {
@@ -215,7 +217,15 @@ const { mutateAsync: deleteTask, isPending: isDeleting } = useDeleteTaskMutation
 const handleDelete = async () => {
   if (!props.task) return;
   const taskId = props.task._id || props.task.id;
-  if (!confirm('Are you sure you want to delete this task?')) return;
+  const result = await Swal.fire({
+    title: 'Confirm',
+    text: 'Are you sure you want to delete this task?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'Cancel'
+  });
+  if (!result.isConfirmed) return;
   
   try {
     await deleteTask(taskId);

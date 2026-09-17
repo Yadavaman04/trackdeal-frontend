@@ -108,19 +108,25 @@
                 </div>
                 <span v-else class="text-slate-400 italic">—</span>
               </td>
-              <td class="p-4 text-center space-x-3">
-                <router-link 
-                  :to="`/app/projects/${proj._id || proj.id}`" 
-                  class="text-primary hover:underline font-bold"
-                >
-                  View
-                </router-link>
-                <button 
-                  @click="openEditProject(proj)" 
-                  class="text-indigo-600 hover:underline font-bold"
-                >
-                  Edit
-                </button>
+              <td class="p-4 text-center">
+                <div class="inline-flex items-center gap-1 justify-center">
+                  <router-link 
+                    :to="`/app/projects/${proj._id || proj.id}`" 
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-500 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    title="View details"
+                    aria-label="View details"
+                  >
+                    <PhEye :size="15" weight="bold" />
+                  </router-link>
+                  <button 
+                    @click="openEditProject(proj)" 
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-950/40 transition-colors"
+                    title="Edit project"
+                    aria-label="Edit project"
+                  >
+                    <PhPencilSimple :size="15" weight="bold" />
+                  </button>
+                </div>
               </td>
             </tr>
             <tr v-if="filteredProjects.length === 0">
@@ -267,7 +273,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { PhMagnifyingGlass, PhCopy } from '@phosphor-icons/vue';
+import { PhMagnifyingGlass, PhCopy, PhEye, PhPencilSimple } from '@phosphor-icons/vue';
 import { useProjectsQuery, useUnitsQuery, useCreateProjectMutation, useUpdateProjectMutation } from '../queries';
 import { useClientPagination } from '@/composables/useClientPagination';
 import apiClient from '@/api/client';

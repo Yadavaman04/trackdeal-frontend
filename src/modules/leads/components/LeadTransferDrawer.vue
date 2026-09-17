@@ -184,6 +184,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
+import { useQueryClient } from '@tanstack/vue-query';
+import Swal from 'sweetalert2';
 import AppDrawer from '@/components/AppDrawer.vue';
 import AgentQuickCreateModal from '@/modules/agents/components/AgentQuickCreateModal.vue';
 import { useAssignLeadMutation, useUpdateLeadMutation } from '../queries';
@@ -282,7 +284,7 @@ const onTransfer = async () => {
   try {
     if (transferType.value === 'agent') {
       if (selectedAgentIds.value.length === 0) {
-        alert('Please select at least one Channel Partner / Agent to transfer lead');
+        Swal.fire({ text: 'Please select at least one Channel Partner / Agent to transfer lead', icon: 'error' });
         return;
       }
 

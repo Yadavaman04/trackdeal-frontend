@@ -174,6 +174,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
   whatsappTemplates: { type: Array, default: () => [] },
@@ -311,7 +312,7 @@ function resetForm() {
 
 function save() {
   if (!activeTemplate.value.name) {
-    alert('Please provide a name');
+    Swal.fire({ text: 'Please provide a name', icon: 'error' });
     return;
   }
   emit('save', {

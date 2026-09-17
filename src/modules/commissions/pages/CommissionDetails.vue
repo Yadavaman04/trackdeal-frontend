@@ -351,23 +351,25 @@
       </div>
     </div>
 
-    <!-- Record Payment Modal -->
-    <div v-if="paymentModalOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transition-all text-xs">
-        <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50">
-          <div>
-            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <AppIcon name="payment" :size="15" />
-              <span>Record Commission Payment</span>
-            </h3>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              {{ commission?.commissionNumber }} · {{ commission?.payablePartyName }}
-            </p>
-          </div>
-          <button @click="paymentModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Close"><AppIcon name="close" :size="15" weight="bold" /></button>
-        </div>
+    <!-- Record Payment Drawer -->
+    <Teleport to="body">
+      <Transition name="drawer-slide">
+        <div v-if="paymentModalOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="paymentModalOpen = false">
+          <div class="bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full h-full flex flex-col overflow-hidden text-xs">
+            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-850/50 shrink-0">
+              <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  <AppIcon name="payment" :size="15" />
+                  <span>Record Commission Payment</span>
+                </h3>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  {{ commission?.commissionNumber }} · {{ commission?.payablePartyName }}
+                </p>
+              </div>
+              <button @click="paymentModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Close"><AppIcon name="close" :size="15" weight="bold" /></button>
+            </div>
 
-        <form @submit.prevent="submitPayment" class="p-5 space-y-4">
+            <form @submit.prevent="submitPayment" class="p-5 space-y-4 flex-1 overflow-y-auto">
           <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex justify-between items-center text-amber-700 dark:text-amber-300">
             <div>
               <span class="text-[10px] font-bold uppercase block">Current Outstanding</span>
@@ -441,13 +443,16 @@
         </form>
       </div>
     </div>
-  </div>
+  </Transition>
+</Teleport>
+</div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { fetchCommissionById, recordCommissionPayment } from '../api/endpoints';
+import Swal from 'sweetalert2';
 
 const route = useRoute();
 const commissionId = route.params.id;
@@ -566,7 +571,7 @@ async function submitPayment() {
     paymentModalOpen.value = false;
     await loadCommission();
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to record payment.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to record payment.', icon: 'error' });
   } finally {
     savingPayment.value = false;
   }
@@ -576,3 +581,9 @@ onMounted(() => {
   loadCommission();
 });
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

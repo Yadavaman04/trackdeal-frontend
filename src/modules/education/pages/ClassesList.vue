@@ -25,14 +25,25 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-          <tr v-for="row in rows" :key="row._id">
-            <td class="py-3 px-4 font-bold">{{ row.name }} <span class="text-slate-400 font-mono">{{ row.code }}</span></td>
+          <tr v-for="row in rows" :key="row._id" class="hover:bg-slate-50/50 dark:hover:bg-slate-850/40 transition-colors">
+            <td class="py-3 px-4 font-bold">{{ row.name }} <span class="text-slate-400 font-mono text-[10px]">{{ row.code }}</span></td>
             <td class="py-3 px-4">{{ row.subject || '—' }} / {{ row.grade || '—' }}</td>
-            <td class="py-3 px-4">₹{{ row.fees || 0 }}</td>
+            <td class="py-3 px-4 font-semibold">₹{{ Number(row.fees || 0).toLocaleString('en-IN') }}</td>
             <td class="py-3 px-4">{{ row.capacity || 0 }}</td>
-            <td class="py-3 px-4 capitalize">{{ row.status }}</td>
+            <td class="py-3 px-4 capitalize">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" :class="row.status === 'upcoming' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'">
+                {{ row.status }}
+              </span>
+            </td>
             <td class="py-3 px-4 text-right">
-              <button class="text-indigo-600 font-semibold" @click="openEdit(row)">Edit</button>
+              <button
+                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-950/40 transition-colors"
+                title="Edit class"
+                aria-label="Edit class"
+                @click="openEdit(row)"
+              >
+                <PhPencilSimple :size="16" weight="bold" />
+              </button>
             </td>
           </tr>
           <tr v-if="!loading && rows.length === 0">
@@ -42,49 +53,57 @@
       </table>
     </div>
 
-    <Teleport to="body">
-      <div v-if="showModal" class="workspace-dialog-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4" @click.self="showModal = false">
-        <form class="workspace-dialog bg-surface border border-default rounded-xl w-full max-w-lg p-6 space-y-4" @submit.prevent="save">
-          <h2 class="font-bold">{{ editing ? 'Edit class' : 'Create class' }}</h2>
-          <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <label class="space-y-1 col-span-2">Name *
-              <input v-model="form.name" required class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Code
-              <input v-model="form.code" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Subject
-              <input v-model="form.subject" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Grade
-              <input v-model="form.grade" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Fees
-              <input v-model="form.fees" type="number" min="0" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Capacity
-              <input v-model="form.capacity" type="number" min="1" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Instructor
-              <input v-model="form.instructorName" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1 col-span-2">Schedule
-              <input v-model="form.schedule" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-          </div>
-          <div class="flex justify-end gap-2">
-            <button type="button" class="btn btn-secondary btn-sm" @click="showModal = false">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm" :disabled="saving">Save</button>
-          </div>
-        </form>
-      </div>
-    </Teleport>
+    <!-- Right-Side Modal Drawer -->
+    <AppDrawer
+      :isOpen="showModal"
+      :title="editing ? 'Edit Class' : 'Create Class'"
+      :subtitle="editing ? 'Update class and batch information' : 'Create a new batch or course offering'"
+      width="520px"
+      @close="showModal = false"
+    >
+      <form id="class-form" class="space-y-4 text-xs" @submit.prevent="save">
+        <p v-if="error" class="text-xs text-red-500 bg-red-50 dark:bg-red-950/40 p-2.5 rounded-lg border border-red-200 dark:border-red-900">{{ error }}</p>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <label class="space-y-1 col-span-2 font-medium text-slate-700 dark:text-slate-300">Name *
+            <input v-model="form.name" required class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Code
+            <input v-model="form.code" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Subject
+            <input v-model="form.subject" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Grade
+            <input v-model="form.grade" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Fees (₹)
+            <input v-model="form.fees" type="number" min="0" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Capacity
+            <input v-model="form.capacity" type="number" min="1" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Instructor
+            <input v-model="form.instructorName" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 col-span-2 font-medium text-slate-700 dark:text-slate-300">Schedule
+            <input v-model="form.schedule" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" class="btn btn-secondary btn-sm" @click="showModal = false">Cancel</button>
+        <button type="submit" form="class-form" class="btn btn-primary btn-sm" :disabled="saving">
+          {{ saving ? 'Saving...' : 'Save Class' }}
+        </button>
+      </template>
+    </AppDrawer>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import { PhPencilSimple } from '@phosphor-icons/vue';
+import AppDrawer from '@/components/AppDrawer.vue';
 import { createEducationClass, fetchEducationClasses, updateEducationClass } from '../api/endpoints';
 
 const rows = ref([]);

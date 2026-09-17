@@ -295,6 +295,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import Swal from 'sweetalert2';
 import {
   fetchAdminUsers,
   createAdminUser,
@@ -395,7 +396,7 @@ async function handleCreateUser() {
     showCreateModal.value = false;
     await loadUsers();
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to create user.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to create user.', icon: 'error' });
   } finally {
     saving.value = false;
   }
@@ -420,7 +421,7 @@ async function handleUpdateUser() {
     showEditModal.value = false;
     await loadUsers();
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to update user.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to update user.', icon: 'error' });
   } finally {
     saving.value = false;
   }
@@ -439,7 +440,7 @@ async function executeMoveUser() {
     showMoveModal.value = false;
     await loadUsers();
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to move user.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to move user.', icon: 'error' });
   } finally {
     saving.value = false;
   }

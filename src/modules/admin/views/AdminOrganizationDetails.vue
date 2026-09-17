@@ -268,6 +268,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
 import {
   fetchAdminOrganizationById,
   updateAdminOrganization,
@@ -331,9 +332,9 @@ async function handleSaveOrg() {
   try {
     await updateAdminOrganization(org.value._id, editForm.value);
     await loadOrgData();
-    alert('Organization successfully updated!');
+    Swal.fire({ text: 'Organization successfully updated!', icon: 'success' });
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to update organization.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to update organization.', icon: 'error' });
   } finally {
     saving.value = false;
   }
@@ -341,13 +342,14 @@ async function handleSaveOrg() {
 
 async function toggleStatus() {
   const newStatus = org.value.status === 'suspended' ? 'active' : 'suspended';
-  if (!confirm(`Are you sure you want to ${newStatus === 'suspended' ? 'SUSPEND' : 'ACTIVATE'} this organization?`)) return;
+  const result = await Swal.fire({ title: 'Confirm', text: `Are you sure you want to ${newStatus === 'suspended' ? 'SUSPEND' : 'ACTIVATE'} this organization?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' });
+  if (!result.isConfirmed) return;
 
   try {
     await updateAdminOrganization(org.value._id, { status: newStatus });
     await loadOrgData();
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to update status.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to update status.', icon: 'error' });
   }
 }
 
@@ -361,9 +363,9 @@ async function executeResetPassword() {
   try {
     await resetAdminOwnerPassword(org.value._id, resetPasswordInput.value);
     showResetModal.value = false;
-    alert('Owner password successfully updated!');
+    Swal.fire({ text: 'Owner password successfully updated!', icon: 'success' });
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to reset password.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to reset password.', icon: 'error' });
   } finally {
     resetting.value = false;
   }

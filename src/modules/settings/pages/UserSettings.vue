@@ -3,15 +3,15 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="font-heading text-xl font-extrabold text-slate-800 dark:text-slate-100">User Management & Audit Trails</h1>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Invite new team members, manage account suspensions, transfer regional branches, and review activity audit logs.</p>
+        <h1 class="font-heading text-xl font-extrabold text-slate-800 dark:text-slate-100">{{ isEducationWorkspace ? 'Staff Management & Access Logs' : 'User Management & Audit Trails' }}</h1>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ isEducationWorkspace ? 'Onboard counselors and staff, manage account access, assign campus branches, and review audit logs.' : 'Onboard team members, manage account suspensions, transfer regional branches, and review activity audit logs.' }}</p>
       </div>
       <button
         @click="openInviteDrawer"
         class="btn-md btn-primary gap-1.5"
       >
         <PhPlus :size="14" />
-        <span>Invite User</span>
+        <span>{{ isEducationWorkspace ? 'Onboard Staff' : 'Onboard User' }}</span>
       </button>
     </div>
 
@@ -60,39 +60,55 @@
                   </span>
                 </td>
                 <td v-if="isEnterprise" class="p-3 font-semibold text-slate-600 dark:text-slate-400">{{ user.branch || user.branchId?.name || '' }}</td>
-                <td class="p-3 text-center">
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      :checked="user.active"
-                      @change="toggleUserStatus(user)"
-                      class="sr-only peer"
-                      :disabled="isSuperAdminSelf(user)"
-                    />
-                    <div class="w-9 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-disabled:opacity-50"></div>
-                  </label>
-                </td>
-                <td class="p-3 text-center space-x-1 flex items-center justify-center">
-                  <button
-                    v-if="isEnterprise"
-                    @click="triggerTransfer(user)"
-                    class="btn btn-sm btn-ghost text-primary text-[10px] h-6 px-1.5 gap-1 font-bold"
-                    :disabled="!user.active"
-                    :class="!user.active ? 'opacity-40 cursor-not-allowed' : ''"
-                  >
-                    <PhMapPin :size="10" />
-                    <span>Transfer Office</span>
-                  </button>
-                  <button
-                    @click="triggerRoleSwap(user)"
-                    class="btn btn-sm btn-ghost text-slate-600 dark:text-slate-400 text-[10px] h-6 px-1.5 gap-1 font-bold"
-                    :disabled="isSuperAdminSelf(user) || !user.active"
-                    :class="(isSuperAdminSelf(user) || !user.active) ? 'opacity-40 cursor-not-allowed' : ''"
-                  >
-                    <PhKey :size="10" />
-                    <span>Adjust Role</span>
-                  </button>
-                </td>
+                  <td class="p-3 text-center">
+                    <span v-if="isSuperAdminSelf(user)" class="px-2.5 py-0.5 rounded-full text-micro font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      Active
+                    </span>
+                    <div v-else class="flex items-center justify-center gap-2">
+                      <label class="relative inline-flex items-center cursor-pointer" :title="user.status === 'active' ? 'Click to Deactivate' : 'Click to Activate'">
+                        <input
+                          type="checkbox"
+                          :checked="user.status === 'active'"
+                          @change="toggleUserStatus(user)"
+                          class="sr-only peer"
+                        />
+                        <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-500"></div>
+                      </label>
+                      <span class="text-[10px] font-bold uppercase transition-colors" :class="user.status === 'active' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'">
+                        {{ user.status === 'active' ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <template v-if="isSuperAdminSelf(user)">
+                      <span class="text-micro font-bold text-slate-400 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
+                        System Generated
+                      </span>
+                    </template>
+                    <template v-else>
+                      <div class="space-x-1 flex items-center justify-center">
+                        <button
+                          v-if="isEnterprise"
+                          @click="triggerTransfer(user)"
+                          class="btn btn-sm btn-ghost text-primary text-[10px] h-6 px-1.5 gap-1 font-bold"
+                          :disabled="user.status !== 'active'"
+                          :class="user.status !== 'active' ? 'opacity-40 cursor-not-allowed' : ''"
+                        >
+                          <PhMapPin :size="10" />
+                          <span>Transfer Office</span>
+                        </button>
+                        <button
+                          @click="triggerRoleSwap(user)"
+                          class="btn btn-sm btn-ghost text-slate-600 dark:text-slate-400 text-[10px] h-6 px-1.5 gap-1 font-bold"
+                          :disabled="user.status !== 'active'"
+                          :class="user.status !== 'active' ? 'opacity-40 cursor-not-allowed' : ''"
+                        >
+                          <PhKey :size="10" />
+                          <span>Adjust Role</span>
+                        </button>
+                      </div>
+                    </template>
+                  </td>
               </tr>
             </tbody>
           </table>
@@ -139,6 +155,7 @@ import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useQueryClient } from '@tanstack/vue-query';
 import { PhPlus, PhMapPin, PhKey } from '@phosphor-icons/vue';
+import Swal from 'sweetalert2';
 import {
   useUsersQuery,
   useRolesQuery,
@@ -156,6 +173,7 @@ const queryClient = useQueryClient();
 
 const activeTab = ref('directory');
 const isEnterprise = computed(() => store.getters['organization/isEnterpriseAgency']);
+const isEducationWorkspace = computed(() => store.getters['organization/isEducationTenant']);
 
 // TanStack queries
 const { data: users } = useUsersQuery();
@@ -193,25 +211,51 @@ function isSuperAdminSelf(user) {
 async function toggleUserStatus(user) {
   if (isSuperAdminSelf(user)) return;
 
-  const targetState = !user.active;
-  const statusWord = targetState ? 'activated' : 'suspended';
+  const currentlyActive = user.status === 'active';
+  const targetState = !currentlyActive;
+  const targetStatusStr = targetState ? 'active' : 'inactive';
+  const actionWord = targetState ? 'activate' : 'deactivate';
+  const statusWord = targetState ? 'Active' : 'Inactive';
+  const userName = user.name || user.fullName || 'this user';
 
-  if (!confirm(`Are you sure you want to ${statusWord} ${user.name}?`)) {
+  const result = await Swal.fire({
+    title: `Set as ${statusWord}`,
+    text: `Are you sure you want to ${actionWord} ${userName}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) {
     // Reset toggle visually
     queryClient.invalidateQueries({ queryKey: ['settings', 'users'] });
     return;
   }
 
   try {
+    // 1. Optimistic Update directly in the cache
+    queryClient.setQueryData(['settings', 'users'], (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map(u => 
+        u.id === user.id ? { ...u, status: targetStatusStr } : u
+      );
+    });
+    user.status = targetStatusStr; // Direct reactivity fallback
+
+    // 2. Perform the API call
     await suspendUser({
       id: user.id,
-      suspend: !targetState
+      suspend: !targetState // if target is active (true), we do NOT suspend (false).
     });
+
     store.dispatch('notifications/triggerToast', {
-      message: `User profile successfully ${statusWord}.`,
+      message: `User profile is now ${statusWord}.`,
       type: 'success'
     });
   } catch (err) {
+    // Revert optimistic update on error
+    queryClient.invalidateQueries({ queryKey: ['settings', 'users'] });
     store.dispatch('notifications/triggerToast', {
       message: 'Failed to toggle user activation status.',
       type: 'error'
@@ -242,7 +286,8 @@ function getRoleCode(role) {
 function getRoleDisplayName(role) {
   if (!role) return '';
   const val = typeof role === 'object' ? role.name || role.code || '' : String(role);
-  return val.replace('_', ' ');
+  const formatted = val.replace(/_/g, ' ');
+  return isEducationWorkspace.value ? formatted.replace(/agent/gi, 'Staff') : formatted;
 }
 
 function refetchData() {

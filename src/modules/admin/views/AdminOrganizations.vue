@@ -268,6 +268,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import Swal from 'sweetalert2';
 import { fetchAdminOrganizations, createAdminOrganization, updateAdminOrganization } from '../api/endpoints';
 
 const loading = ref(false);
@@ -376,13 +377,14 @@ async function handleCreateOrg() {
 async function toggleOrgStatus(org) {
   const newStatus = org.status === 'suspended' ? 'active' : 'suspended';
   const confirmMsg = `Are you sure you want to ${newStatus === 'suspended' ? 'SUSPEND' : 'ACTIVATE'} organization '${org.name}'?`;
-  if (!confirm(confirmMsg)) return;
+  const result = await Swal.fire({ title: 'Confirm', text: confirmMsg, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' });
+  if (!result.isConfirmed) return;
 
   try {
     await updateAdminOrganization(org._id, { status: newStatus });
     await loadOrganizations();
   } catch (err) {
-    alert(err.response?.data?.error?.message || err.message || 'Failed to update organization status.');
+    Swal.fire({ text: err.response?.data?.error?.message || err.message || 'Failed to update organization status.', icon: 'error' });
   }
 }
 

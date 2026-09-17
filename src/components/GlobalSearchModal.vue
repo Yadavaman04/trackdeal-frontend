@@ -1,19 +1,20 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-start justify-center pt-20 p-4 animate-fade-in" @click.self="close">
-    <div class="section-panel max-w-xl w-full overflow-hidden transition-all text-xs" role="dialog" aria-modal="true" aria-label="Global search">
+  <Teleport to="body">
+    <div v-if="isOpen" class="fixed inset-0 z-[1000] overflow-y-auto premium-backdrop flex items-start justify-center pt-20 p-4 animate-fade-in" @click.self="close">
+      <div class="section-panel premium-modal max-w-xl w-full overflow-hidden transition-all text-body" role="dialog" aria-modal="true" aria-label="Global search">
       <!-- Search Input Header -->
-      <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+      <div class="p-4 flex items-center gap-3">
         <AppIcon name="search" :size="17" class="text-slate-400" />
         <input 
           ref="searchInputRef"
           v-model="searchQuery" 
           type="text" 
           placeholder="Search leads, properties, projects, deals, contacts... (Press Esc to close)"
-          class="w-full bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none font-medium"
+          class="w-full input-field bg-transparent text-body text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none font-medium"
           @keydown.esc="close"
           @input="performSearch"
         />
-        <button @click="close" class="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800">
+        <button @click="close" class="px-2 py-1 rounded-md text-micro font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800">
           ESC
         </button>
       </div>
@@ -22,12 +23,12 @@
       <div class="max-h-[60vh] overflow-y-auto p-3 space-y-4">
         <!-- Loading State -->
         <div v-if="loading" class="py-6 text-center text-slate-400">
-          <span class="text-xs">Searching TrackDeal records...</span>
+          <span class="text-body">Searching TrackDeal records...</span>
         </div>
 
         <!-- Quick Links when empty -->
         <div v-else-if="!searchQuery" class="space-y-3 p-2">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Quick Navigation</span>
+          <span class="text-label text-slate-400 block">Quick Navigation</span>
           <div class="grid grid-cols-2 gap-2">
             <router-link to="/app/dashboard" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
               <AppIcon name="chart" :size="16" class="text-accent-600" />
@@ -37,38 +38,59 @@
               <AppIcon name="users" :size="16" class="text-accent-600" />
               <span>Leads Directory</span>
             </router-link>
-            <router-link to="/app/properties" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <AppIcon name="buildings" :size="16" class="text-accent-600" />
-              <span>Properties</span>
-            </router-link>
-            <router-link to="/app/deals" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <AppIcon name="handshake" :size="16" class="text-accent-600" />
-              <span>Deals Pipeline</span>
-            </router-link>
-            <router-link to="/app/commissions" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <AppIcon name="currency" :size="16" class="text-accent-600" />
-              <span>Commissions</span>
-            </router-link>
-            <router-link to="/app/commissions/receivables" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-              <AppIcon name="file" :size="16" class="text-accent-600" />
-              <span>Receivables Ledger</span>
-            </router-link>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-body">
+            <template v-if="isEducation">
+              <router-link to="/app/leads" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="user" :size="16" class="text-accent-600" />
+                <span>Student Leads</span>
+              </router-link>
+              <router-link to="/app/students" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="user" :size="16" class="text-accent-600" />
+                <span>Students</span>
+              </router-link>
+              <router-link to="/app/classes" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="buildings" :size="16" class="text-accent-600" />
+                <span>Classes</span>
+              </router-link>
+              <router-link v-if="hasTasksAccess" to="/app/tasks" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="clipboard" :size="16" class="text-accent-600" />
+                <span>Tasks</span>
+              </router-link>
+            </template>
+            <template v-else>
+              <router-link to="/app/properties" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="buildings" :size="16" class="text-accent-600" />
+                <span>Properties</span>
+              </router-link>
+              <router-link to="/app/deals" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="handshake" :size="16" class="text-accent-600" />
+                <span>Deals Pipeline</span>
+              </router-link>
+              <router-link to="/app/commissions" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="currency" :size="16" class="text-accent-600" />
+                <span>Commissions</span>
+              </router-link>
+              <router-link to="/app/commissions/receivables" @click="close" class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
+                <AppIcon name="file" :size="16" class="text-accent-600" />
+                <span>Receivables</span>
+              </router-link>
+            </template>
           </div>
         </div>
 
         <!-- Empty search results -->
         <div v-else-if="resultsCount === 0" class="py-8 text-center text-slate-400 space-y-1">
           <AppIcon name="search" :size="26" class="mx-auto" />
-          <p class="font-semibold text-slate-600 dark:text-slate-300">No results found for "{{ searchQuery }}"</p>
-          <p class="text-[11px]">Try searching by lead name, phone number, project, or deal ID.</p>
+          <p class="text-h3 font-semibold text-slate-600 dark:text-slate-300">No results found for "{{ searchQuery }}"</p>
+          <p class="text-micro">Try searching by lead name, phone number, project, or deal ID.</p>
         </div>
 
-        <!-- Grouped Results -->
         <div v-else class="space-y-4">
           <!-- 1. Leads Group -->
           <div v-if="results.leads?.length > 0" class="space-y-1.5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 px-2 block">
-              Leads & Inquiries ({{ results.leads.length }})
+            <span class="text-label text-indigo-600 dark:text-indigo-400 px-2 block">
+              {{ isEducation ? 'Student Leads' : 'Leads & Inquiries' }} ({{ results.leads.length }})
             </span>
             <router-link 
               v-for="lead in results.leads" 
@@ -78,108 +100,108 @@
               class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between transition-colors block"
             >
               <div class="space-y-0.5">
-                <div class="font-bold text-slate-800 dark:text-slate-100 text-xs flex items-center gap-2">
+                <div class="font-bold text-slate-800 dark:text-slate-100 text-body flex items-center gap-2">
                   <span>{{ lead.firstName }} {{ lead.lastName || '' }}</span>
                   <span 
                     v-if="lead.temperature" 
-                    class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase"
+                    class="px-1.5 py-0.5 rounded text-micro font-bold uppercase"
                     :class="lead.temperature === 'hot' ? 'bg-red-500/10 text-red-600' : 'bg-blue-500/10 text-blue-600'"
                   >
                     {{ lead.temperature }}
                   </span>
                 </div>
-                <div class="text-[11px] text-slate-400">
+                <div class="text-micro text-slate-400">
                   {{ lead.preferredPropertyType || 'Residential' }} · {{ lead.budgetMax ? '₹' + Number(lead.budgetMax).toLocaleString('en-IN') : 'Budget Flexible' }}
                 </div>
               </div>
-              <span class="text-[10px] font-semibold text-slate-400 capitalize bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+              <span class="text-micro font-semibold text-slate-400 capitalize bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                 {{ (lead.stage || 'new').replace(/_/g, ' ') }}
               </span>
             </router-link>
           </div>
 
           <!-- 2. Properties & Projects Group -->
-          <div v-if="results.properties?.length > 0" class="space-y-1.5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 px-2 block">
+          <div v-if="!isEducation && results.properties?.length > 0" class="space-y-1.5">
+            <span class="text-label text-emerald-600 dark:text-emerald-400 px-2 block">
               Properties & Inventory ({{ results.properties.length }})
             </span>
             <router-link 
               v-for="prop in results.properties" 
-              :key="prop._id"
+              :key="prop._id" 
               :to="`/app/properties/${prop._id}`" 
               @click="close"
               class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between transition-colors block"
             >
               <div class="space-y-0.5">
-                <div class="font-bold text-slate-800 dark:text-slate-100 text-xs">
+                <div class="font-bold text-slate-800 dark:text-slate-100 text-body">
                   {{ prop.title || prop.name }}
                 </div>
-                <div class="text-[11px] text-slate-400">
+                <div class="text-micro text-slate-400">
                   {{ prop.location || prop.city }} · {{ prop.configuration || '3 BHK' }}
                 </div>
               </div>
-              <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span class="text-body font-bold text-emerald-600 dark:text-emerald-400">
                 ₹{{ Number(prop.price || prop.askingPrice || 0).toLocaleString('en-IN') }}
               </span>
             </router-link>
           </div>
 
           <!-- 3. Deals Group -->
-          <div v-if="results.deals?.length > 0" class="space-y-1.5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 px-2 block">
+          <div v-if="!isEducation && results.deals?.length > 0" class="space-y-1.5">
+            <span class="text-label text-amber-600 dark:text-amber-400 px-2 block">
               Deals & Transactions ({{ results.deals.length }})
             </span>
             <router-link 
               v-for="deal in results.deals" 
-              :key="deal._id"
+              :key="deal._id" 
               :to="`/app/deals/${deal._id}`" 
               @click="close"
               class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between transition-colors block"
             >
               <div class="space-y-0.5">
-                <div class="font-bold text-slate-800 dark:text-slate-100 text-xs">
+                <div class="font-bold text-slate-800 dark:text-slate-100 text-body">
                   {{ deal.dealNumber }}
                 </div>
-                <div class="text-[11px] text-slate-400">
+                <div class="text-micro text-slate-400">
                   Value: ₹{{ Number(deal.dealValue || 0).toLocaleString('en-IN') }}
                 </div>
               </div>
-              <span class="text-[10px] font-bold uppercase text-indigo-600">
+              <span class="text-micro font-bold uppercase text-indigo-600">
                 {{ deal.status }}
               </span>
             </router-link>
           </div>
 
           <!-- 4. Loans Group -->
-          <div v-if="results.loans?.length > 0" class="space-y-1.5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 px-2 block">
+          <div v-if="!isEducation && results.loans?.length > 0" class="space-y-1.5">
+            <span class="text-label text-blue-600 dark:text-blue-400 px-2 block">
               Loan Cases & Applications ({{ results.loans.length }})
             </span>
             <router-link 
               v-for="loan in results.loans" 
-              :key="loan._id"
+              :key="loan._id" 
               :to="`/app/loans/${loan._id}`" 
               @click="close"
               class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between transition-colors block"
             >
               <div class="space-y-0.5">
-                <div class="font-bold text-slate-800 dark:text-slate-100 text-xs flex items-center gap-2">
+                <div class="font-bold text-slate-800 dark:text-slate-100 text-body flex items-center gap-2">
                   <span>{{ loan.loanCaseNumber }}</span>
                   <span class="text-slate-400 font-normal">· {{ loan.customerId?.firstName }} {{ loan.customerId?.lastName }}</span>
                 </div>
-                <div class="text-[11px] text-slate-400">
+                <div class="text-micro text-slate-400">
                   {{ loan.preferredBank || 'Bank' }} · ₹{{ Number(loan.requiredAmount || 0).toLocaleString('en-IN') }}
                 </div>
               </div>
-              <span class="text-[10px] font-bold uppercase text-blue-600">
+              <span class="text-micro font-bold uppercase text-blue-600">
                 {{ (loan.stage || 'new').replace(/_/g, ' ') }}
               </span>
             </router-link>
           </div>
 
           <!-- 5. Agreements Group -->
-          <div v-if="results.agreements?.length > 0" class="space-y-1.5">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 px-2 block">
+          <div v-if="!isEducation && results.agreements?.length > 0" class="space-y-1.5">
+            <span class="text-label text-emerald-600 dark:text-emerald-400 px-2 block">
               Property Agreements ({{ results.agreements.length }})
             </span>
             <router-link 
@@ -190,15 +212,15 @@
               class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between transition-colors block"
             >
               <div class="space-y-0.5">
-                <div class="font-bold text-slate-800 dark:text-slate-100 text-xs flex items-center gap-2">
+                <div class="font-bold text-slate-800 dark:text-slate-100 text-body flex items-center gap-2">
                   <span>{{ agr.agreementNumber }}</span>
                   <span class="text-slate-400 font-normal">· {{ agr.structuredData?.property?.flatNumber ? 'Flat ' + agr.structuredData.property.flatNumber : agr.agreementType }}</span>
                 </div>
-                <div class="text-[11px] text-slate-400">
+                <div class="text-micro text-slate-400">
                   {{ agr.structuredData?.transferees?.[0]?.name || 'Buyer' }} · ₹{{ Number(agr.structuredData?.consideration?.totalAmount || 0).toLocaleString('en-IN') }}
                 </div>
               </div>
-              <span class="text-[10px] font-bold uppercase text-emerald-600">
+              <span class="text-micro font-bold uppercase text-emerald-600">
                 {{ (agr.status || 'draft').replace(/_/g, ' ') }}
               </span>
             </router-link>
@@ -207,16 +229,18 @@
       </div>
 
       <!-- Footer Help -->
-      <div class="p-3 bg-slate-50 dark:bg-slate-850/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-400 text-[10px]">
+      <div class="p-3 bg-slate-50 dark:bg-slate-850/60 flex items-center justify-between text-slate-400 text-micro">
         <span>Quick search across all active CRM modules</span>
         <span class="font-mono">Ctrl + K</span>
       </div>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue';
+import { useStore } from 'vuex';
 import apiClient from '@/api/client';
 
 const props = defineProps({
@@ -224,6 +248,16 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+
+const store = useStore();
+const isEducation = computed(() => store.getters['organization/isEducationTenant']);
+const hasTasksAccess = computed(() => {
+  return (
+    store.getters['organization/isFeatureEnabled']('tasks') &&
+    (store.getters['permissions/hasCapability']('tasks:read') ||
+     store.getters['permissions/hasCapability']('tasks.read'))
+  );
+});
 
 const searchQuery = ref('');
 const loading = ref(false);
@@ -238,6 +272,9 @@ const results = ref({
 });
 
 const resultsCount = computed(() => {
+  if (isEducation.value) {
+    return results.value.leads?.length || 0;
+  }
   return (results.value.leads?.length || 0) + 
          (results.value.properties?.length || 0) + 
          (results.value.deals?.length || 0) +

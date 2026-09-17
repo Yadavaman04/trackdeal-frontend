@@ -319,6 +319,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { PhArrowLeft, PhFloppyDisk, PhSpinner, PhLockKey } from '@phosphor-icons/vue';
 import apiClient from '@/api/client';
+import Swal from 'sweetalert2';
 
 const route = useRoute();
 const router = useRouter();
@@ -372,7 +373,7 @@ const addTransferee = () => {
 
 const handleSaveDetails = async () => {
   if (agreement.value?.status === 'executed') {
-    alert('This agreement is Executed & Signed and cannot be modified.');
+    Swal.fire({ text: 'This agreement is Executed & Signed and cannot be modified.', icon: 'error' });
     return;
   }
   isSaving.value = true;

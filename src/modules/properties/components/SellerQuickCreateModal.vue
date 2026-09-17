@@ -1,15 +1,16 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style="background-color: rgba(9, 14, 26, 0.65); backdrop-filter: blur(4px);"
-      @click.self="close"
-    >
+    <Transition name="drawer-slide">
       <div
-        class="w-full max-w-md rounded-xl border shadow-2xl overflow-hidden flex flex-col transition-all duration-150"
-        style="background-color: hsl(var(--bg-surface)); border-color: hsl(var(--neutral-100));"
+        v-if="open"
+        class="fixed inset-0 z-[1000] flex justify-end overflow-hidden"
+        style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);"
+        @click.self="close"
       >
+        <div
+          class="w-full max-w-md h-full border-l shadow-2xl overflow-hidden flex flex-col transition-all duration-150"
+          style="background-color: hsl(var(--bg-surface)); border-color: hsl(var(--neutral-100));"
+        >
         <!-- Header -->
         <div
           class="flex items-center justify-between px-5 py-4 border-b shrink-0"
@@ -41,7 +42,7 @@
         </div>
 
         <!-- Body Form -->
-        <form @submit.prevent="handleSubmit" class="p-5 space-y-3.5">
+        <form @submit.prevent="handleSubmit" class="p-5 space-y-3.5 flex-1 overflow-y-auto">
           <!-- Error alert -->
           <div
             v-if="errorMessage"
@@ -150,7 +151,8 @@
         </form>
       </div>
     </div>
-  </Teleport>
+  </Transition>
+</Teleport>
 </template>
 
 <script setup>
@@ -237,3 +239,9 @@ const close = () => {
   emit('close');
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

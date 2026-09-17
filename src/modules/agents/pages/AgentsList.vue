@@ -276,6 +276,7 @@ import {
 } from '@phosphor-icons/vue';
 import { useAgentsQuery, useAgentStatusMutation, useDeleteAgentMutation } from '../queries';
 import AgentCreateDrawer from '../components/AgentCreateDrawer.vue';
+import Swal from 'sweetalert2';
 
 const filters = reactive({
   search: '',
@@ -318,21 +319,23 @@ const openEditDrawer = (agent) => {
 
 const toggleAgentStatus = async (agent) => {
   const newStatus = agent.status === 'active' ? 'inactive' : 'active';
-  if (confirm(`Are you sure you want to change '${agent.name}' status to ${newStatus}?`)) {
+  const result = await Swal.fire({ title: 'Confirm', text: `Are you sure you want to change '${agent.name}' status to ${newStatus}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' });
+  if (result.isConfirmed) {
     try {
       await statusMutation.mutateAsync({ id: agent._id, status: newStatus });
     } catch (err) {
-      alert(err.response?.data?.error?.message || 'Failed to update status');
+      Swal.fire({ text: err.response?.data?.error?.message || 'Failed to update status', icon: 'error' });
     }
   }
 };
 
 const confirmDeleteAgent = async (agent) => {
-  if (confirm(`Are you sure you want to delete '${agent.name}'? This action cannot be undone.`)) {
+  const result = await Swal.fire({ title: 'Confirm', text: `Are you sure you want to delete '${agent.name}'? This action cannot be undone.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' });
+  if (result.isConfirmed) {
     try {
       await deleteMutation.mutateAsync(agent._id);
     } catch (err) {
-      alert(err.response?.data?.error?.message || 'Failed to delete agent');
+      Swal.fire({ text: err.response?.data?.error?.message || 'Failed to delete agent', icon: 'error' });
     }
   }
 };

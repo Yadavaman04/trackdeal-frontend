@@ -209,6 +209,7 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
+import Swal from 'sweetalert2';
 import {
   activateTenant,
   createTenant,
@@ -304,7 +305,8 @@ async function handleSave() {
 }
 
 async function handleSuspend(tenant) {
-  if (!window.confirm(`Suspend tenant "${tenant.name}"? Users in this tenant will not be able to sign in.`)) return;
+  const result = await Swal.fire({ title: 'Confirm', text: `Suspend tenant "${tenant.name}"? Users in this tenant will not be able to sign in.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' });
+  if (!result.isConfirmed) return;
   try {
     await suspendTenant(tenant._id || tenant.id);
     await loadTenants();

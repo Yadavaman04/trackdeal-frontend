@@ -1,22 +1,24 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-    <div class="bg-surface border border-default w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-      <!-- Header -->
-      <div class="px-6 py-4 border-b border-default flex items-center justify-between bg-emerald-500/10 dark:bg-emerald-950/20">
-        <div>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <PhCheckCircle :size="22" class="text-emerald-600" weight="duotone" />
-            Resolve Bank Query
-          </h3>
-          <p class="text-xs text-slate-500 mt-0.5">Submit resolution explanation and updated documents</p>
-        </div>
-        <button @click="$emit('close')" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-          <PhX :size="18" />
-        </button>
-      </div>
+  <Teleport to="body">
+    <Transition name="drawer-slide">
+      <div v-if="isOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="$emit('close')">
+        <div class="bg-surface border-l border-default w-full max-w-lg h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+          <!-- Header -->
+          <div class="px-6 py-4 border-b border-default flex items-center justify-between bg-emerald-500/10 dark:bg-emerald-950/20 shrink-0">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <PhCheckCircle :size="22" class="text-emerald-600" weight="duotone" />
+                Resolve Bank Query
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Submit resolution explanation and updated documents</p>
+            </div>
+            <button @click="$emit('close')" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <PhX :size="18" />
+            </button>
+          </div>
 
-      <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
+          <!-- Form -->
+          <form @submit.prevent="handleSubmit" class="p-6 space-y-4 flex-1 overflow-y-auto">
         <div v-if="query" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-default text-xs space-y-1">
           <div class="font-bold text-slate-900 dark:text-white">Query from {{ query.bankName }}:</div>
           <p class="text-slate-600 dark:text-slate-300 italic">"{{ query.queryDetails }}"</p>
@@ -40,6 +42,8 @@
       </form>
     </div>
   </div>
+</Transition>
+</Teleport>
 </template>
 
 <script setup>
@@ -61,3 +65,9 @@ const handleSubmit = () => {
   resolution.value = '';
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

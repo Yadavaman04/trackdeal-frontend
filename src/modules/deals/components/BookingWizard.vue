@@ -1,19 +1,23 @@
 <template>
-  <div 
-    v-if="isOpen"
-    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-  >
-    <div class="bg-surface border border-default w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-fade-in text-xs">
-      <!-- Header -->
-      <div class="px-4 py-3 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
-        <div>
-          <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center space-x-2">
-            <AppIcon name="clipboard" :size="15" /> <span>Booking confirmation</span>
-          </h3>
-          <p class="text-[10px] text-slate-450 mt-0.5">Verify deal criteria before confirming to database.</p>
-        </div>
-        <button @click="$emit('close')" class="text-slate-400 hover:text-slate-650 text-sm" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
-      </div>
+  <Teleport to="body">
+    <Transition name="drawer-slide">
+      <div 
+        v-if="isOpen" 
+        class="fixed inset-0 z-[1000] flex justify-end overflow-hidden"
+        style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);"
+        @click.self="$emit('close')"
+      >
+        <div class="bg-surface border-l border-default w-full max-w-2xl h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+          <!-- Header -->
+          <div class="px-5 py-4 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
+            <div>
+              <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                <AppIcon name="clipboard" :size="15" /> <span>Booking confirmation</span>
+              </h3>
+              <p class="text-[10px] text-slate-450 mt-0.5">Verify deal criteria before confirming to database.</p>
+            </div>
+            <button @click="$emit('close')" class="text-slate-400 hover:text-slate-650 text-sm" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
+          </div>
 
       <!-- Stepper Progress Ribbon -->
       <div class="px-6 py-3 bg-slate-55/30 dark:bg-slate-900/50 border-b border-default flex justify-between text-[10px] font-bold uppercase shrink-0">
@@ -188,6 +192,8 @@
       </div>
     </div>
   </div>
+</Transition>
+</Teleport>
 </template>
 
 <script setup>
@@ -289,3 +295,9 @@ const formatCurrency = (val) => {
   }).format(val);
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

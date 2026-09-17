@@ -42,6 +42,17 @@
           Assign ({{ selectedRows.length }})
         </button>
 
+        <!-- Bulk Import Leads (Excel/CSV) for Org Admin -->
+        <button
+          v-if="isOrgAdmin"
+          @click="isBulkUploadOpen = true"
+          class="btn btn-secondary btn-sm h-8 text-xs font-semibold px-3 gap-1.5 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+          title="Bulk Upload Leads from Excel (.xlsx, .csv)"
+        >
+          <PhFileArrowUp class="w-3.5 h-3.5" />
+          <span>Import Excel</span>
+        </button>
+
         <!-- Create Lead button -->
         <button 
           @click="isCreateOpen = true"
@@ -194,13 +205,20 @@
       :asDrawer="true"
       @close="isActivityCenterOpen = false; activityCenterLead = null"
     />
+
+    <!-- Lead Bulk Upload Modal (Opens from right side) -->
+    <LeadBulkUploadModal
+      :isOpen="isBulkUploadOpen"
+      @close="isBulkUploadOpen = false"
+      @success="refetch"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
-import { PhTable, PhColumns, PhPlus, PhPhone, PhStar } from '@phosphor-icons/vue';
+import { PhTable, PhColumns, PhPlus, PhPhone, PhStar, PhFileArrowUp } from '@phosphor-icons/vue';
 import apiClient from '@/api/client';
 import LeadFilters from '../components/LeadFilters.vue';
 import LeadTable from '../components/LeadTable.vue';
@@ -212,7 +230,16 @@ import LeadLostModal from '../components/LeadLostModal.vue';
 import LeadClosingModal from '../components/LeadClosingModal.vue';
 import LeadMergeModal from '../components/LeadMergeModal.vue';
 import LeadActivityCenter from '../components/LeadActivityCenter.vue';
+import LeadBulkUploadModal from '../components/LeadBulkUploadModal.vue';
 import { useLeadsQuery, useChangeLeadStageMutation } from '../queries';
+
+const store = useStore();
+const isOrgAdmin = computed(() =>
+  ['super_admin', 'system_admin', 'org_admin', 'organization_admin'].includes(
+    String(store.getters['auth/userRole'] || '').toLowerCase()
+  )
+);
+const isBulkUploadOpen = ref(false);
 
 const activeFilters = ref({
   search: '',
@@ -314,7 +341,6 @@ const handleKanbanStageChange = async ({ id, status }) => {
   }
 };
 
-const store = useStore();
 const isMergeOpen = ref(false);
 const mergeLeadA = ref(null);
 const mergeLeadB = ref(null);

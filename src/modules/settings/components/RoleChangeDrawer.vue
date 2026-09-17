@@ -27,7 +27,7 @@
             :key="r.id"
             :value="r.id"
           >
-            {{ r.name }}
+            {{ roleDisplayName(r) }}
           </option>
         </select>
       </div>
@@ -96,12 +96,25 @@ const userRoleCode = computed(() => {
   return String(props.user.role);
 });
 
+const isEducationWorkspace = computed(
+  () => store.getters['organization/isEducationTenant']
+);
+
+function roleDisplayName(roleOption) {
+  const name = roleOption?.name || roleOption?.code || '';
+  return isEducationWorkspace.value ? name.replace(/agent/gi, 'Staff') : name;
+}
+
 const userRoleDisplayName = computed(() => {
   if (!props.user?.role) return '';
+  let val = '';
   if (typeof props.user.role === 'object') {
-    return props.user.role.name || props.user.role.code || '';
+    val = props.user.role.name || props.user.role.code || '';
+  } else {
+    val = String(props.user.role);
   }
-  return String(props.user.role);
+  const formatted = val.replace(/_/g, ' ');
+  return isEducationWorkspace.value ? formatted.replace(/agent/gi, 'Staff') : formatted;
 });
 
 watch(() => props.isOpen, (open) => {

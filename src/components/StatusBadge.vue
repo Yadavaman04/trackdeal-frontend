@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-flex items-center gap-1.5 text-micro font-semibold tracking-wide shrink-0 px-2 py-0.5 rounded-chip"
+    class="inline-flex items-center gap-1.5 text-micro font-semibold tracking-wide shrink-0 px-2.5 py-0.5 rounded-full"
     :style="badgeStyle"
   >
     <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ backgroundColor: dotColor }" />

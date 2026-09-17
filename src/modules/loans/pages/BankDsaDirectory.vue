@@ -136,83 +136,91 @@
       <AppPagination v-bind="dsaPagination" @page-change="setDsaPage" @page-size-change="setDsaPageSize" />
     </div>
 
-    <!-- Add Bank Modal -->
-    <div v-if="isAddBankModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div class="bg-surface border border-default w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4">
-        <div class="flex items-center justify-between border-b border-default pb-3">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <PhBank :size="18" class="text-primary-600" />
-            Add Bank Master
-          </h3>
-          <button @click="isAddBankModalOpen = false" class="text-slate-400 hover:text-slate-600"><PhX :size="16" /></button>
+    <!-- Add Bank Drawer -->
+    <Teleport to="body">
+      <Transition name="drawer-slide">
+        <div v-if="isAddBankModalOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="isAddBankModalOpen = false">
+          <div class="bg-surface border-l border-default w-full max-w-md h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+            <div class="flex items-center justify-between border-b border-default px-5 py-4 shrink-0 bg-slate-50 dark:bg-slate-900">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <PhBank :size="18" class="text-primary-600" />
+                Add Bank Master
+              </h3>
+              <button @click="isAddBankModalOpen = false" class="text-slate-400 hover:text-slate-600"><PhX :size="16" /></button>
+            </div>
+            <form @submit.prevent="handleAddBank" class="p-5 space-y-3.5 flex-1 overflow-y-auto">
+              <div>
+                <label class="block font-semibold mb-1">Bank Name *</label>
+                <input v-model="bankForm.bankName" required type="text" placeholder="e.g. HDFC Bank, SBI" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Branch</label>
+                <input v-model="bankForm.branch" type="text" placeholder="e.g. Baner, Pune" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Contact Person / RM Name</label>
+                <input v-model="bankForm.contactPerson" type="text" placeholder="e.g. Praveen Patil" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold mb-1">Phone</label>
+                  <input v-model="bankForm.mobile" type="text" placeholder="e.g. 9876500001" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+                </div>
+                <div>
+                  <label class="block font-semibold mb-1">Standard Comm (%)</label>
+                  <input v-model.number="bankForm.standardCommissionRate" type="number" step="0.05" placeholder="0.5" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+                </div>
+              </div>
+              <div class="pt-3 border-t border-default flex justify-end gap-2 shrink-0">
+                <button type="button" @click="isAddBankModalOpen = false" class="px-3.5 py-1.5 font-semibold text-slate-500">Cancel</button>
+                <button type="submit" class="px-4 py-1.5 font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl">Save Bank</button>
+              </div>
+            </form>
+          </div>
         </div>
-        <form @submit.prevent="handleAddBank" class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">Bank Name *</label>
-            <input v-model="bankForm.bankName" required type="text" placeholder="e.g. HDFC Bank, SBI" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Branch</label>
-            <input v-model="bankForm.branch" type="text" placeholder="e.g. Baner, Pune" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Contact Person / RM Name</label>
-            <input v-model="bankForm.contactPerson" type="text" placeholder="e.g. Praveen Patil" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold mb-1">Phone</label>
-              <input v-model="bankForm.mobile" type="text" placeholder="e.g. 9876500001" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-            </div>
-            <div>
-              <label class="block font-semibold mb-1">Standard Comm (%)</label>
-              <input v-model.number="bankForm.standardCommissionRate" type="number" step="0.05" placeholder="0.5" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-            </div>
-          </div>
-          <div class="pt-3 border-t border-default flex justify-end gap-2">
-            <button type="button" @click="isAddBankModalOpen = false" class="px-3.5 py-1.5 font-semibold text-slate-500">Cancel</button>
-            <button type="submit" class="px-4 py-1.5 font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl">Save Bank</button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
-    <!-- Add DSA Modal -->
-    <div v-if="isAddDsaModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div class="bg-surface border border-default w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4">
-        <div class="flex items-center justify-between border-b border-default pb-3">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <PhUsersThree :size="18" class="text-purple-600" />
-            Add DSA Partner Master
-          </h3>
-          <button @click="isAddDsaModalOpen = false" class="text-slate-400 hover:text-slate-600"><PhX :size="16" /></button>
+    <!-- Add DSA Drawer -->
+    <Teleport to="body">
+      <Transition name="drawer-slide">
+        <div v-if="isAddDsaModalOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="isAddDsaModalOpen = false">
+          <div class="bg-surface border-l border-default w-full max-w-md h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+            <div class="flex items-center justify-between border-b border-default px-5 py-4 shrink-0 bg-slate-50 dark:bg-slate-900">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <PhUsersThree :size="18" class="text-purple-600" />
+                Add DSA Partner Master
+              </h3>
+              <button @click="isAddDsaModalOpen = false" class="text-slate-400 hover:text-slate-600"><PhX :size="16" /></button>
+            </div>
+            <form @submit.prevent="handleAddDSA" class="p-5 space-y-3.5 flex-1 overflow-y-auto">
+              <div>
+                <label class="block font-semibold mb-1">DSA Agency / Company Name *</label>
+                <input v-model="dsaForm.companyName" required type="text" placeholder="e.g. ABC Capital Services" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Key Contact Person</label>
+                <input v-model="dsaForm.contactPerson" type="text" placeholder="e.g. Amit Kulkarni" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold mb-1">Phone</label>
+                  <input v-model="dsaForm.mobile" type="text" placeholder="e.g. 9988776655" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+                </div>
+                <div>
+                  <label class="block font-semibold mb-1">Standard Comm (%)</label>
+                  <input v-model.number="dsaForm.standardCommissionRate" type="number" step="0.05" placeholder="0.6" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
+                </div>
+              </div>
+              <div class="pt-3 border-t border-default flex justify-end gap-2 shrink-0">
+                <button type="button" @click="isAddDsaModalOpen = false" class="px-3.5 py-1.5 font-semibold text-slate-500">Cancel</button>
+                <button type="submit" class="px-4 py-1.5 font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl">Save DSA</button>
+              </div>
+            </form>
+          </div>
         </div>
-        <form @submit.prevent="handleAddDSA" class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">DSA Agency / Company Name *</label>
-            <input v-model="dsaForm.companyName" required type="text" placeholder="e.g. ABC Capital Services" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Key Contact Person</label>
-            <input v-model="dsaForm.contactPerson" type="text" placeholder="e.g. Amit Kulkarni" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold mb-1">Phone</label>
-              <input v-model="dsaForm.mobile" type="text" placeholder="e.g. 9988776655" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-            </div>
-            <div>
-              <label class="block font-semibold mb-1">Standard Comm (%)</label>
-              <input v-model.number="dsaForm.standardCommissionRate" type="number" step="0.05" placeholder="0.6" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-            </div>
-          </div>
-          <div class="pt-3 border-t border-default flex justify-end gap-2">
-            <button type="button" @click="isAddDsaModalOpen = false" class="px-3.5 py-1.5 font-semibold text-slate-500">Cancel</button>
-            <button type="submit" class="px-4 py-1.5 font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl">Save DSA</button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -285,3 +293,9 @@ const handleAddDSA = async () => {
   }
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

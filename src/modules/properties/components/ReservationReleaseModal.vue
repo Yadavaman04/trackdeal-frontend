@@ -1,22 +1,26 @@
 <template>
-  <div 
-    v-if="isOpen" 
-    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-  >
-    <div class="bg-surface border border-default w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col animate-fade-in text-xs">
-      <!-- Header -->
-      <div class="px-4 py-3 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
-        <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-          <PhLockOpen :size="14" class="text-red-500" />
-          <span>Confirm Hold Release</span>
-        </h3>
-        <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors">
-          <PhX :size="14" />
-        </button>
-      </div>
+  <Teleport to="body">
+    <Transition name="drawer-slide">
+      <div 
+        v-if="isOpen" 
+        class="fixed inset-0 z-[1000] flex justify-end overflow-hidden"
+        style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);"
+        @click.self="$emit('close')"
+      >
+        <div class="bg-surface border-l border-default w-full max-w-md h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+          <!-- Header -->
+          <div class="px-4 py-3 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
+            <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+              <PhLockOpen :size="14" class="text-red-500" />
+              <span>Confirm Hold Release</span>
+            </h3>
+            <button @click="$emit('close')" class="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors">
+              <PhX :size="14" />
+            </button>
+          </div>
 
-      <!-- Form Content -->
-      <div class="p-4 space-y-4">
+          <!-- Form Content -->
+          <div class="p-4 space-y-4 flex-1 overflow-y-auto">
         <p class="text-slate-550 leading-relaxed text-[11px]">
           Are you sure you want to release the active reservation hold on this property? This will make the unit instantly <b>Available</b> in the public directory and waitlist Rollovers.
         </p>
@@ -69,6 +73,8 @@
       </div>
     </div>
   </div>
+</Transition>
+</Teleport>
 </template>
 
 <script setup>
@@ -141,3 +147,9 @@ const formatCurrency = (val) => {
   }).format(val);
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

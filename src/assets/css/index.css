@@ -1,3 +1,4 @@
+@import './premium.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -183,6 +184,31 @@
     color: hsl(var(--neutral-900));
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     min-width: 320px;
+    min-height: 100vh;
+  }
+
+  #app {
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* Corevian-standard Custom Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.6);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -594,8 +620,30 @@
   font-weight: 650;
   text-transform: capitalize;
 }
-.workspace-dialog-backdrop { background: rgb(21 39 30 / 0.45); backdrop-filter: blur(3px); }
-.workspace-dialog { box-shadow: 0 24px 70px rgb(26 41 31 / 0.2); }
+.workspace-dialog-backdrop {
+  background: rgb(9 14 26 / 0.55);
+  backdrop-filter: blur(3px);
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: stretch !important;
+  padding: 0 !important;
+}
+.workspace-dialog {
+  box-shadow: -10px 0 40px rgb(0 0 0 / 0.2);
+  height: 100% !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border-left: 1px solid hsl(var(--neutral-100)) !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: none !important;
+  animation: slideDrawerIn 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+@keyframes slideDrawerIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
 .workspace-form-label { display: grid; gap: 0.35rem; color: hsl(var(--neutral-700)); font-size: 11px; font-weight: 650; }
 .workspace-form-input {
   width: 100%;
@@ -1542,3 +1590,19 @@
   }
 }
 
+/* ── Global Modal & Drawer Slide Transitions ───────────────────────────────── */
+.drawer-slide-enter-active {
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease;
+}
+.drawer-slide-leave-active {
+  transition: transform 180ms cubic-bezier(0.4, 0, 1, 1), opacity 150ms ease;
+}
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(100%);
+  opacity: 0.9;
+}
+
+.workspace-dialog-backdrop {
+  z-index: 1000 !important;
+}

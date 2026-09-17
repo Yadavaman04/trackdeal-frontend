@@ -352,91 +352,99 @@
       </main>
     </div>
 
-    <!-- ── 3. Insert Clause Modal (with Auto-Renumbering) ──────────────────── -->
-    <div v-if="isInsertClauseModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div class="bg-surface border border-default w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4 animate-scale-up">
-        <div class="flex items-center justify-between border-b border-default pb-3">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <PhPlus :size="16" class="text-primary-600" weight="bold" />
-            Insert Legal Clause
-          </h3>
-          <button @click="isInsertClauseModalOpen = false" class="text-slate-400 hover:text-slate-600" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
+    <!-- ── 3. Insert Clause Drawer (with Auto-Renumbering) ──────────────────── -->
+    <Teleport to="body">
+      <Transition name="drawer-slide">
+        <div v-if="isInsertClauseModalOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="isInsertClauseModalOpen = false">
+          <div class="bg-surface border-l border-default w-full max-w-lg h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+            <div class="flex items-center justify-between border-b border-default px-6 py-4 shrink-0 bg-slate-50 dark:bg-slate-900">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <PhPlus :size="16" class="text-primary-600" weight="bold" />
+                Insert Legal Clause
+              </h3>
+              <button @click="isInsertClauseModalOpen = false" class="text-slate-400 hover:text-slate-600" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
+            </div>
+
+            <div class="p-6 space-y-4 flex-1 overflow-y-auto">
+              <div>
+                <label class="block font-semibold mb-1">Clause Title *</label>
+                <input
+                  v-model="newClause.title"
+                  type="text"
+                  placeholder="e.g. Special Car Parking Allocation / Fixtures"
+                  class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500"
+                />
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1">Insert Position</label>
+                <select
+                  v-model.number="newClause.insertAfterIdx"
+                  class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500"
+                >
+                  <option v-for="(c, idx) in editableClauses" :key="idx" :value="idx">
+                    After {{ idx + 1 }}. {{ c.title }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1">Clause Text *</label>
+                <textarea
+                  v-model="newClause.text"
+                  rows="6"
+                  placeholder="The Transferor(s) confirms that covered car parking space bearing No. CP-42 is transferred along with the Said Flat..."
+                  class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl p-3 font-serif text-xs leading-relaxed focus:outline-none focus:border-primary-500"
+                ></textarea>
+              </div>
+
+              <div class="flex items-center gap-2 pt-1">
+                <input id="auto-renumber" v-model="newClause.autoRenumber" type="checkbox" class="rounded text-primary-600 focus:ring-primary-500" />
+                <label for="auto-renumber" class="text-slate-600 dark:text-slate-300 font-medium">
+                  Automatically renumber subsequent clauses
+                </label>
+              </div>
+            </div>
+
+            <div class="p-6 border-t border-default flex justify-end gap-2 shrink-0">
+              <button @click="isInsertClauseModalOpen = false" class="px-4 py-2 font-semibold text-slate-500 hover:text-slate-700">Cancel</button>
+              <button @click="confirmInsertClause" class="px-5 py-2 font-bold text-white bg-primary hover:bg-opacity-90 active:scale-95 rounded-xl cursor-pointer">Insert Clause</button>
+            </div>
+          </div>
         </div>
-
-        <div class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">Clause Title *</label>
-            <input
-              v-model="newClause.title"
-              type="text"
-              placeholder="e.g. Special Car Parking Allocation / Fixtures"
-              class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500"
-            />
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1">Insert Position</label>
-            <select
-              v-model.number="newClause.insertAfterIdx"
-              class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-primary-500"
-            >
-              <option v-for="(c, idx) in editableClauses" :key="idx" :value="idx">
-                After {{ idx + 1 }}. {{ c.title }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1">Clause Text *</label>
-            <textarea
-              v-model="newClause.text"
-              rows="5"
-              placeholder="The Transferor(s) confirms that covered car parking space bearing No. CP-42 is transferred along with the Said Flat..."
-              class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-xl p-3 font-serif text-xs leading-relaxed focus:outline-none focus:border-primary-500"
-            ></textarea>
-          </div>
-
-          <div class="flex items-center gap-2 pt-1">
-            <input id="auto-renumber" v-model="newClause.autoRenumber" type="checkbox" class="rounded text-primary-600 focus:ring-primary-500" />
-            <label for="auto-renumber" class="text-slate-600 dark:text-slate-300 font-medium">
-              Automatically renumber subsequent clauses
-            </label>
-          </div>
-        </div>
-
-        <div class="pt-3 border-t border-default flex justify-end gap-2 text-xs">
-          <button @click="isInsertClauseModalOpen = false" class="px-4 py-2 font-semibold text-slate-500 hover:text-slate-700">Cancel</button>
-          <button @click="confirmInsertClause" class="px-5 py-2 font-bold text-white bg-primary hover:bg-opacity-90 active:scale-95 rounded-xl cursor-pointer">Insert Clause</button>
-        </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
     <!-- ── 4. Version History Drawer ──────────────────────────────────────── -->
-    <div v-if="isVersionDrawerOpen" class="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-xs" @click.self="isVersionDrawerOpen = false">
-      <div class="bg-surface border-l border-default w-full max-w-md h-full p-6 space-y-4 overflow-y-auto shadow-2xl animate-slide-left">
-        <div class="flex items-center justify-between border-b border-default pb-3">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <PhClockCounterClockwise :size="18" class="text-primary-600" />
-            Document Version History
-          </h3>
-          <button @click="isVersionDrawerOpen = false" class="text-slate-400 hover:text-slate-600" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
-        </div>
-
-        <div class="space-y-3">
-          <div
-            v-for="v in (agreement.versions || []).slice().reverse()"
-            :key="v._id || v.versionNumber"
-            class="p-4 bg-slate-50/70 dark:bg-slate-800/40 border border-default rounded-2xl space-y-2"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-mono text-xs font-bold text-slate-900 dark:text-white">Version {{ v.versionNumber }}.0</span>
-              <span class="text-[10px] font-mono text-slate-400">{{ formatDate(v.modifiedAt) }}</span>
+    <Teleport to="body">
+      <Transition name="drawer-slide">
+        <div v-if="isVersionDrawerOpen" class="fixed inset-0 z-[1000] flex justify-end overflow-hidden" style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);" @click.self="isVersionDrawerOpen = false">
+          <div class="bg-surface border-l border-default w-full max-w-md h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+            <div class="flex items-center justify-between border-b border-default px-6 py-4 shrink-0 bg-slate-50 dark:bg-slate-900">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <PhClockCounterClockwise :size="18" class="text-primary-600" />
+                Document Version History
+              </h3>
+              <button @click="isVersionDrawerOpen = false" class="text-slate-400 hover:text-slate-600" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
             </div>
-            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ v.changeSummary || 'Document updated.' }}</p>
+
+            <div class="p-6 space-y-3 flex-1 overflow-y-auto">
+              <div
+                v-for="v in (agreement.versions || []).slice().reverse()"
+                :key="v._id || v.versionNumber"
+                class="p-4 bg-slate-50/70 dark:bg-slate-800/40 border border-default rounded-2xl space-y-2"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="font-mono text-xs font-bold text-slate-900 dark:text-white">Version {{ v.versionNumber }}.0</span>
+                  <span class="text-[10px] font-mono text-slate-400">{{ formatDate(v.modifiedAt) }}</span>
+                </div>
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ v.changeSummary || 'Document updated.' }}</p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 

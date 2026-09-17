@@ -182,6 +182,7 @@ import FinancialStatusBadge from '../components/FinancialStatusBadge.vue';
 import RecordPaymentModal from '../components/RecordPaymentModal.vue';
 import { fetchCommissionSummary, fetchCommissions, recordCommissionPayment } from '../api/endpoints';
 import { formatCurrency, formatDate, getCollectionPercentage } from '../utils/financialFormat';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const summary = ref({ totalEarned: 0, totalCollected: 0, totalOutstanding: 0, totalOverdue: 0, expectedThisMonth: 0, fullyPaidCount: 0, partiallyPaidCount: 0, unpaidCount: 0, overdueCount: 0, totalDeals: 0, collectionRate: 0, upcomingCollections: [] });
@@ -246,7 +247,7 @@ const submitPayment = async (form) => {
   if (!activeCommission.value) return;
   savingPayment.value = true;
   try { await recordCommissionPayment({ id: activeCommission.value._id, ...form }); closePayment(); await loadAllData(); }
-  catch (error) { window.alert(error.response?.data?.error?.message || error.message || 'Failed to record payment.'); }
+  catch (error) { Swal.fire({ text: error.response?.data?.error?.message || error.message || 'Failed to record payment.', icon: 'error' }); }
   finally { savingPayment.value = false; }
 };
 

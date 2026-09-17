@@ -58,6 +58,20 @@ export function setupRouterGuards(router) {
       return next({ path: "/app/dashboard" });
     }
 
+
+    // Team and Settings accessible to org_admin only
+    if (to.path.startsWith("/app/settings")) {
+      const role = String(userRole || "").toLowerCase();
+      const isOrgAdmin = ["org_admin", "organization_admin", "super_admin", "system_admin"].includes(role);
+      if (!isOrgAdmin) {
+        store.dispatch("notifications/triggerToast", {
+          message: "Access restricted to Organization Administrators.",
+          type: "error",
+        });
+        return next({ path: "/app/dashboard" });
+      }
+    }
+
     const requiredModule = to.meta.module;
     if (requiredModule) {
       const isFeatureActive =

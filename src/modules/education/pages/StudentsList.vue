@@ -28,14 +28,22 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-          <tr v-for="row in rows" :key="row._id">
+          <tr v-for="row in rows" :key="row._id" class="hover:bg-slate-50/50 dark:hover:bg-slate-850/40 transition-colors">
             <td class="py-3 px-4">
               <div class="font-bold">{{ row.firstName }} {{ row.lastName }}</div>
               <div class="text-slate-500">{{ row.mobile }}</div>
             </td>
             <td class="py-3 px-4">{{ row.parentName || '—' }} <span class="text-slate-400">{{ row.parentMobile }}</span></td>
-            <td class="py-3 px-4">{{ row.classId?.name || 'Unassigned' }}</td>
-            <td class="py-3 px-4 capitalize">{{ row.status }}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                {{ row.classId?.name || 'Unassigned' }}
+              </span>
+            </td>
+            <td class="py-3 px-4 capitalize">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {{ row.status }}
+              </span>
+            </td>
             <td class="py-3 px-4">{{ formatDate(row.enrollmentDate) }}</td>
           </tr>
           <tr v-if="!loading && rows.length === 0">
@@ -45,49 +53,56 @@
       </table>
     </div>
 
-    <Teleport to="body">
-      <div v-if="showModal" class="workspace-dialog-backdrop fixed inset-0 z-[200] flex items-center justify-center p-4" @click.self="showModal = false">
-        <form class="workspace-dialog bg-surface border border-default rounded-xl w-full max-w-lg p-6 space-y-4" @submit.prevent="save">
-          <h2 class="font-bold">Add student</h2>
-          <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <label class="space-y-1">First name *
-              <input v-model="form.firstName" required class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Last name
-              <input v-model="form.lastName" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Mobile *
-              <input v-model="form.mobile" required class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Email
-              <input v-model="form.email" type="email" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Parent name
-              <input v-model="form.parentName" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1">Parent mobile
-              <input v-model="form.parentMobile" class="w-full border border-default rounded-xl px-3 py-2" />
-            </label>
-            <label class="space-y-1 col-span-2">Class
-              <select v-model="form.classId" class="w-full border border-default rounded-xl px-3 py-2">
-                <option value="">Unassigned</option>
-                <option v-for="c in classes" :key="c._id" :value="c._id">{{ c.name }}</option>
-              </select>
-            </label>
-          </div>
-          <div class="flex justify-end gap-2">
-            <button type="button" class="btn btn-secondary btn-sm" @click="showModal = false">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm" :disabled="saving">Save</button>
-          </div>
-        </form>
-      </div>
-    </Teleport>
+    <!-- Right-Side Modal Drawer -->
+    <AppDrawer
+      :isOpen="showModal"
+      title="Add Student"
+      subtitle="Enroll a new student and associate class details"
+      width="520px"
+      @close="showModal = false"
+    >
+      <form id="student-form" class="space-y-4 text-xs" @submit.prevent="save">
+        <p v-if="error" class="text-xs text-red-500 bg-red-50 dark:bg-red-950/40 p-2.5 rounded-lg border border-red-200 dark:border-red-900">{{ error }}</p>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">First name *
+            <input v-model="form.firstName" required class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Last name
+            <input v-model="form.lastName" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Mobile *
+            <input v-model="form.mobile" required class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Email
+            <input v-model="form.email" type="email" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Parent name
+            <input v-model="form.parentName" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 font-medium text-slate-700 dark:text-slate-300">Parent mobile
+            <input v-model="form.parentMobile" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none" />
+          </label>
+          <label class="space-y-1 col-span-2 font-medium text-slate-700 dark:text-slate-300">Class
+            <select v-model="form.classId" class="w-full border border-default rounded-xl px-3 py-2 bg-surface text-xs focus:border-primary outline-none">
+              <option value="">Unassigned</option>
+              <option v-for="c in classes" :key="c._id" :value="c._id">{{ c.name }}</option>
+            </select>
+          </label>
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" class="btn btn-secondary btn-sm" @click="showModal = false">Cancel</button>
+        <button type="submit" form="student-form" class="btn btn-primary btn-sm" :disabled="saving">
+          {{ saving ? 'Saving...' : 'Enroll Student' }}
+        </button>
+      </template>
+    </AppDrawer>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import AppDrawer from '@/components/AppDrawer.vue';
 import { createEducationStudent, fetchEducationClasses, fetchEducationStudents } from '../api/endpoints';
 
 const rows = ref([]);

@@ -3,7 +3,7 @@
     <nav class="settings-subnav" aria-label="Workspace settings">
       <div class="settings-subnav__intro">
         <p class="eyebrow">Workspace settings</p>
-        <p>Configure your organization, access, and policies.</p>
+        <p>{{ isEducation ? 'Configure your institute, staff access, and campus policies.' : 'Configure your organization, access, and policies.' }}</p>
       </div>
       <div class="settings-subnav__items" role="tablist" aria-label="Settings sections">
         <router-link
@@ -38,12 +38,14 @@ import {
 
 const store = useStore();
 const route = useRoute();
-const settingsMenu = [
-  { name: 'Organization',      to: '/app/settings/org',      icon: PhBuildings,   permission: 'settings.org'    },
-  { name: 'Branches',          to: '/app/settings/branches', icon: PhMapPin,      permission: 'settings.branch' },
-  { name: 'Users',             to: '/app/settings/users',    icon: PhUsersThree,  permission: 'settings.users'  },
-  { name: 'Roles & Permissions', to: '/app/settings/roles', icon: PhShieldCheck, permission: 'settings.roles'  },
-];
+const isEducation = computed(() => store.getters['organization/isEducationTenant']);
+
+const settingsMenu = computed(() => [
+  { name: isEducation.value ? 'Institute Profile' : 'Organization', to: '/app/settings/org', icon: PhBuildings, permission: 'settings.org' },
+  { name: isEducation.value ? 'Campuses & Centres' : 'Branches', to: '/app/settings/branches', icon: PhMapPin, permission: 'settings.branch' },
+  { name: isEducation.value ? 'Staff Directory' : 'Users', to: '/app/settings/users', icon: PhUsersThree, permission: 'settings.users' },
+  { name: 'Roles & Permissions', to: '/app/settings/roles', icon: PhShieldCheck, permission: 'settings.roles' },
+]);
 
 const isActive = (to) => route.path === to || route.path.startsWith(`${to}/`);
 
@@ -51,7 +53,7 @@ const filteredSettingsMenu = computed(() => {
   const isSuperAdmin = store.getters['auth/userRole'] === 'super_admin';
   const orgType = store.getters['organization/organizationType'];
 
-  return settingsMenu.filter(item => {
+  return settingsMenu.value.filter(item => {
     if (item.to === '/app/settings/branches' && orgType !== 'ENTERPRISE_AGENCY') {
       return false;
     }

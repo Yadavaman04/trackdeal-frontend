@@ -105,12 +105,20 @@ const targetBranchId = ref('');
 const leadsReassignment = ref('reassign');
 const errors = ref({ targetBranch: '' });
 
+const isEducationWorkspace = computed(
+  () => store.getters['organization/isEducationTenant']
+);
+
 const userRoleDisplayName = computed(() => {
   if (!props.user?.role) return '';
+  let val = '';
   if (typeof props.user.role === 'object') {
-    return props.user.role.name || props.user.role.code || '';
+    val = props.user.role.name || props.user.role.code || '';
+  } else {
+    val = String(props.user.role);
   }
-  return String(props.user.role);
+  const formatted = val.replace(/_/g, ' ');
+  return isEducationWorkspace.value ? formatted.replace(/agent/gi, 'Staff') : formatted;
 });
 
 const userBranchName = computed(() => {

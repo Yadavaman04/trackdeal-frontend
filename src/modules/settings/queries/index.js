@@ -73,8 +73,12 @@ export function useSuspendUserMutation() {
   return useMutation({
     mutationFn: settingsApi.suspendUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings', 'users'] });
-      queryClient.invalidateQueries({ queryKey: ['settings', 'audit'] });
+      // Delay invalidation slightly to prevent read-replica race conditions
+      // which immediately overwrite optimistic updates with stale data
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['settings', 'users'] });
+        queryClient.invalidateQueries({ queryKey: ['settings', 'audit'] });
+      }, 750);
     }
   });
 }
