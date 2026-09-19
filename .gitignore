@@ -1,6 +1,8 @@
 node_modules
+artifacts/ui/
 package-lock.json
 scripts/
 dist/
 .env
 *.md
+!docs/ui-design.md

@@ -10,12 +10,41 @@
         @click="errorMessage = ''"
         class="font-bold opacity-80 hover:opacity-100"
       >
-        ✕
+        <AppIcon name="close" :size="14" weight="bold" />
       </button>
     </div>
 
     <!-- Login Form -->
     <form @submit="onSubmit" class="space-y-4">
+      <!-- Organization Input -->
+      <div class="space-y-1">
+        <label
+          for="organization"
+          class="label-text"
+        >
+          Organization
+        </label>
+        <input
+          id="organization"
+          v-model="organization"
+          type="text"
+          placeholder="Organization name (leave blank for Super Admin)"
+          autocomplete="organization"
+          class="input-field text-caption text-neutral-900"
+          :class="{ 'input-field-error': errors.organization }"
+          :disabled="isPending"
+        />
+        <span
+          v-if="errors.organization"
+          class="text-[10px] text-danger-text block mt-1"
+        >
+          {{ errors.organization }}
+        </span>
+        <span v-else class="text-[10px] text-neutral-400 block mt-1">
+          Required for organization users. Super Admin can leave this blank.
+        </span>
+      </div>
+
       <!-- Email Address Input -->
       <div class="space-y-1">
         <label
@@ -132,12 +161,14 @@ const errorMessage = ref("");
 const { errors, handleSubmit } = useForm({
   validationSchema: toTypedSchema(loginSchema),
   initialValues: {
+    organization: "",
     email: "",
     password: "",
     rememberMe: false,
   },
 });
 
+const { value: organization } = useField("organization");
 const { value: email } = useField("email");
 const { value: password } = useField("password");
 const { value: rememberMe } = useField("rememberMe");
@@ -152,6 +183,10 @@ onMounted(() => {
     email.value = savedEmail;
     rememberMe.value = true;
   }
+  const savedOrganization = localStorage.getItem("remembered_organization") || localStorage.getItem("remembered_tenant");
+  if (savedOrganization) {
+    organization.value = savedOrganization;
+  }
 });
 
 const onSubmit = handleSubmit((values) => {
@@ -163,16 +198,17 @@ const onSubmit = handleSubmit((values) => {
   } else {
     localStorage.removeItem("remembered_email");
   }
+  localStorage.setItem("remembered_organization", values.organization.trim());
 
   // Trigger mutation
   mutate(
-    { email: values.email, password: values.password },
+    { organization: values.organization.trim(), email: values.email, password: values.password },
     {
       onError: (err) => {
         // Render server errors
         errorMessage.value =
           err.data?.message ||
-          "Invalid credentials. Please verify your email and password.";
+          "Invalid credentials. Please verify your organization, email and password.";
       },
     },
   );

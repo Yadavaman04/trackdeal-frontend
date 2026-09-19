@@ -94,7 +94,7 @@
           class="w-full text-center text-[10px] text-primary font-bold hover:underline py-1 flex items-center justify-center gap-1"
         >
           <PhLink :size="10" />
-          <span>Manage Conflict Queue ➔</span>
+          <span class="inline-flex items-center gap-1">Manage conflict queue <AppIcon name="arrowRight" :size="13" /></span>
         </button>
       </div>
       <p v-else class="text-[10px] text-slate-400 italic text-center py-2">
@@ -121,7 +121,7 @@
           @click="$emit('viewMatchingLeads')"
           class="text-primary hover:underline font-bold text-[10px]"
         >
-          View Matches ➔
+          View matches <AppIcon name="arrowRight" :size="13" />
         </button>
       </div>
     </div>

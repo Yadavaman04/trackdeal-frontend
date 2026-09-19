@@ -50,9 +50,27 @@ export async function bounceCollection(collectionId) {
   return response.data;
 }
 
+export async function fetchCommissionSummary(params) {
+  const response = await apiClient.get('/commissions/summary', { params });
+  return response.data;
+}
+
+export async function fetchReceivables(params) {
+  const response = await apiClient.get('/commissions/receivables', { params });
+  return response.data;
+}
+
+export async function recordCommissionPayment({ id, ...data }) {
+  const response = await apiClient.post(`/commissions/${id}/payments`, data);
+  return response.data;
+}
+
 export default {
   fetchCommissions,
   fetchCommissionById,
+  fetchCommissionSummary,
+  fetchReceivables,
+  recordCommissionPayment,
   createCommission,
   createInvoice,
   recordCollection,
@@ -60,5 +78,5 @@ export default {
   processClawback,
   transitionStage,
   clearCollection,
-  bounceCollection
+  bounceCollection,
 };

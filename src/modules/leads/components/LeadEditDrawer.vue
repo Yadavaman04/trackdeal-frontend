@@ -13,7 +13,7 @@
         :lastName="lastName"
         :mobile="mobile"
         :email="email"
-        @merge="handleMerge"
+        @viewProfile="handleViewCustomerProfile"
       />
 
       <!-- Basic Profile Fields -->
@@ -175,6 +175,14 @@
       </button>
     </template>
   </AppDrawer>
+
+  <!-- Customer Profile History Modal -->
+  <CustomerProfileModal
+    :isOpen="isCustomerModalOpen"
+    :customer="selectedCustomer"
+    :existingLeads="selectedCustomerLeads"
+    @close="isCustomerModalOpen = false"
+  />
 </template>
 
 <script setup>
@@ -185,7 +193,18 @@ import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 import AppDrawer from '@/components/AppDrawer.vue';
 import DuplicateDetectionPanel from './DuplicateDetectionPanel.vue';
+import CustomerProfileModal from './CustomerProfileModal.vue';
 import { useUpdateLeadMutation } from '../queries';
+
+const isCustomerModalOpen = ref(false);
+const selectedCustomer = ref(null);
+const selectedCustomerLeads = ref([]);
+
+const handleViewCustomerProfile = ({ customer, existingLeads }) => {
+  selectedCustomer.value = customer;
+  selectedCustomerLeads.value = existingLeads || [];
+  isCustomerModalOpen.value = true;
+};
 
 const props = defineProps({
   isOpen: { type: Boolean, required: true },
@@ -259,9 +278,12 @@ const { mutateAsync: updateLead, isPending } = useUpdateLeadMutation();
 const onSubmit = handleSubmit(async (values) => {
   const payload = {
     id: props.lead._id || props.lead.id,
-    ...values,
-    lastName: lastName.value,
-    alternativeMobile: alternativeMobile.value,
+    firstName: values.firstName,
+    mobile: values.mobile,
+    source: values.source,
+    ...(values.email?.trim() ? { email: values.email.trim() } : {}),
+    ...(lastName.value?.trim() ? { lastName: lastName.value.trim() } : {}),
+    ...(alternativeMobile.value?.trim() ? { alternativeMobile: alternativeMobile.value.trim() } : {}),
     requirements: {
       propertyType: propertyTypes.value,
       bhk: bhkTypes.value,
@@ -270,7 +292,7 @@ const onSubmit = handleSubmit(async (values) => {
         max: budgetMax.value || 999999999,
         currency: 'INR'
       } : undefined,
-      locations: locations.value ? locations.value.split(',').map(l => l.trim()) : [],
+      locations: locations.value ? locations.value.split(',').map(l => l.trim()).filter(Boolean) : [],
       notes: reqNotes.value
     }
   };

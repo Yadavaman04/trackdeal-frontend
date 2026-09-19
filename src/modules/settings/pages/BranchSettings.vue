@@ -60,9 +60,11 @@
               <td class="p-3 text-center">
                 <button
                   @click="openEditDrawer(branch)"
-                  class="btn btn-sm btn-ghost text-primary hover:text-primary-700 h-6 px-2 font-bold"
+                  class="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-950/40 transition-colors"
+                  title="Edit branch"
+                  aria-label="Edit branch"
                 >
-                  Edit
+                  <PhPencilSimple :size="15" weight="bold" />
                 </button>
               </td>
             </tr>
@@ -268,7 +270,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useStore } from 'vuex';
-import { PhPlus, PhLightning, PhEnvelope, PhChatCircle, PhCalendar } from '@phosphor-icons/vue';
+import { PhPlus, PhLightning, PhEnvelope, PhChatCircle, PhCalendar, PhPencilSimple } from '@phosphor-icons/vue';
 import { useBranchesQuery, useCreateBranchMutation, useUpdateBranchMutation, useTestIntegrationMutation, useUsersQuery } from '../queries';
 import IntegrationCard from '../components/IntegrationCard.vue';
 import AppDrawer from '@/components/AppDrawer.vue';

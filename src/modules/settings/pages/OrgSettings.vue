@@ -3,12 +3,12 @@
     <!-- Breadcrumbs / Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="font-heading text-xl font-extrabold text-slate-800 dark:text-slate-100">Organization Settings</h1>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Manage company profile details, theme palettes, subscription quotas, and data migrations.</p>
+        <h1 class="font-heading text-xl font-extrabold text-slate-800 dark:text-slate-100">{{ isEducation ? 'Institute Settings' : 'Organization Settings' }}</h1>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ isEducation ? 'Manage institute profile, campus branding, and counseling workspace theme.' : 'Manage company profile details and corporate theme branding.' }}</p>
       </div>
     </div>
 
-    <!-- Inner Tab Navigation -->
+    <!-- Inner Tab Navigation (Only Profile Metadata & Theme Branding) -->
     <div class="flex border-b border-default overflow-x-auto space-x-4 pb-0.5 scrollbar-none">
       <button
         v-for="tab in tabs"
@@ -37,7 +37,7 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Company Name *</label>
+              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">{{ isEducation ? 'Institute / Organisation Name *' : 'Company Name *' }}</label>
               <input
                 v-model="orgForm.companyName"
                 type="text"
@@ -131,20 +131,57 @@
         </div>
       </div>
 
-      <!-- 2. Feature Flags -->
-      <div v-if="activeTab === 'features'">
-        <FeatureFlagCard
-          v-model="localFeatureFlags"
-          @change="saveFeatureFlags"
-        />
-      </div>
+      <!-- 2. Theme Config -->
+      <div v-if="activeTab === 'theme'" class="max-w-4xl space-y-6">
+        <!-- Appearance Mode Card (Light / Dark) -->
+        <div class="bg-surface border border-default rounded-xl p-6 shadow-sm space-y-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Appearance Mode</h3>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">Select your workspace interface color theme.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              type="button"
+              @click="setThemeMode('light')"
+              class="p-4 rounded-xl border-2 transition-all flex items-center gap-3.5 text-left"
+              :class="activeThemeMode === 'light' ? 'border-primary bg-primary/5 shadow-xs' : 'border-default hover:border-slate-300 dark:hover:border-slate-750 bg-slate-50/50 dark:bg-slate-800/40'"
+            >
+              <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center shrink-0">
+                <PhSun :size="22" weight="bold" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Light Mode</span>
+                  <span v-if="activeThemeMode === 'light'" class="text-[10px] font-bold text-primary">Active</span>
+                </div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Clean surfaces and high contrast readability</div>
+              </div>
+            </button>
+            <button
+              type="button"
+              @click="setThemeMode('dark')"
+              class="p-4 rounded-xl border-2 transition-all flex items-center gap-3.5 text-left"
+              :class="activeThemeMode === 'dark' ? 'border-primary bg-primary/5 shadow-xs' : 'border-default hover:border-slate-300 dark:hover:border-slate-750 bg-slate-50/50 dark:bg-slate-800/40'"
+            >
+              <div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-400 flex items-center justify-center shrink-0">
+                <PhMoon :size="22" weight="bold" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Dark Mode</span>
+                  <span v-if="activeThemeMode === 'dark'" class="text-[10px] font-bold text-primary">Active</span>
+                </div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Deep slate tones tailored for nighttime work</div>
+              </div>
+            </button>
+          </div>
+        </div>
 
-      <!-- 3. Theme Branding Config -->
-      <div v-if="activeTab === 'branding'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-surface border border-default rounded-xl p-6 shadow-sm space-y-6">
+        <!-- Token Customization Card -->
+        <div class="bg-surface border border-default rounded-xl p-6 shadow-sm space-y-6">
           <div class="flex items-center justify-between border-b border-default pb-3">
             <div>
-              <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Theme Token Customization</h3>
+              <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Brand Color Customization</h3>
               <p class="text-[10px] text-slate-500 dark:text-slate-400">Configure corporate branding theme colors. Changes propagate across views in real time.</p>
             </div>
             <button
@@ -155,375 +192,64 @@
             </button>
           </div>
  
-          <!-- Color HSL Customizers -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <!-- Primary HSL Color -->
-            <div class="space-y-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-default">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-700 dark:text-slate-200">Primary Color HSL</span>
-                <span
-                  class="w-5 h-5 rounded border border-default shadow-xs"
-                  :style="{ backgroundColor: `hsl(${themeConfig.primaryH} ${themeConfig.primaryS}% ${themeConfig.primaryL}%)` }"
-                ></span>
+          <!-- Color Customizers -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Brand / Button Accent -->
+            <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-default">
+              <div class="relative w-10 h-10 rounded-full overflow-hidden shadow-inner border border-slate-300 dark:border-slate-600 shrink-0">
+                <input
+                  v-model="themeConfig.primaryHex"
+                  type="color"
+                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 cursor-pointer border-0 p-0"
+                  @input="updateColorsInRealTime"
+                />
               </div>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-semibold text-slate-500 dark:text-slate-400">Hue (H): {{ themeConfig.primaryH }}</span>
-                  <input type="range" min="0" max="360" v-model="themeConfig.primaryH" @input="updateColorsInRealTime" class="w-2/3 h-1 bg-slate-200 dark:bg-slate-750 rounded-lg appearance-none cursor-pointer" />
-                </div>
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-semibold text-slate-500 dark:text-slate-400">Sat (S): {{ themeConfig.primaryS }}%</span>
-                  <input type="range" min="0" max="100" v-model="themeConfig.primaryS" @input="updateColorsInRealTime" class="w-2/3 h-1 bg-slate-200 dark:bg-slate-750 rounded-lg appearance-none cursor-pointer" />
-                </div>
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-semibold text-slate-500 dark:text-slate-400">Light (L): {{ themeConfig.primaryL }}%</span>
-                  <input type="range" min="0" max="100" v-model="themeConfig.primaryL" @input="updateColorsInRealTime" class="w-2/3 h-1 bg-slate-200 dark:bg-slate-750 rounded-lg appearance-none cursor-pointer" />
-                </div>
+              <div class="flex flex-col">
+                <span class="font-bold text-slate-700 dark:text-slate-200 text-xs">Buttons & Accents</span>
+                <span class="text-[10px] text-slate-500 font-mono uppercase">{{ themeConfig.primaryHex }}</span>
               </div>
             </div>
- 
-            <!-- Secondary HSL Color -->
-            <div class="space-y-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-default">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-700 dark:text-slate-200">Secondary Color HSL</span>
-                <span
-                  class="w-5 h-5 rounded border border-default shadow-xs"
-                  :style="{ backgroundColor: `hsl(${themeConfig.secondaryH} ${themeConfig.secondaryS}% ${themeConfig.secondaryL}%)` }"
-                ></span>
+
+            <!-- Navbar Color -->
+            <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-default">
+              <div class="relative w-10 h-10 rounded-full overflow-hidden shadow-inner border border-slate-300 dark:border-slate-600 shrink-0">
+                <input
+                  v-model="themeConfig.navbarHex"
+                  type="color"
+                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 cursor-pointer border-0 p-0"
+                  @input="updateColorsInRealTime"
+                />
               </div>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-semibold text-slate-500 dark:text-slate-400">Hue (H): {{ themeConfig.secondaryH }}</span>
-                  <input type="range" min="0" max="360" v-model="themeConfig.secondaryH" @input="updateColorsInRealTime" class="w-2/3 h-1 bg-slate-200 dark:bg-slate-750 rounded-lg appearance-none cursor-pointer" />
-                </div>
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-semibold text-slate-500 dark:text-slate-400">Sat (S): {{ themeConfig.secondaryS }}%</span>
-                  <input type="range" min="0" max="100" v-model="themeConfig.secondaryS" @input="updateColorsInRealTime" class="w-2/3 h-1 bg-slate-200 dark:bg-slate-750 rounded-lg appearance-none cursor-pointer" />
-                </div>
-                <div class="flex items-center justify-between text-[10px]">
-                  <span class="font-semibold text-slate-500 dark:text-slate-400">Light (L): {{ themeConfig.secondaryL }}%</span>
-                  <input type="range" min="0" max="100" v-model="themeConfig.secondaryL" @input="updateColorsInRealTime" class="w-2/3 h-1 bg-slate-200 dark:bg-slate-750 rounded-lg appearance-none cursor-pointer" />
-                </div>
+              <div class="flex flex-col">
+                <span class="font-bold text-slate-700 dark:text-slate-200 text-xs">Navigation Bar</span>
+                <span class="text-[10px] text-slate-500 font-mono uppercase">{{ themeConfig.navbarHex }}</span>
+              </div>
+            </div>
+
+            <!-- Background Color -->
+            <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-default">
+              <div class="relative w-10 h-10 rounded-full overflow-hidden shadow-inner border border-slate-300 dark:border-slate-600 shrink-0">
+                <input
+                  v-model="themeConfig.backgroundHex"
+                  type="color"
+                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 cursor-pointer border-0 p-0"
+                  @input="updateColorsInRealTime"
+                />
+              </div>
+              <div class="flex flex-col">
+                <span class="font-bold text-slate-700 dark:text-slate-200 text-xs">App Background</span>
+                <span class="text-[10px] text-slate-500 font-mono uppercase">{{ themeConfig.backgroundHex }}</span>
               </div>
             </div>
           </div>
- 
-          <!-- Dynamic Propagation Checklist -->
-          <div class="space-y-3 pt-2">
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">DYNAMIC PROPAGATION CHANNELS</label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-default">
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="brandingChannels.sidebar" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-700 dark:text-slate-300">Sidebar layouts & UI navigation nodes</span>
-              </label>
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="brandingChannels.portal" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-700 dark:text-slate-300">External customer Portal & login screens</span>
-              </label>
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="brandingChannels.emails" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-700 dark:text-slate-300">Custom email transaction notifications</span>
-              </label>
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="brandingChannels.pdfs" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-700 dark:text-slate-300">Generated PDF Invoice & Microsheet exports</span>
-              </label>
-            </div>
-          </div>
- 
-          <!-- Save Color Theme button -->
+
           <div class="flex justify-end pt-4 border-t border-default">
             <button
               @click="saveBrandingColors"
               class="btn-md btn-primary gap-1.5"
             >
               <PhFloppyDisk :size="14" />
-              <span>Save Theme Settings</span>
-            </button>
-          </div>
-        </div>
- 
-        <!-- Custom Logo Uploads -->
-        <div class="bg-surface border border-default rounded-xl p-6 shadow-sm space-y-5">
-          <div>
-            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">Custom Logo Assets</h3>
-            <p class="text-[9px] text-slate-500 dark:text-slate-400">Provide PNG assets for light/dark mode layouts and browser ICO favicons.</p>
-          </div>
- 
-          <!-- Logo light -->
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Main Light Logo</label>
-            <div class="flex items-center space-x-3">
-              <div class="w-14 h-14 border border-default rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 font-semibold text-[9px] shadow-xs">
-                Light Logo
-              </div>
-              <button class="btn-sm btn-secondary text-[10px]">Upload PNG</button>
-            </div>
-          </div>
- 
-          <!-- Logo dark -->
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Main Dark Logo</label>
-            <div class="flex items-center space-x-3">
-              <div class="w-14 h-14 border border-default rounded-xl bg-slate-900 flex items-center justify-center text-slate-500 dark:text-slate-400 font-semibold text-[9px] shadow-xs">
-                Dark Logo
-              </div>
-              <button class="btn-sm btn-secondary text-[10px]">Upload PNG</button>
-            </div>
-          </div>
- 
-          <!-- Favicon -->
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Favicon (16x16 / 32x32)</label>
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 border border-default rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xs shadow-xs">
-                <PhFileText :size="16" class="text-slate-400 dark:text-slate-500" />
-              </div>
-              <button class="btn-sm btn-secondary text-[10px]">Upload ICO</button>
-            </div>
-          </div>
-        </div>
-      </div>
- 
-      <!-- 4. Subscription & Billing -->
-      <div v-if="activeTab === 'billing'" class="space-y-6">
-        <div class="bg-gradient-to-r from-primary to-slate-800 text-white rounded-xl p-6 shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div class="space-y-1">
-            <span class="text-[9px] font-bold bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Active Subscription</span>
-            <h3 class="text-base font-extrabold font-heading">{{ orgForm.companyName || orgSettings?.companyName || '' }} — {{ orgSettings?.billing?.currentPlan || '' }}</h3>
-            <p class="text-[10px] text-slate-200 dark:text-slate-300">Billed monthly. Next invoice scheduled for July 1, 2026.</p>
-          </div>
-          <button class="btn-md bg-white hover:bg-slate-50 text-slate-900 border-0 font-bold shrink-0 gap-1.5">
-            <PhCreditCard :size="14" />
-            <span>Manage Billing Portal</span>
-          </button>
-        </div>
- 
-        <!-- Quota progress bars -->
-        <div class="bg-surface border border-default rounded-xl p-6 shadow-sm space-y-6">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Tenant Resource Quotas</h3>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Resource quotas are capped based on plan tiers. Color shifts flag capacity limits.</p>
-          </div>
- 
-          <div class="space-y-4">
-            <!-- Active Users Quota -->
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-slate-700 dark:text-slate-350">Active Seats (Users)</span>
-                <span class="font-semibold text-slate-500 dark:text-slate-400">{{ orgSettings.billing?.activeUsers }} / {{ orgSettings.billing?.maxUsers }} Users ({{ usersQuotaPercent }}%)</span>
-              </div>
-              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-500" :class="getQuotaColorClass(usersQuotaPercent)" :style="{ width: `${usersQuotaPercent}%` }"></div>
-              </div>
-            </div>
- 
-            <!-- Branches Quota -->
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-slate-700 dark:text-slate-350">Branch Locations</span>
-                <span class="font-semibold text-slate-500 dark:text-slate-400">{{ orgSettings.billing?.activeBranches }} / {{ orgSettings.billing?.maxBranches }} Branches ({{ branchQuotaPercent }}%)</span>
-              </div>
-              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-500" :class="getQuotaColorClass(branchQuotaPercent)" :style="{ width: `${branchQuotaPercent}%` }"></div>
-              </div>
-            </div>
- 
-            <!-- Storage Quota -->
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-slate-700 dark:text-slate-350">Allocated Cloud Document Storage</span>
-                <span class="font-semibold text-slate-500 dark:text-slate-400">{{ orgSettings.billing?.storageUsed }} GB / {{ orgSettings.billing?.storageAllocated }} GB ({{ storageQuotaPercent }}%)</span>
-              </div>
-              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-500" :class="getQuotaColorClass(storageQuotaPercent)" :style="{ width: `${storageQuotaPercent}%` }"></div>
-              </div>
-            </div>
- 
-            <!-- Leads Quota -->
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-slate-700 dark:text-slate-350">Registered Leads</span>
-                <span class="font-semibold text-slate-500 dark:text-slate-400">{{ orgSettings.billing?.leadsCount }} / Unlimited Leads</span>
-              </div>
-              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
-                <div class="h-full rounded-full bg-emerald-500" style="width: 100%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 5. Data Center (Import / Export) -->
-      <div v-if="activeTab === 'datacenter'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- CSV Import Mapper Stepper -->
-        <div class="bg-surface border border-default rounded-xl p-6 shadow-sm space-y-6">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">CSV Import Center</h3>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Migrate leads, deals, or properties databases via column map files.</p>
-          </div>
- 
-          <!-- Stepper Headers -->
-          <div class="flex items-center justify-between border-y border-default py-2 text-[10px] font-bold text-slate-450 dark:text-slate-500">
-            <span :class="importStep >= 1 ? 'text-primary' : ''">1. UPLOAD CSV</span>
-            <span>▶</span>
-            <span :class="importStep >= 2 ? 'text-primary' : ''">2. FIELD MAPPING</span>
-            <span>▶</span>
-            <span :class="importStep >= 3 ? 'text-primary' : ''">3. CONFLICT RULES</span>
-          </div>
- 
-          <!-- Step 1: Upload CSV -->
-          <div v-if="importStep === 1" class="space-y-4">
-            <div class="border-2 border-dashed border-default hover:border-primary rounded-xl p-8 text-center bg-slate-50/50 dark:bg-slate-800/20 cursor-pointer space-y-2" @click="mockCSVSelect">
-              <PhFileText :size="32" class="text-slate-400 dark:text-slate-500 mx-auto" />
-              <div class="font-bold text-slate-700 dark:text-slate-250">{{ csvFile ? csvFile.name : 'Drag & Drop CSV file here' }}</div>
-              <p class="text-[9px] text-slate-400 dark:text-slate-500">File limits: 50MB max. Rows will be scanned for headers.</p>
-            </div>
-            <div class="flex justify-end">
-              <button
-                @click="importStep = 2"
-                :disabled="!csvFile"
-                class="btn-md btn-primary"
-              >
-                Proceed to Mapping
-              </button>
-            </div>
-          </div>
- 
-          <!-- Step 2: Field Mapping Canvas -->
-          <div v-if="importStep === 2" class="space-y-4">
-            <div class="font-bold text-slate-700 dark:text-slate-250">Column Mapping Wizard</div>
-            <div class="space-y-2 border border-default rounded-lg p-3 max-h-[220px] overflow-y-auto bg-slate-50/30 dark:bg-slate-800/30">
-              <div v-for="map in columnMappings" :key="map.csvCol" class="flex items-center justify-between gap-3 text-xs py-1.5 border-b border-default last:border-0">
-                <span class="font-semibold text-slate-600 dark:text-slate-400 font-mono">{{ map.csvCol }}</span>
-                <PhArrowRight :size="12" class="text-slate-400 dark:text-slate-500" />
-                <select v-model="map.crmKey" class="bg-surface border border-default rounded-md px-2 py-1 text-xs outline-none focus:border-primary text-slate-800 dark:text-slate-200">
-                  <option value="lead.name">Lead Name</option>
-                  <option value="lead.phone">Mobile Number</option>
-                  <option value="lead.email">Email Address</option>
-                  <option value="lead.budget">Preferred Budget</option>
-                  <option value="ignore">[ Ignore Column ]</option>
-                </select>
-              </div>
-            </div>
- 
-            <!-- Mock Validation Warning preview -->
-            <div class="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900/40 text-yellow-800 dark:text-yellow-400 p-3 rounded-lg text-[10px] font-semibold leading-relaxed flex items-start gap-1.5">
-              <PhWarning :size="14" class="text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
-              <div>
-                <strong>Pre-validation check:</strong> Found 3 rows with missing phone numbers. If imported, these will report validation errors during execution and write log reports.
-              </div>
-            </div>
- 
-            <div class="flex justify-between">
-              <button @click="importStep = 1" class="btn-md btn-secondary">Back</button>
-              <button @click="importStep = 3" class="btn-md btn-primary">Conflict Rules</button>
-            </div>
-          </div>
- 
-          <!-- Step 3: Conflict Rules -->
-          <div v-if="importStep === 3" class="space-y-4">
-            <div class="font-bold text-slate-700 dark:text-slate-250 mb-2">Duplicate Conflict Resolution Rules</div>
-            <div class="space-y-3 bg-slate-50 dark:bg-slate-800/40 p-4 border border-default rounded-xl">
-              <label class="flex items-start cursor-pointer">
-                <input type="radio" name="conflict" value="skip" v-model="conflictRule" class="mt-0.5 text-primary" />
-                <span class="ml-2.5 font-semibold text-slate-750 dark:text-slate-300">Skip duplicate rows (Keep existing CRM records intact)</span>
-              </label>
-              <label class="flex items-start cursor-pointer">
-                <input type="radio" name="conflict" value="overwrite" v-model="conflictRule" class="mt-0.5 text-primary" />
-                <span class="ml-2.5 font-semibold text-slate-750 dark:text-slate-300">Overwrite CRM record values with CSV columns data</span>
-              </label>
-              <label class="flex items-start cursor-pointer">
-                <input type="radio" name="conflict" value="merge" v-model="conflictRule" class="mt-0.5 text-primary" />
-                <span class="ml-2.5 font-semibold text-slate-750 dark:text-slate-300">Merge details (Append missing fields without overwriting fields)</span>
-              </label>
-            </div>
- 
-            <div class="flex justify-between">
-              <button @click="importStep = 2" class="btn-md btn-secondary">Back</button>
-              <button @click="runCSVImport" class="btn-md btn-primary gap-1.5">
-                <PhLightning :size="14" />
-                <span>Execute Import Job</span>
-              </button>
-            </div>
-          </div>
-        </div>
- 
-        <!-- Export Center -->
-        <div class="bg-surface border border-default rounded-xl p-6 shadow-sm space-y-5">
-          <div>
-            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Export Center</h3>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Request raw backups and database exports enqueued for security audits.</p>
-          </div>
- 
-          <!-- Export Scopes -->
-          <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Select Data Scopes</label>
-            <div class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-default">
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="exportScopes.leads" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-750 dark:text-slate-300">Leads Module</span>
-              </label>
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="exportScopes.deals" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-750 dark:text-slate-300">Deals & Bookings</span>
-              </label>
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="exportScopes.properties" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-750 dark:text-slate-300">Inventory Property</span>
-              </label>
-              <label class="flex items-center space-x-2.5 cursor-pointer">
-                <input type="checkbox" v-model="exportScopes.auditLogs" class="rounded border-default text-primary" />
-                <span class="font-semibold text-slate-750 dark:text-slate-300">System Audit Logs</span>
-              </label>
-            </div>
-          </div>
- 
-          <!-- Format Filters -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Export Format</label>
-              <select v-model="exportFormat" class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-primary text-slate-800 dark:text-slate-200">
-                <option value="CSV">CSV Format</option>
-                <option value="JSON">JSON File</option>
-                <option value="EXCEL">Excel (.xlsx)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Delivery Channel</label>
-              <select class="w-full bg-slate-50 dark:bg-slate-800 border border-default rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-primary text-slate-800 dark:text-slate-200" disabled>
-                <option value="email">Send via Email link</option>
-              </select>
-            </div>
-          </div>
- 
-          <!-- Security Authorizations Checkbox -->
-          <div class="bg-red-50/50 dark:bg-red-950/10 border border-red-200/50 dark:border-red-900/20 p-3 rounded-lg space-y-2">
-            <label class="flex items-start cursor-pointer">
-              <input type="checkbox" v-model="exportAuthorized" class="mt-0.5 rounded border-red-300 text-red-650 focus:ring-red-500" />
-              <span class="ml-2 font-semibold text-red-800 dark:text-red-400 text-[10px]">I confirm that I am authorized to export raw organization data for backup and compliance purposes.</span>
-            </label>
-          </div>
- 
-          <!-- Export History List empty state -->
-          <div class="space-y-2 pt-1">
-            <label class="block text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase">RECENT EXPORT HISTORY</label>
-            <div class="flex flex-col items-center justify-center py-6 px-4 bg-slate-50 dark:bg-slate-800/40 border border-dashed border-default rounded-xl text-center space-y-1">
-              <PhFileText :size="20" class="text-slate-350 dark:text-slate-500" />
-              <span class="font-semibold text-slate-500 dark:text-slate-300 text-[10px]">No Export History Found</span>
-              <span class="text-slate-400 dark:text-slate-500 text-[9px] leading-normal">Enqueued compliance and backup history will appear here.</span>
-            </div>
-          </div>
-
-          <!-- Request button -->
-          <div class="flex justify-end pt-2">
-            <button
-              @click="requestDatabaseExport"
-              :disabled="!exportAuthorized"
-              class="btn-md btn-primary gap-1.5"
-            >
-              <PhDownload :size="14" />
-              <span>Request Database Export</span>
+              <span>Apply Theme Changes</span>
             </button>
           </div>
         </div>
@@ -535,24 +261,30 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useStore } from 'vuex';
-import { PhFloppyDisk, PhCreditCard, PhFileText, PhLightning, PhDownload, PhWarning, PhArrowRight } from '@phosphor-icons/vue';
+import { PhFloppyDisk, PhSun, PhMoon } from '@phosphor-icons/vue';
+import { applyThemeTokensToDOM } from '@/store/modules/ui';
 import { useOrgSettingsQuery, useUpdateOrgSettingsMutation } from '../queries';
-import FeatureFlagCard from '../components/FeatureFlagCard.vue';
 
 const store = useStore();
 
-const tabs = [
-  { label: 'Profile Metadata', value: 'profile' },
-  { label: 'Feature Flags', value: 'features' },
-  { label: 'Theme Branding', value: 'branding' },
-  { label: 'Subscription & Billing', value: 'billing' },
-  { label: 'Data Center', value: 'datacenter' }
-];
+const isEducation = computed(() => store.getters['organization/isEducationTenant']);
+
+// Cleaned Tabs: Only Profile Metadata & Theme
+const tabs = computed(() => [
+  { label: isEducation.value ? 'Institute Profile' : 'Profile Metadata', value: 'profile' },
+  { label: 'Theme', value: 'theme' },
+]);
 
 const activeTab = ref('profile');
 
+// Theme Mode Selection
+const activeThemeMode = computed(() => store.state.ui.activeThemeMode);
+const setThemeMode = (mode) => {
+  store.commit('ui/SET_THEME_MODE', mode);
+};
+
 // Fetch Query Layer
-const { data: orgSettings, isLoading } = useOrgSettingsQuery();
+const { data: orgSettings } = useOrgSettingsQuery();
 const { mutateAsync: updateOrgSettings, isPending: isUpdating } = useUpdateOrgSettingsMutation();
 
 // Local forms state
@@ -564,14 +296,6 @@ const orgForm = ref({
   timezone: 'Asia/Kolkata'
 });
 
-const localFeatureFlags = ref({
-  whatsappModule: false,
-  commissionModule: false,
-  reportsModule: false,
-  automationEngine: false,
-  apiAccess: false
-});
-
 watch(orgSettings, (newVal) => {
   if (newVal) {
     orgForm.value = {
@@ -581,132 +305,47 @@ watch(orgSettings, (newVal) => {
       currency: newVal.settings?.currency || newVal.currency || 'INR',
       timezone: newVal.settings?.timezone || newVal.timezone || 'Asia/Kolkata'
     };
-    if (newVal.featureFlags) {
-      localFeatureFlags.value = { ...newVal.featureFlags };
-    }
   }
 }, { immediate: true });
 
-// Branding states
-const themeConfig = ref({
-  primaryH: '220',
-  primaryS: '85',
-  primaryL: '45',
-  secondaryH: '210',
-  secondaryS: '25',
-  secondaryL: '35'
-});
+// Branding default tokens (TrackDeal teal-green default: 150, 34%, 23%)
+const defaultTokens = {
+  primaryHex: '#264f3c',
+  secondaryHex: '#43617e',
+  navbarHex: '#ffffff',
+  backgroundHex: '#f8fafc'
+};
 
-const brandingChannels = ref({
-  sidebar: true,
-  portal: true,
-  emails: true,
-  pdfs: false
-});
+const getInitialTheme = () => {
+  try {
+    const saved = localStorage.getItem('theme_custom_hsl');
+    if (saved) return { ...defaultTokens, ...JSON.parse(saved) };
+  } catch (e) {}
+  return { ...defaultTokens };
+};
 
-// Quota Percentages computed values
-const usersQuotaPercent = computed(() => {
-  const billing = orgSettings.value?.billing;
-  if (!billing) return 0;
-  return Math.round((billing.activeUsers / billing.maxUsers) * 100);
-});
+const themeConfig = ref(getInitialTheme());
 
-const branchQuotaPercent = computed(() => {
-  const billing = orgSettings.value?.billing;
-  if (!billing) return 0;
-  return Math.round((billing.activeBranches / billing.maxBranches) * 100);
-});
-
-const storageQuotaPercent = computed(() => {
-  const billing = orgSettings.value?.billing;
-  if (!billing) return 0;
-  return Math.round((billing.storageUsed / billing.storageAllocated) * 100);
-});
-
-function getQuotaColorClass(percent) {
-  if (percent >= 95) return 'bg-red-500';
-  if (percent >= 80) return 'bg-amber-500';
-  return 'bg-emerald-500';
-}
-
-// Data Center details
-const importStep = ref(1);
-const csvFile = ref(null);
-const conflictRule = ref('skip');
-const columnMappings = ref([
-  { csvCol: 'First Name', crmKey: 'lead.name' },
-  { csvCol: 'Buyer Mob', crmKey: 'lead.phone' },
-  { csvCol: 'Email Addr', crmKey: 'lead.email' },
-  { csvCol: 'Target Price', crmKey: 'lead.budget' }
-]);
-
-const exportScopes = ref({
-  leads: true,
-  deals: true,
-  properties: false,
-  auditLogs: false
-});
-const exportFormat = ref('CSV');
-const exportAuthorized = ref(false);
-
-function mockCSVSelect() {
-  csvFile.value = { name: 'leads_migration_june2026.csv', size: 1024 * 342 };
-  store.dispatch('notifications/triggerToast', {
-    message: 'CSV file enqueued. System detected columns mapping.',
-    type: 'success'
-  });
-}
-
-function runCSVImport() {
-  store.dispatch('notifications/triggerToast', {
-    message: 'CSV migration job enqueued in background. Progress can be monitored in Audit Logs.',
-    type: 'success'
-  });
-  importStep.value = 1;
-  csvFile.value = null;
-}
-
-function requestDatabaseExport() {
-  if (!exportAuthorized.value) return;
-  store.dispatch('notifications/triggerToast', {
-    message: 'Database backup request submitted. Download link will be sent shortly via email.',
-    type: 'success'
-  });
-  exportAuthorized.value = false;
-}
-
-// Branding save
+// Branding save & preview
 function updateColorsInRealTime() {
-  // Update document variables dynamically
-  document.documentElement.style.setProperty('--primary', `${themeConfig.value.primaryH} ${themeConfig.value.primaryS}% ${themeConfig.value.primaryL}%`);
-  document.documentElement.style.setProperty('--secondary', `${themeConfig.value.secondaryH} ${themeConfig.value.secondaryS}% ${themeConfig.value.secondaryL}%`);
+  applyThemeTokensToDOM(themeConfig.value);
 }
 
 function resetBrandingColors() {
-  themeConfig.value = {
-    primaryH: '220',
-    primaryS: '85',
-    primaryL: '45',
-    secondaryH: '210',
-    secondaryS: '25',
-    secondaryL: '35'
-  };
-  updateColorsInRealTime();
-}
-
-function saveBrandingColors() {
-  updateColorsInRealTime();
+  themeConfig.value = { ...defaultTokens };
+  applyThemeTokensToDOM(null);
+  localStorage.removeItem('theme_custom_hsl');
   store.dispatch('notifications/triggerToast', {
-    message: 'HSL Theme Colors applied and saved to tenant profile successfully.',
-    type: 'success'
+    message: 'Theme colors restored to defaults.',
+    type: 'info'
   });
 }
 
-// Feature flags save
-function saveFeatureFlags(updatedFlags) {
-  localFeatureFlags.value = { ...updatedFlags };
+function saveBrandingColors() {
+  applyThemeTokensToDOM(themeConfig.value);
+  localStorage.setItem('theme_custom_hsl', JSON.stringify(themeConfig.value));
   store.dispatch('notifications/triggerToast', {
-    message: 'Organization-level access permissions modified.',
+    message: 'Theme colors applied and saved successfully.',
     type: 'success'
   });
 }

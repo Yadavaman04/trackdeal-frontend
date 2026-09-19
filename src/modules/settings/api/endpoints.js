@@ -69,19 +69,43 @@ export async function fetchUsers() {
 }
 
 export async function inviteUser(data) {
+  const nameParts = (data.name || '').trim().split(/\s+/);
+  const firstName = data.firstName || nameParts[0] || 'User';
+  const lastName = data.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName);
+
   const payload = {
     email: data.email,
-    roleId: data.role || data.roleId
+    roleId: data.role || data.roleId,
+    name: data.name,
+    firstName,
+    lastName
   };
   if (data.branch || data.branchId) {
     payload.branchId = data.branch || data.branchId;
   }
+  if (data.password) {
+    payload.password = data.password;
+    if (data.phone) payload.phone = data.phone;
+    try {
+      const response = await apiClient.post('/settings/users', payload);
+      return response.data;
+    } catch (err) {
+      const response = await apiClient.post('/settings/users/invite', payload);
+      return response.data;
+    }
+  }
+
   const response = await apiClient.post('/settings/users/invite', payload);
   return response.data;
 }
 
+export async function createUser(data) {
+  return inviteUser(data);
+}
+
 export async function suspendUser({ id, suspend }) {
-  const response = await apiClient.post(`/settings/users/${id}/suspend`, { suspend });
+  const endpoint = suspend ? `/settings/users/${id}/suspend` : `/settings/users/${id}/activate`;
+  const response = await apiClient.post(endpoint, {});
   return response.data;
 }
 
@@ -101,7 +125,12 @@ function convertPermissionsArrayToObject(permissionsArr) {
     deals: { create: false, read: false, update: false, delete: false },
     commissions: { create: false, read: false, update: false, delete: false },
     properties: { create: false, read: false, update: false, delete: false },
-    reports: { create: false, read: false, update: false, delete: false }
+    reports: { create: false, read: false, update: false, delete: false },
+    tasks: { create: false, read: false, update: false, delete: false },
+    students: { create: false, read: false, update: false, delete: false },
+    classes: { create: false, read: false, update: false, delete: false },
+    admissions: { create: false, read: false, update: false, delete: false },
+    settings: { create: false, read: false, update: false, delete: false }
   };
   
   if (Array.isArray(permissionsArr)) {
@@ -109,9 +138,10 @@ function convertPermissionsArrayToObject(permissionsArr) {
       const parts = perm.split('.');
       if (parts.length === 2) {
         const [scope, action] = parts;
-        if (obj[scope]) {
-          obj[scope][action] = true;
+        if (!obj[scope]) {
+          obj[scope] = { create: false, read: false, update: false, delete: false };
         }
+        obj[scope][action] = true;
       }
     });
   }

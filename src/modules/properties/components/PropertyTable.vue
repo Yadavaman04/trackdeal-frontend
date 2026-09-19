@@ -6,8 +6,11 @@
       :selectable="true"
       :selectedRows="selectedProperties"
       :isLoading="isLoading"
+      :pagination="pagination"
       @selectionChange="handleSelectionChange"
       @sort="handleSort"
+      @pageChange="$emit('pageChange', $event)"
+      @pageSizeChange="$emit('pageSizeChange', $event)"
       :sorting="sorting"
     >
       <!-- Slot for Unit Code -->
@@ -94,10 +97,11 @@ import AppTable from '@/components/AppTable.vue';
 const props = defineProps({
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
-  selectedProperties: { type: Array, default: () => [] }
+  selectedProperties: { type: Array, default: () => [] },
+  pagination: { type: Object, default: null }
 });
 
-const emit = defineEmits(['sort', 'selectionChange']);
+const emit = defineEmits(['sort', 'selectionChange', 'pageChange', 'pageSizeChange']);
 
 const sorting = ref({ field: 'createdAt', direction: 'desc' });
 

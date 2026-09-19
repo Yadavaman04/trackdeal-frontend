@@ -1,3 +1,4 @@
+import { unref } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import propertiesApi from '../api/endpoints';
 
@@ -8,7 +9,7 @@ import propertiesApi from '../api/endpoints';
 export function usePropertiesQuery(filters) {
   return useQuery({
     queryKey: ['properties', 'list', filters],
-    queryFn: () => propertiesApi.fetchProperties(filters),
+    queryFn: () => propertiesApi.fetchProperties(unref(filters)),
     placeholderData: (previousData) => previousData
   });
 }

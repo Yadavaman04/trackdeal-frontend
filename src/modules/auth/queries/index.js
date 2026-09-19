@@ -21,7 +21,11 @@ export function useLoginMutation() {
         message: "Successfully logged in. Welcome back!",
         type: "success",
       });
-      router.push("/app/dashboard");
+      if (['system_admin', 'super_admin'].includes(payload.user?.role)) {
+        router.push("/admin");
+      } else {
+        router.push("/app/dashboard");
+      }
     },
   });
 }

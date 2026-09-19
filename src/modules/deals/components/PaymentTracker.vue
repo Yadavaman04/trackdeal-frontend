@@ -89,20 +89,25 @@
         </table>
       </div>
     </div>
+  </div>
 
-    <!-- Log Payment Modal -->
-    <div 
-      v-if="showLogPaymentModal"
-      class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-    >
-      <div class="bg-surface border border-default w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col animate-fade-in text-xs">
-        <div class="px-4 py-3 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
-          <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center space-x-1.5">
-            <PhReceipt :size="15" class="text-slate-450" />
-            <span>Log Payment Receipt</span>
-          </h3>
-          <button @click="showLogPaymentModal = false" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
-        </div>
+  <!-- Log Payment Modal -->
+    <Teleport to="body">
+      <Transition name="drawer-slide">
+        <div 
+          v-if="showLogPaymentModal"
+          class="fixed inset-0 z-[1000] flex justify-end overflow-hidden"
+          style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);"
+          @click.self="showLogPaymentModal = false"
+        >
+          <div class="bg-surface border-l border-default w-full max-w-md h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+            <div class="px-5 py-4 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
+              <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center space-x-1.5">
+                <PhReceipt :size="15" class="text-slate-450" />
+                <span>Log Payment Receipt</span>
+              </h3>
+              <button @click="showLogPaymentModal = false" class="text-slate-400 hover:text-slate-600 text-sm" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
+            </div>
 
         <form @submit.prevent="handleLogPayment" class="p-4 space-y-3.5 flex-1 overflow-y-auto">
           <!-- Type & Mode -->
@@ -175,9 +180,10 @@
             {{ isSaving ? 'Logging...' : 'Save Payment' }}
           </button>
         </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -297,3 +303,9 @@ const formatCurrency = (val) => {
   }).format(val);
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

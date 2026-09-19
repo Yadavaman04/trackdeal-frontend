@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6 text-center py-4">
     <div class="text-center">
-      <span class="text-4xl text-red-500">🚫</span>
+      <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-danger-bg text-danger-text"><AppIcon name="shieldWarning" :size="26" weight="duotone" /></span>
       <h3 class="font-heading text-lg font-bold text-slate-800 mt-4">
         Access Unauthorized
       </h3>

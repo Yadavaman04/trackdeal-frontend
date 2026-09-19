@@ -64,7 +64,7 @@
         :to="`/app/builders/${builder._id || builder.id}`"
         class="text-primary font-bold text-[10px] hover:underline"
       >
-        View Profile Directory ➔
+        View profile <AppIcon name="arrowRight" :size="13" />
       </router-link>
     </div>
   </div>

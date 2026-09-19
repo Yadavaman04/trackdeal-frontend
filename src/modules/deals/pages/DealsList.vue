@@ -1,487 +1,130 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header Block -->
-    <div class="bg-surface border border-default rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
+  <div class="financial-workspace space-y-5 pb-16">
+    <header class="financial-page-header">
       <div>
-        <h2 class="font-heading text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
-          <PhHandshake :size="20" class="text-primary" />
-          <span>Enterprise Deals Workspace</span>
-        </h2>
-        <p class="text-xs text-slate-550 mt-0.5">
-          Track property bookings, manage buyer milestone KYC validation, and forecast commission schedules.
-        </p>
+        <p class="eyebrow">Revenue operations</p>
+        <h1>Deals workspace</h1>
+        <p>Track property transactions from reservation through registration, commission eligibility, and closure.</p>
       </div>
+      <div class="workspace-action-cluster">
+        <div class="workspace-segmented" aria-label="Deal view">
+          <button type="button" :class="{ 'is-active': viewMode === 'table' }" @click="viewMode = 'table'"><PhTable :size="13" /> Table</button>
+          <button type="button" :class="{ 'is-active': viewMode === 'kanban' }" @click="viewMode = 'kanban'"><PhColumns :size="13" /> Pipeline</button>
+          <button type="button" :class="{ 'is-active': viewMode === 'lifecycle' }" @click="viewMode = 'lifecycle'"><PhTrendUp :size="13" /> Lifecycle</button>
+        </div>
+        <button type="button" class="btn-md btn-secondary" @click="openConvertReservation"><AppIcon name="key" :size="15" /> Convert hold</button>
+        <button type="button" class="btn-md btn-primary" @click="isCreateOpen = true"><AppIcon name="add" :size="15" /> Create deal</button>
+      </div>
+    </header>
 
-      <!-- Action buttons & Views toggle -->
-      <div class="flex items-center gap-3 self-end sm:self-auto shrink-0 flex-wrap">
-        <!-- View Toggle buttons -->
-        <div class="border border-default rounded-lg p-0.5 bg-slate-55/50 dark:bg-slate-900 flex space-x-0.5">
-          <button 
-            @click="viewMode = 'table'"
-            class="px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all flex items-center gap-1.5"
-            :class="viewMode === 'table' ? 'bg-surface text-slate-800 dark:text-slate-200 shadow-xs' : 'text-slate-400 hover:text-slate-650'"
-            title="Table View"
-          >
-            <PhTable :size="12" />
-            <span>Table</span>
+    <section v-if="isLoading && !dealsList.length" class="workspace-kpi-grid" aria-label="Loading deal summary">
+      <div class="skeleton h-52 rounded-xl lg:col-span-6"></div>
+      <div v-for="item in 3" :key="item" class="skeleton h-52 rounded-xl lg:col-span-2"></div>
+    </section>
+
+    <section v-else class="workspace-kpi-grid" aria-label="Deal summary">
+      <article class="financial-hero workspace-hero--deals">
+        <div class="relative z-[1] flex h-full flex-col justify-between">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="financial-hero__label">Portfolio deal value</p>
+              <p class="financial-hero__value">{{ formatCurrency(metrics.totalValue) }}</p>
+              <p class="financial-hero__caption">Recorded value across {{ dealsList.length }} transaction files</p>
+            </div>
+            <span class="financial-hero__icon"><AppIcon name="handshake" :size="22" weight="duotone" /></span>
+          </div>
+          <div class="workspace-hero__meta">
+            <div><span>Current view</span><strong>{{ activeStageLabel }}</strong></div>
+            <div><span>Visible files</span><strong>{{ filteredDeals.length }} deals</strong></div>
+          </div>
+        </div>
+      </article>
+      <WorkspaceMetric label="Active deals" :value="metrics.activeCount" caption="Open transaction files in the pipeline" icon="target" />
+      <WorkspaceMetric label="Booking confirmed" :value="metrics.confirmedCount" caption="Booking-stage transaction records" icon="checkCircle" tone="success" />
+      <WorkspaceMetric label="Expected commission" :value="formatCurrency(metrics.expectedCommissions)" caption="Commission recorded on existing deals" icon="currency" tone="warning" />
+    </section>
+
+    <section class="financial-panel" aria-label="Deal filters">
+      <div class="financial-panel__header"><div><p class="eyebrow">Pipeline</p><h2>Transaction stages</h2></div><span class="financial-panel__meta">{{ dealsList.length }} total records</span></div>
+      <div class="workspace-state-strip">
+        <button v-for="state in stageStates" :key="state.key" type="button" :class="{ 'is-active': filters.status === state.key }" @click="filters.status = state.key"><span>{{ state.label }}</span><strong>{{ state.count }}</strong></button>
+      </div>
+      <div class="financial-table-toolbar">
+        <div><p class="eyebrow">Deal register</p><h2>Transaction files</h2><p>Search by deal, customer, project, unit, stage, or owner.</p></div>
+        <div class="financial-filter-row">
+          <div class="relative min-w-0 sm:min-w-[260px]">
+            <AppIcon name="search" :size="15" class="absolute left-3 top-1/2 -translate-y-1/2" style="color: hsl(var(--neutral-400));" />
+            <input v-model="filters.search" class="filter-control !pl-9" type="search" placeholder="Search deals or customers…" />
+          </div>
+          <select v-model="filters.status" class="filter-control sm:max-w-[190px]" aria-label="Filter by transaction stage">
+            <option value="">All stages</option><option v-for="status in dealStages" :key="status" :value="status">{{ formatStageName(status) }}</option>
+          </select>
+          <select v-model="filters.assignedTo" class="filter-control sm:max-w-[180px]" aria-label="Filter by assigned agent">
+            <option value="">All owners</option><option v-for="agent in agents" :key="agent._id" :value="agent._id">{{ [agent.firstName, agent.lastName].filter(Boolean).join(' ') }}</option>
+          </select>
+          <button v-if="hasFilters" type="button" class="btn-md btn-ghost" @click="resetFilters">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <div v-if="error" class="financial-error" role="alert">
+      <AppIcon name="warning" :size="18" /><div><strong>Deals could not be loaded</strong><p>Retry to restore the transaction workspace.</p></div><button type="button" class="btn-sm btn-secondary" @click="refetch">Retry</button>
+    </div>
+
+    <AppTable
+      v-if="viewMode === 'table'"
+      class="financial-table"
+      :rows="filteredDeals"
+      :columns="columns"
+      :is-loading="isLoading"
+      :page-size="15"
+      empty-title="No deals in this view"
+      empty-subtext="Clear the current filters or create a deal to begin tracking its transaction lifecycle."
+      @row-click="openDeal"
+    >
+      <template #cell(deal)="{ row }"><div class="workspace-record"><span class="workspace-code">{{ row.dealNumber || 'Unnumbered deal' }}</span><small>{{ formatDate(row.createdAt) }}</small></div></template>
+      <template #cell(customer)="{ row }"><div class="workspace-record max-w-[180px]"><strong>{{ customerName(row) }}</strong><small>{{ row.customer?.mobile || 'Mobile not available' }}</small></div></template>
+      <template #cell(asset)="{ row }"><div class="workspace-record max-w-[190px]"><strong>{{ row.project?.name || row.projectTitle || 'Project not linked' }}</strong><small>{{ row.unit?.unitNumber || row.unitCode ? `Unit ${row.unit?.unitNumber || row.unitCode}` : 'Unit not assigned' }}</small></div></template>
+      <template #cell(value)="{ row }"><span class="financial-amount">{{ formatCurrency(row.dealValue ?? row.askingPrice) }}</span></template>
+      <template #cell(stage)="{ row }"><WorkspaceStatusBadge :label="formatStageName(row.status)" :tone="stageTone(row.status)" /></template>
+      <template #cell(closeDate)="{ row }"><div class="workspace-record"><strong>{{ formatDate(row.closeDate) }}</strong><small>{{ row.closeDate ? 'Expected close' : 'Not scheduled' }}</small></div></template>
+      <template #cell(owner)="{ row }"><div class="workspace-record"><strong>{{ ownerName(row) }}</strong><small>Deal owner</small></div></template>
+      <template #cell(actions)="{ row }"><router-link :to="`/app/deals/${row._id || row.id}`" class="financial-action financial-action--primary" aria-label="Open deal" @click.stop><AppIcon name="arrowRight" :size="14" /></router-link></template>
+    </AppTable>
+
+    <DealPipelineBoard v-else-if="viewMode === 'kanban'" :deals="filteredDeals" @stageChange="handleStageChange" @cancelDeal="triggerCancel" @startWizard="triggerWizard" />
+
+    <section v-else class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Deal lifecycle overview">
+      <article v-for="lane in lifecycleLanes" :key="lane.key" class="workspace-lane">
+        <header class="workspace-lane__header"><div><h3>{{ lane.label }}</h3><p>{{ lane.description }}</p></div><span class="workspace-lane__total">{{ formatCurrency(lane.total) }}</span></header>
+        <div class="workspace-lane__body">
+          <button v-for="deal in lane.deals" :key="deal._id || deal.id" type="button" class="workspace-lane-card text-left" @click="openDeal(deal)">
+            <div class="flex items-center justify-between gap-2"><span class="workspace-code">{{ deal.dealNumber || 'Unnumbered deal' }}</span><WorkspaceStatusBadge :label="formatStageName(deal.status)" :tone="stageTone(deal.status)" /></div>
+            <div class="workspace-record mt-3"><strong>{{ customerName(deal) }}</strong><small>{{ deal.project?.name || deal.projectTitle || 'Project not linked' }}</small></div>
+            <div class="mt-3 flex items-center justify-between border-t pt-3" style="border-color: hsl(var(--neutral-100));"><span class="financial-amount">{{ formatCurrency(deal.dealValue ?? deal.askingPrice) }}</span><small style="color: hsl(var(--neutral-400));">{{ ownerName(deal) }}</small></div>
           </button>
-          <button 
-            @click="viewMode = 'kanban'"
-            class="px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all flex items-center gap-1.5"
-            :class="viewMode === 'kanban' ? 'bg-surface text-slate-800 dark:text-slate-200 shadow-xs' : 'text-slate-400 hover:text-slate-650'"
-            title="Pipeline Board"
-          >
-            <PhColumns :size="12" />
-            <span>Kanban</span>
-          </button>
-          <button 
-            @click="viewMode = 'forecast'"
-            class="px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all flex items-center gap-1.5"
-            :class="viewMode === 'forecast' ? 'bg-surface text-slate-800 dark:text-slate-200 shadow-xs' : 'text-slate-400 hover:text-slate-650'"
-            title="Revenue Forecast"
-          >
-            <PhTrendUp :size="12" />
-            <span>Forecast</span>
-          </button>
+          <div v-if="!lane.deals.length" class="workspace-inline-empty">No deals in this lifecycle stage.</div>
         </div>
+      </article>
+    </section>
 
-        <!-- Convert Reservation Action -->
-        <button 
-          @click="openConvertReservation"
-          class="btn btn-sm btn-secondary text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900 gap-1.5"
-        >
-          <PhKey :size="14" />
-          <span>Convert Hold</span>
-        </button>
-
-        <!-- Create Deal button -->
-        <button 
-          @click="isCreateOpen = true"
-          class="btn btn-sm btn-primary"
-        >
-          + Create Deal
-        </button>
-      </div>
-    </div>
-
-    <!-- Metrics Ribbon -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Card 1: Active Deal Files -->
-      <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-1.5">
-        <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Active Transactions</span>
-        <div class="flex items-baseline space-x-2">
-          <span class="text-lg font-bold font-heading text-slate-800 dark:text-slate-100">{{ metrics.activeCount }}</span>
-          <span class="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.2 rounded dark:bg-indigo-950/20">Pipeline</span>
-        </div>
-      </div>
-      <!-- Card 2: Booked MTD -->
-      <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-1.5">
-        <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Booking Confirmed MTD</span>
-        <div class="flex items-baseline space-x-2">
-          <span class="text-lg font-bold font-heading text-slate-800 dark:text-slate-100">{{ metrics.confirmedCount }}</span>
-          <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.2 rounded dark:bg-emerald-950/20">Success</span>
-        </div>
-      </div>
-      <!-- Card 3: Expected Revenue Forecast -->
-      <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-1.5">
-        <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Est. Revenue Value</span>
-        <div class="flex items-baseline space-x-2">
-          <span class="text-base font-bold font-heading text-slate-800 dark:text-slate-100">{{ formatCurrency(metrics.totalValue) }}</span>
-        </div>
-      </div>
-      <!-- Card 4: Total Expected Commissions -->
-      <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-1.5">
-        <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Commission Accrued</span>
-        <div class="flex items-baseline space-x-2">
-          <span class="text-base font-bold font-heading text-slate-800 dark:text-slate-100">{{ formatCurrency(metrics.expectedCommissions) }}</span>
-          <span class="text-[9px] text-emerald-500 font-semibold">● Projected</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters Panel -->
-    <div class="bg-surface border border-default rounded-xl p-3 shadow-xs text-xs flex flex-wrap items-center gap-3">
-      <div class="flex-1 min-w-[200px]">
-        <input 
-          v-model="filters.search" 
-          type="text" 
-          placeholder="Search by Deal #, Customer name..."
-          class="w-full bg-slate-55/30 border border-default rounded-lg px-3 py-1.5 outline-none focus:border-primary font-medium"
-        />
-      </div>
-
-      <div class="w-40 shrink-0">
-        <select v-model="filters.status" class="w-full bg-slate-55/30 border border-default rounded-lg px-3 py-1.5 outline-none font-medium">
-          <option value="">All Stages</option>
-          <option value="draft">Reserved / Draft</option>
-          <option value="token_received">Token Received</option>
-          <option value="booking_confirmed">Booking Confirmed</option>
-          <option value="agreement_executed">Agreement Executed</option>
-          <option value="registration_completed">Registration Completed</option>
-          <option value="commission_eligible">Commission Eligible</option>
-          <option value="deal_closed">Closed Won</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-
-      <div class="w-44 shrink-0">
-        <select v-model="filters.assignedTo" class="w-full bg-slate-55/30 border border-default rounded-lg px-3 py-1.5 outline-none font-medium">
-          <option value="">All Agents</option>
-          <option v-for="agent in agents" :key="agent._id" :value="agent._id">
-            {{ agent.firstName }} {{ agent.lastName || '' }}
-          </option>
-        </select>
-      </div>
-
-      <button 
-        @click="resetFilters"
-        class="text-slate-400 hover:text-slate-600 font-semibold py-1.5 px-3 rounded-lg border border-default hover:bg-slate-50 transition-colors"
-      >
-        Clear Filters
-      </button>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="isLoading" class="animate-pulse space-y-4">
-      <div class="h-40 bg-slate-200 dark:bg-slate-850 rounded-xl w-full"></div>
-      <div class="h-64 bg-slate-200 dark:bg-slate-850 rounded-xl w-full"></div>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="text-center py-12 text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 rounded-xl">
-      ⚠️ Failed to load deals data. Please refresh and try again.
-    </div>
-
-    <!-- Main Workspace Content -->
-    <div v-else class="space-y-4">
-      <!-- 1. TABLE VIEW -->
-      <div v-if="viewMode === 'table'" class="bg-surface border border-default rounded-xl overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs text-left">
-            <thead>
-              <tr class="border-b border-default text-slate-400 font-bold uppercase text-[9px] tracking-wider bg-slate-50 dark:bg-slate-900/50">
-                <th class="py-3 px-4">Deal Number</th>
-                <th class="py-3 px-4">Client Customer</th>
-                <th class="py-3 px-4">Project & Unit</th>
-                <th class="py-3 px-4 text-right">Deal Value</th>
-                <th class="py-3 px-4">Transaction Stage</th>
-                <th class="py-3 px-4 text-center">Health</th>
-                <th class="py-3 px-4">Est. Close Target</th>
-                <th class="py-3 px-4">Allocated Agent</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-default text-slate-655">
-              <tr 
-                v-for="deal in filteredDeals" 
-                :key="deal._id || deal.id"
-                class="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors cursor-pointer"
-                @click="$router.push(`/app/deals/${deal._id || deal.id}`)"
-              >
-                <!-- Deal Number -->
-                <td class="py-3.5 px-4 font-bold text-primary font-heading">
-                  {{ deal.dealNumber || `#DL-${(deal._id || deal.id || '').substring(18).toUpperCase()}` }}
-                </td>
-                
-                <!-- Client Customer -->
-                <td class="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
-                  <div class="space-y-0.5">
-                    <p>{{ deal.customer?.name || deal.customer?.firstName || 'Buyer Lead' }}</p>
-                    <p class="text-[9px] text-slate-450 font-medium font-mono" v-if="deal.customer?.mobile">{{ deal.customer.mobile }}</p>
-                  </div>
-                </td>
-
-                <!-- Project & Unit -->
-                <td class="py-3.5 px-4">
-                  <div class="space-y-0.5 font-medium">
-                    <p class="text-slate-800 dark:text-slate-250 truncate max-w-[180px]">{{ deal.project?.name || deal.projectTitle || 'Skyway Prestige' }}</p>
-                    <p class="text-[10px] text-slate-450">Unit: {{ deal.unit?.unitNumber || deal.unitCode || 'Unit 802' }}</p>
-                  </div>
-                </td>
-
-                <!-- Deal Value -->
-                <td class="py-3.5 px-4 text-right font-bold text-slate-800 dark:text-slate-100 font-heading">
-                  {{ formatCurrency(deal.dealValue || deal.askingPrice) }}
-                </td>
-
-                <!-- Transaction Stage -->
-                <td class="py-3.5 px-4">
-                  <span 
-                    class="px-2 py-0.5 rounded text-[8px] font-bold uppercase"
-                    :class="getStageBadgeClass(deal.status)"
-                  >
-                    ● {{ formatStageName(deal.status) }}
-                  </span>
-                </td>
-
-                <!-- Health score -->
-                <td class="py-3.5 px-4 text-center">
-                  <span 
-                    class="px-1.5 py-0.5 rounded text-[9px] font-bold"
-                    :class="deal.healthScore >= 80 ? 'bg-emerald-50 text-emerald-600' : deal.healthScore >= 60 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'"
-                  >
-                    {{ deal.healthScore || 90 }}%
-                  </span>
-                </td>
-
-                <!-- Est. Close Target -->
-                <td class="py-3.5 px-4 text-slate-450 font-medium">
-                  {{ formatDate(deal.closeDate || deal.createdAt) }}
-                </td>
-
-                <!-- Allocated Agent -->
-                <td class="py-3.5 px-4 text-slate-650 dark:text-slate-400 font-semibold">
-                  {{ deal.assignedTo?.firstName || 'Assigned Staff' }}
-                </td>
-              </tr>
-
-              <tr v-if="filteredDeals.length === 0">
-                <td colspan="8" class="text-center py-10 text-slate-400 italic">No deals matching active filters.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 2. PIPELINE BOARD -->
-      <div v-else-if="viewMode === 'kanban'">
-        <DealPipelineBoard 
-          :deals="dealsList"
-          @stageChange="handleStageChange"
-          @cancelDeal="triggerCancel"
-          @startWizard="triggerWizard"
-        />
-      </div>
-
-      <!-- 3. FORECAST REVENUE VIEW -->
-      <div v-else-if="viewMode === 'forecast'" class="space-y-6">
-        <!-- Probability Distribution SVG Metric Panel -->
-        <div class="bg-surface border border-default rounded-xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <div class="md:col-span-8 space-y-2">
-            <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">Probability Weighted Closing Distribution</h4>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">
-              Analysis based on closing velocity factors (KYC completion speed, booking deposit clearing time, loan coordination milestones).
-            </p>
-            <!-- Native SVG probability curve/chart -->
-            <div class="pt-3">
-              <svg viewBox="0 0 500 100" class="w-full h-24 overflow-visible">
-                <!-- Grid lines -->
-                <line x1="0" y1="90" x2="500" y2="90" stroke="var(--border-default, #e2e8f0)" stroke-dasharray="4 4" />
-                <line x1="0" y1="50" x2="500" y2="50" stroke="var(--border-default, #e2e8f0)" stroke-dasharray="4 4" />
-                <line x1="0" y1="10" x2="500" y2="10" stroke="var(--border-default, #e2e8f0)" stroke-dasharray="4 4" />
-
-                <!-- Probability Area Curve -->
-                <path 
-                  d="M0,90 C80,85 120,20 180,30 C240,40 300,75 360,60 C420,45 460,10 500,10 L500,90 Z" 
-                  fill="url(#forecastGradient)" 
-                  opacity="0.15" 
-                />
-                <!-- Curve Stroke -->
-                <path 
-                  d="M0,90 C80,85 120,20 180,30 C240,40 300,75 360,60 C420,45 460,10 500,10" 
-                  fill="none" 
-                  stroke="var(--color-primary, #6366f1)" 
-                  stroke-width="3" 
-                  stroke-linecap="round"
-                />
-
-                <!-- Markers/Nodes -->
-                <circle cx="180" cy="30" r="4" fill="#6366f1" stroke="#ffffff" stroke-width="1.5" />
-                <circle cx="360" cy="60" r="4" fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" />
-                <circle cx="500" cy="10" r="4" fill="#10b981" stroke="#ffffff" stroke-width="1.5" />
-
-                <!-- Node labels -->
-                <text x="175" y="20" font-size="8" font-weight="bold" fill="#6366f1">30 Days (85%)</text>
-                <text x="350" y="50" font-size="8" font-weight="bold" fill="#3b82f6">60 Days (60%)</text>
-                <text x="460" y="25" font-size="8" font-weight="bold" fill="#10b981">Won (100%)</text>
-
-                <defs>
-                  <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#6366f1" />
-                    <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </div>
-          
-          <div class="md:col-span-4 border-l border-default pl-0 md:pl-6 space-y-4">
-            <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Weighted Targets</h5>
-            <div class="space-y-2">
-              <div class="flex justify-between items-center">
-                <span class="text-slate-655 font-medium">30 Days Volume:</span>
-                <span class="font-bold text-slate-800 dark:text-slate-100">{{ formatCurrency(forecasts.d30Total) }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-655 font-medium">60 Days Volume:</span>
-                <span class="font-bold text-slate-800 dark:text-slate-100">{{ formatCurrency(forecasts.d60Total) }}</span>
-              </div>
-              <div class="flex justify-between items-center border-t border-dashed border-default pt-2">
-                <span class="text-slate-655 font-bold">Total Weighted:</span>
-                <span class="font-bold text-emerald-600 dark:text-emerald-450">{{ formatCurrency(forecasts.d30Total + forecasts.d60Total) }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Columns Timeline -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <!-- Column 1: Next 30 Days Expected -->
-          <div class="bg-slate-50/50 dark:bg-slate-900 border border-default rounded-xl p-4 flex flex-col min-h-[400px]">
-            <div class="border-b border-default pb-3 mb-4 flex justify-between items-center">
-              <div>
-                <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">🔥 Next 30 Days Expected</h4>
-                <p class="text-[10px] text-slate-450 mt-0.5">High probability closing targets</p>
-              </div>
-              <span class="text-[10px] font-bold text-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 border border-default rounded-full">
-                {{ formatCurrency(forecasts.d30Total) }}
-              </span>
-            </div>
-
-            <div class="space-y-3 flex-1 overflow-y-auto">
-              <div 
-                v-for="deal in forecasts.d30List" 
-                :key="deal._id || deal.id"
-                class="bg-surface border border-default rounded-xl p-3 hover:border-slate-350 dark:hover:border-slate-700 transition-all shadow-xs cursor-pointer text-xs space-y-2"
-                @click="$router.push(`/app/deals/${deal._id || deal.id}`)"
-              >
-                <div class="flex justify-between items-start">
-                  <span class="font-heading font-bold text-primary">{{ deal.dealNumber || 'DEAL-FILE' }}</span>
-                  <span class="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-600 text-[8px] font-bold uppercase">
-                    {{ deal.status === 'booking_initiated' || deal.status === 'booking_confirmed' ? 'Booking' : formatStageName(deal.status) }}
-                  </span>
-                </div>
-                <p class="font-semibold text-slate-700 dark:text-slate-300">👤 {{ deal.customer?.name || 'Client' }}</p>
-                <div class="text-[10px] text-slate-450 flex justify-between pt-1 border-t border-default border-dashed">
-                  <span>Value: <b>{{ formatCurrency(deal.dealValue) }}</b></span>
-                  <span class="text-emerald-500 font-bold">Comm: {{ formatCurrency(deal.commissionAmount) }}</span>
-                </div>
-              </div>
-
-              <div v-if="forecasts.d30List.length === 0" class="h-24 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-default rounded-xl">
-                No pipeline files expected in 30 days.
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 2: Next 60 Days Expected -->
-          <div class="bg-slate-50/50 dark:bg-slate-900 border border-default rounded-xl p-4 flex flex-col min-h-[400px]">
-            <div class="border-b border-default pb-3 mb-4 flex justify-between items-center">
-              <div>
-                <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">📅 Next 60 Days Expected</h4>
-                <p class="text-[10px] text-slate-450 mt-0.5">Agreement and registration stage files</p>
-              </div>
-              <span class="text-[10px] font-bold text-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 border border-default rounded-full">
-                {{ formatCurrency(forecasts.d60Total) }}
-              </span>
-            </div>
-
-            <div class="space-y-3 flex-1 overflow-y-auto">
-              <div 
-                v-for="deal in forecasts.d60List" 
-                :key="deal._id || deal.id"
-                class="bg-surface border border-default rounded-xl p-3 hover:border-slate-350 dark:hover:border-slate-700 transition-all shadow-xs cursor-pointer text-xs space-y-2"
-                @click="$router.push(`/app/deals/${deal._id || deal.id}`)"
-              >
-                <div class="flex justify-between items-start">
-                  <span class="font-heading font-bold text-primary">{{ deal.dealNumber || 'DEAL-FILE' }}</span>
-                  <span class="px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-600 text-[8px] font-bold uppercase">
-                    {{ formatStageName(deal.status) }}
-                  </span>
-                </div>
-                <p class="font-semibold text-slate-700 dark:text-slate-300">👤 {{ deal.customer?.name || 'Client' }}</p>
-                <div class="text-[10px] text-slate-450 flex justify-between pt-1 border-t border-default border-dashed">
-                  <span>Value: <b>{{ formatCurrency(deal.dealValue) }}</b></span>
-                  <span class="text-emerald-500 font-bold">Comm: {{ formatCurrency(deal.commissionAmount) }}</span>
-                </div>
-              </div>
-
-              <div v-if="forecasts.d60List.length === 0" class="h-24 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-default rounded-xl">
-                No pipeline files expected in 60 days.
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 3: Risks / Long-term / Stale -->
-          <div class="bg-slate-50/50 dark:bg-slate-900 border border-default rounded-xl p-4 flex flex-col min-h-[400px]">
-            <div class="border-b border-default pb-3 mb-4 flex justify-between items-center">
-              <div>
-                <h4 class="font-heading font-bold text-slate-800 dark:text-slate-200">⚠️ Risk / Long-Term</h4>
-                <p class="text-[10px] text-slate-450 mt-0.5">Stale files or pending mortgage loans</p>
-              </div>
-              <span class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 border border-red-200 rounded-full">
-                {{ formatCurrency(forecasts.riskTotal) }}
-              </span>
-            </div>
-
-            <div class="space-y-3 flex-1 overflow-y-auto">
-              <div 
-                v-for="deal in forecasts.riskList" 
-                :key="deal._id || deal.id"
-                class="bg-surface border border-default rounded-xl p-3 border-red-200 hover:border-red-300 dark:border-red-950/50 dark:hover:border-red-900 transition-all shadow-xs cursor-pointer text-xs space-y-2"
-                @click="$router.push(`/app/deals/${deal._id || deal.id}`)"
-              >
-                <div class="flex justify-between items-start">
-                  <span class="font-heading font-bold text-red-600">{{ deal.dealNumber || 'DEAL-FILE' }}</span>
-                  <span class="px-1.5 py-0.2 rounded bg-red-50 text-red-655 text-[8px] font-bold uppercase">
-                    {{ formatStageName(deal.status) }}
-                  </span>
-                </div>
-                <p class="font-semibold text-slate-700 dark:text-slate-350">👤 {{ deal.customer?.name || 'Client' }}</p>
-                <div class="text-[10px] text-slate-450 flex justify-between pt-1 border-t border-default border-dashed">
-                  <span>Value: <b>{{ formatCurrency(deal.dealValue) }}</b></span>
-                  <span class="text-red-550 font-bold">Health: {{ deal.healthScore || 50 }}%</span>
-                </div>
-              </div>
-
-              <div v-if="forecasts.riskList.length === 0" class="h-24 flex items-center justify-center text-[10px] text-slate-400 italic border border-dashed border-default rounded-xl">
-                No high risk/long-term items.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Create Deal Drawer -->
-    <DealCreationDrawer 
-      :isOpen="isCreateOpen"
-      @close="isCreateOpen = false"
-      @success="refetch"
-    />
-
-    <!-- Convert Reservation Drawer -->
-    <ReservationConversionDrawer
-      v-if="selectedHold"
-      :isOpen="isConvertOpen"
-      :property="selectedHold"
-      @close="isConvertOpen = false; selectedHold = null"
-      @success="refetch"
-    />
-
-    <!-- Booking Confirmation Stepper Wizard -->
-    <BookingWizard
-      v-if="wizardTargetDeal"
-      :isOpen="isWizardOpen"
-      :deal="wizardTargetDeal"
-      @close="isWizardOpen = false; wizardTargetDeal = null"
-      @success="refetch"
-    />
-
-    <!-- Cancellation Drawer -->
-    <DealCancellationDrawer
-      v-if="cancelTargetDeal"
-      :isOpen="isCancelOpen"
-      :deal="cancelTargetDeal"
-      @close="isCancelOpen = false; cancelTargetDeal = null"
-      @success="refetch"
-    />
+    <DealCreationDrawer :isOpen="isCreateOpen" @close="isCreateOpen = false" @success="handleSuccess" />
+    <ReservationConversionDrawer v-if="selectedHold" :isOpen="isConvertOpen" :property="selectedHold" @close="isConvertOpen = false; selectedHold = null" @success="handleSuccess" />
+    <BookingWizard v-if="wizardTargetDeal" :isOpen="isWizardOpen" :deal="wizardTargetDeal" @close="isWizardOpen = false; wizardTargetDeal = null" @success="handleSuccess" />
+    <DealCancellationDrawer v-if="cancelTargetDeal" :isOpen="isCancelOpen" :deal="cancelTargetDeal" @close="isCancelOpen = false; cancelTargetDeal = null" @success="handleSuccess" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import { PhColumns, PhTable, PhTrendUp } from '@phosphor-icons/vue';
 import apiClient from '@/api/client';
+import AppIcon from '@/components/AppIcon.vue';
+import AppTable from '@/components/AppTable.vue';
+import WorkspaceMetric from '@/components/WorkspaceMetric.vue';
+import WorkspaceStatusBadge from '@/components/WorkspaceStatusBadge.vue';
 import DealPipelineBoard from '../components/DealPipelineBoard.vue';
 import DealCreationDrawer from '../components/DealCreationDrawer.vue';
 import ReservationConversionDrawer from '../components/ReservationConversionDrawer.vue';
@@ -489,246 +132,97 @@ import BookingWizard from '../components/BookingWizard.vue';
 import DealCancellationDrawer from '../components/DealCancellationDrawer.vue';
 import { useDealsQuery, useTransitionStageMutation } from '../queries';
 
-// Phosphor icons
-import { PhHandshake, PhTable, PhColumns, PhTrendUp, PhKey } from '@phosphor-icons/vue';
-
+const router = useRouter();
 const store = useStore();
-
-const filters = ref({
-  search: '',
-  status: '',
-  assignedTo: '',
-  sort: 'createdAt',
-  order: -1
-});
-
+const filters = ref({ search: '', status: '', assignedTo: '', sort: 'createdAt', order: -1 });
 const viewMode = ref('table');
-
-// Drawers & Modals States
 const isCreateOpen = ref(false);
 const isConvertOpen = ref(false);
 const isWizardOpen = ref(false);
 const isCancelOpen = ref(false);
-
 const selectedHold = ref(null);
 const wizardTargetDeal = ref(null);
 const cancelTargetDeal = ref(null);
-
 const agents = ref([]);
+const dealStages = ['draft', 'token_received', 'booking_initiated', 'booking_confirmed', 'agreement_executed', 'registration_completed', 'commission_eligible', 'deal_closed', 'cancelled'];
+const columns = [
+  { key: 'deal', label: 'Deal' }, { key: 'customer', label: 'Customer' }, { key: 'asset', label: 'Project & unit' },
+  { key: 'value', label: 'Deal value', align: 'right' }, { key: 'stage', label: 'Stage' }, { key: 'closeDate', label: 'Expected close' },
+  { key: 'owner', label: 'Owner' }, { key: 'actions', label: '', align: 'right' },
+];
 
 const { data, isLoading, error, refetch } = useDealsQuery(filters);
-
-const dealsList = computed(() => {
-  return data.value?.data || data.value || [];
-});
-
-const filteredDeals = computed(() => {
-  return dealsList.value.filter(deal => {
-    // Stage check
-    if (filters.value.status) {
-      if (deal.status !== filters.value.status) return false;
-    }
-    // Agent check
-    if (filters.value.assignedTo) {
-      const agentId = deal.assignedTo?._id || deal.assignedTo;
-      if (agentId !== filters.value.assignedTo) return false;
-    }
-    // Search text check
-    if (filters.value.search.trim()) {
-      const query = filters.value.search.toLowerCase();
-      const num = (deal.dealNumber || '').toLowerCase();
-      const client = (deal.customer?.name || deal.customer?.firstName || '').toLowerCase();
-      const unitStr = (deal.unit?.unitNumber || deal.unitCode || '').toLowerCase();
-      if (!num.includes(query) && !client.includes(query) && !unitStr.includes(query)) {
-        return false;
-      }
-    }
-    return true;
-  });
-});
-
-// Calculate metrics based on filtered or active deals
-const metrics = computed(() => {
-  const active = dealsList.value.filter(d => d.status !== 'cancelled' && d.status !== 'deal_closed');
-  const confirmed = dealsList.value.filter(d => d.status === 'booking_confirmed' || d.status === 'booking_initiated');
-  
-  const totalVal = dealsList.value.reduce((acc, d) => acc + (d.dealValue || d.askingPrice || 0), 0);
-  const comms = dealsList.value.reduce((acc, d) => acc + (d.commissionAmount || 0), 0);
-
-  return {
-    activeCount: active.length,
-    confirmedCount: confirmed.length,
-    totalValue: totalVal,
-    expectedCommissions: comms
-  };
-});
-
-// Forecast Timeline split lists
-const forecasts = computed(() => {
-  const d30 = [];
-  const d60 = [];
-  const risk = [];
-
-  let d30Sum = 0;
-  let d60Sum = 0;
-  let riskSum = 0;
-
-  dealsList.value.forEach(deal => {
-    const health = deal.healthScore || 90;
-    const isCancelled = deal.status === 'cancelled';
-    const isClosed = deal.status === 'deal_closed' || deal.status === 'commission_received';
-
-    if (isCancelled || isClosed) return;
-
-    if (health < 70) {
-      risk.push(deal);
-      riskSum += (deal.dealValue || 0);
-    } else {
-      // Look at status or target date.
-      // For mock simplicity: draft, token_received, booking_confirmed/initiated go to 30 days.
-      // agreement_executed, registration_completed go to 60 days.
-      const status = deal.status;
-      if (status === 'draft' || status === 'token_received' || status === 'booking_initiated' || status === 'booking_confirmed') {
-        d30.push(deal);
-        d30Sum += (deal.dealValue || 0);
-      } else {
-        d60.push(deal);
-        d60Sum += (deal.dealValue || 0);
-      }
-    }
-  });
-
-  return {
-    d30List: d30,
-    d60List: d60,
-    riskList: risk,
-    d30Total: d30Sum,
-    d60Total: d60Sum,
-    riskTotal: riskSum
-  };
-});
-
-// Load context agents
-onMounted(async () => {
-  try {
-    const res = await apiClient.get('/users');
-    agents.value = res.data?.data || [];
-  } catch (err) {
-    console.error('Failed to load agents in DealsList:', err);
+const { mutateAsync: transitionStage } = useTransitionStageMutation();
+const dealsList = computed(() => data.value?.data || data.value || []);
+const filteredDeals = computed(() => dealsList.value.filter(deal => {
+  if (filters.value.status && deal.status !== filters.value.status) return false;
+  if (filters.value.assignedTo && (deal.assignedTo?._id || deal.assignedTo) !== filters.value.assignedTo) return false;
+  if (filters.value.search.trim()) {
+    const query = filters.value.search.toLowerCase();
+    const haystack = [deal.dealNumber, customerName(deal), deal.customer?.mobile, deal.project?.name, deal.projectTitle, deal.unit?.unitNumber, deal.unitCode].filter(Boolean).join(' ').toLowerCase();
+    if (!haystack.includes(query)) return false;
   }
-});
+  return true;
+}));
+const metrics = computed(() => ({
+  activeCount: dealsList.value.filter(deal => !['cancelled', 'deal_closed', 'commission_received'].includes(deal.status)).length,
+  confirmedCount: dealsList.value.filter(deal => ['booking_initiated', 'booking_confirmed'].includes(deal.status)).length,
+  totalValue: dealsList.value.reduce((sum, deal) => sum + Number(deal.dealValue ?? deal.askingPrice ?? 0), 0),
+  expectedCommissions: dealsList.value.reduce((sum, deal) => sum + Number(deal.commissionAmount || 0), 0),
+}));
+const stageStates = computed(() => [
+  { key: '', label: 'All deals', count: dealsList.value.length },
+  { key: 'draft', label: 'Draft', count: countStage(['draft']) },
+  { key: 'booking_confirmed', label: 'Booking confirmed', count: countStage(['booking_confirmed']) },
+  { key: 'agreement_executed', label: 'Agreement executed', count: countStage(['agreement_executed']) },
+  { key: 'registration_completed', label: 'Registered', count: countStage(['registration_completed']) },
+  { key: 'deal_closed', label: 'Closed', count: countStage(['deal_closed']) },
+  { key: 'cancelled', label: 'Cancelled', count: countStage(['cancelled']) },
+]);
+const activeStageLabel = computed(() => stageStates.value.find(item => item.key === filters.value.status)?.label || formatStageName(filters.value.status));
+const hasFilters = computed(() => Boolean(filters.value.search || filters.value.status || filters.value.assignedTo));
+const lifecycleLanes = computed(() => [
+  makeLane('opening', 'Opening', 'Reservation, token, and booking preparation', ['draft', 'token_received', 'booking_initiated']),
+  makeLane('execution', 'Execution', 'Booking, agreement, and registration', ['booking_confirmed', 'agreement_executed', 'registration_completed']),
+  makeLane('revenue', 'Revenue ready', 'Commission eligibility and completed deals', ['commission_eligible', 'deal_closed', 'commission_received']),
+  makeLane('attention', 'Attention', 'Transactions marked as cancelled', ['cancelled']),
+]);
 
-const resetFilters = () => {
-  filters.value = {
-    search: '',
-    status: '',
-    assignedTo: '',
-    sort: 'createdAt',
-    order: -1
-  };
-};
+function countStage(stages) { return dealsList.value.filter(deal => stages.includes(deal.status)).length; }
+function makeLane(key, label, description, stages) {
+  const laneDeals = filteredDeals.value.filter(deal => stages.includes(deal.status));
+  return { key, label, description, deals: laneDeals, total: laneDeals.reduce((sum, deal) => sum + Number(deal.dealValue ?? deal.askingPrice ?? 0), 0) };
+}
+const resetFilters = () => { filters.value = { search: '', status: '', assignedTo: '', sort: 'createdAt', order: -1 }; };
+const openDeal = deal => router.push(`/app/deals/${deal._id || deal.id}`);
+const customerName = deal => deal.customer?.name || [deal.customer?.firstName, deal.customer?.lastName].filter(Boolean).join(' ') || 'Customer not linked';
+const ownerName = deal => [deal.assignedTo?.firstName, deal.assignedTo?.lastName].filter(Boolean).join(' ') || deal.assignedTo?.name || 'Unassigned';
+const formatCurrency = value => value === null || value === undefined ? 'Not set' : new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value) || 0);
+const formatDate = value => value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not scheduled';
+const formatStageName = stage => ({ draft: 'Reserved / draft', token_received: 'Token received', booking_initiated: 'Booking initiated', booking_confirmed: 'Booking confirmed', agreement_executed: 'Agreement executed', registration_completed: 'Registration completed', commission_eligible: 'Commission eligible', deal_closed: 'Closed won', commission_received: 'Closed won', cancelled: 'Cancelled' }[stage] || (stage ? stage.replace(/_/g, ' ') : 'All deals'));
+const stageTone = stage => ({ draft: 'neutral', token_received: 'warning', booking_initiated: 'info', booking_confirmed: 'info', agreement_executed: 'purple', registration_completed: 'purple', commission_eligible: 'success', deal_closed: 'success', commission_received: 'success', cancelled: 'danger' }[stage] || 'neutral');
 
 const openConvertReservation = async () => {
   try {
-    // Find a property with reserved status
-    const propsRes = await apiClient.get('/properties');
-    const reservedProps = propsRes.data?.data?.filter(p => p.status === 'reserved') || [];
-    if (reservedProps.length > 0) {
-      selectedHold.value = reservedProps[0];
-      isConvertOpen.value = true;
-    } else {
-      store.dispatch('notifications/triggerToast', {
-        message: 'No active reservation holds available for conversion. Create a property hold first.',
-        type: 'warning'
-      });
-    }
-  } catch (err) {
-    console.error('Failed to check reserved holds:', err);
-  }
+    const response = await apiClient.get('/properties');
+    const reserved = (response.data?.data || []).filter(property => property.status === 'reserved');
+    if (reserved.length) { selectedHold.value = reserved[0]; isConvertOpen.value = true; }
+    else store.dispatch('notifications/triggerToast', { message: 'No active reservation holds are available for conversion.', type: 'warning' });
+  } catch (error) { console.error('Failed to check reserved holds:', error); }
 };
-
-const { mutateAsync: transitionStage } = useTransitionStageMutation();
-
 const handleStageChange = async ({ deal, oldStage, newStage }) => {
   try {
-    await transitionStage({
-      id: deal._id || deal.id,
-      stage: newStage,
-      notes: `Dragged from stage ${oldStage} to ${newStage}`
-    });
-    store.dispatch('notifications/triggerToast', {
-      message: `Deal transitioned to ${formatStageName(newStage)} successfully.`,
-      type: 'success'
-    });
+    await transitionStage({ id: deal._id || deal.id, stage: newStage, notes: `Moved from ${oldStage} to ${newStage}` });
+    store.dispatch('notifications/triggerToast', { message: `Deal moved to ${formatStageName(newStage)}.`, type: 'success' });
     refetch();
-  } catch (err) {
-    store.dispatch('notifications/triggerToast', {
-      message: err.response?.data?.message || 'Failed to update deal stage.',
-      type: 'error'
-    });
-  }
+  } catch (error) { store.dispatch('notifications/triggerToast', { message: error.response?.data?.message || 'Failed to update deal stage.', type: 'error' }); }
 };
+const triggerCancel = deal => { cancelTargetDeal.value = deal; isCancelOpen.value = true; };
+const triggerWizard = deal => { wizardTargetDeal.value = deal; isWizardOpen.value = true; };
+const handleSuccess = () => { refetch(); };
 
-const triggerCancel = (deal) => {
-  cancelTargetDeal.value = deal;
-  isCancelOpen.value = true;
-};
-
-const triggerWizard = (deal) => {
-  wizardTargetDeal.value = deal;
-  isWizardOpen.value = true;
-};
-
-// Formatting helpers
-const formatCurrency = (val) => {
-  if (val === undefined || val === null) return '—';
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(val);
-};
-
-const formatDate = (val) => {
-  if (!val) return '';
-  return new Date(val).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
-};
-
-const formatStageName = (stage) => {
-  if (!stage) return '';
-  // Map stage code to labels
-  const mapping = {
-    'draft': 'Reserved / Draft',
-    'token_received': 'Token Received',
-    'booking_initiated': 'Booking Initiating',
-    'booking_confirmed': 'Booking Confirmed',
-    'agreement_executed': 'Agreement Executed',
-    'registration_completed': 'Registration Completed',
-    'commission_eligible': 'Commission Eligible',
-    'deal_closed': 'Closed Won',
-    'commission_received': 'Closed Won',
-    'cancelled': 'Cancelled'
-  };
-  return mapping[stage] || stage.replace(/_/g, ' ');
-};
-
-const getStageBadgeClass = (stage) => {
-  switch (stage) {
-    case 'draft': return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-350';
-    case 'token_received': return 'bg-amber-50 text-amber-700 dark:bg-amber-950/20';
-    case 'booking_initiated':
-    case 'booking_confirmed': return 'bg-blue-50 text-blue-700 dark:bg-blue-950/20';
-    case 'agreement_executed': return 'bg-purple-50 text-purple-700 dark:bg-purple-950/20';
-    case 'registration_completed': return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20';
-    case 'commission_eligible': return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20';
-    case 'deal_closed':
-    case 'commission_received': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40';
-    case 'cancelled': return 'bg-red-50 text-red-500 dark:bg-red-950/20';
-    default: return 'bg-slate-100 text-slate-600';
-  }
-};
+onMounted(async () => {
+  try { const response = await apiClient.get('/users'); agents.value = response.data?.data || []; }
+  catch (error) { console.error('Failed to load deal owners:', error); }
+});
 </script>

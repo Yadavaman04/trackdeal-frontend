@@ -99,6 +99,7 @@
 <script setup>
 // Phosphor icons
 import { PhUser, PhBuildings, PhKey, PhWarning } from '@phosphor-icons/vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
   deals: { type: Array, required: true }
@@ -150,7 +151,7 @@ const handleDrop = (evt, targetStage) => {
     // We expect signed agreement and registration certificates
     const isDocVerified = targetDeal.documentsVerified || false; // simulated flag
     if (!isDocVerified) {
-      alert('Slab Verification Failed: Both "Signed Agreement" and "Registration Certificate" must be uploaded and verified before eligibility.');
+      Swal.fire({ text: 'Slab Verification Failed: Both "Signed Agreement" and "Registration Certificate" must be uploaded and verified before eligibility.', icon: 'error' });
       return;
     }
   }
@@ -159,7 +160,7 @@ const handleDrop = (evt, targetStage) => {
   if (targetStage === 'deal_closed') {
     const outstanding = targetDeal.outstandingAmount || 0; // simulated
     if (outstanding > 0) {
-      alert('Closing Locked: Total outstanding invoices must be paid before deal closure.');
+      Swal.fire({ text: 'Closing Locked: Total outstanding invoices must be paid before deal closure.', icon: 'error' });
       return;
     }
   }

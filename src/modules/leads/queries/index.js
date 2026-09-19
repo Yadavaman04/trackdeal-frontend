@@ -1,10 +1,11 @@
+import { unref, computed } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import leadsApi from '../api/endpoints';
 
 export function useLeadsQuery(filters) {
   return useQuery({
     queryKey: ['leads', filters],
-    queryFn: () => leadsApi.fetchLeads(filters),
+    queryFn: () => leadsApi.fetchLeads(unref(filters)),
     placeholderData: (previousData) => previousData
   });
 }
@@ -12,8 +13,8 @@ export function useLeadsQuery(filters) {
 export function useLeadQuery(id) {
   return useQuery({
     queryKey: ['leads', id],
-    queryFn: () => leadsApi.fetchLeadById(id),
-    enabled: !!id
+    queryFn: () => leadsApi.fetchLeadById(unref(id)),
+    enabled: computed(() => !!unref(id))
   });
 }
 
@@ -178,5 +179,13 @@ export function useMarkLeadLostMutation() {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['leads', variables.id] });
     }
+  });
+}
+
+export function useCustomerLeadsQuery(customerId) {
+  return useQuery({
+    queryKey: ['customers', customerId, 'leads'],
+    queryFn: () => leadsApi.fetchCustomerLeads(unref(customerId)),
+    enabled: computed(() => !!unref(customerId)),
   });
 }

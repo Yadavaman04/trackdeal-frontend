@@ -1,190 +1,142 @@
 <template>
-  <div class="bg-surface border border-default rounded-xl p-4 shadow-sm space-y-4">
-    <!-- Saved Views tabs row -->
-    <div class="flex items-center justify-between border-b border-default pb-3 flex-wrap gap-2">
-      <div class="flex space-x-1">
-        <button 
-          v-for="view in savedViews" 
-          :key="view.id"
-          @click="selectSavedView(view)"
-          class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
-          :class="[
-            activeSavedView === view.id
-              ? 'bg-primary text-white'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-850'
-          ]"
-        >
-          {{ view.name }}
-        </button>
-      </div>
-      
-      <!-- Date range filters wrapper -->
-      <div class="flex items-center space-x-2 text-xs">
-        <span class="text-slate-400 dark:text-slate-500">Registered:</span>
-        <select 
-          v-model="activeDateRange" 
-          @change="handleFilterChange"
-          class="bg-surface border border-default rounded-lg px-2.5 py-1.5 outline-none font-semibold text-slate-700 dark:text-slate-200"
-        >
-          <option value="all">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="ytd">Year to Date</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Active Filters Form Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-      <!-- Search Input -->
-      <div class="relative flex items-center">
-        <input 
-          v-model="filtersState.search" 
-          type="text" 
-          placeholder="Search name, phone, email..."
-          @input="debounceSearch"
-          class="input-field pr-8 text-caption text-neutral-900"
-        />
-        <div class="absolute right-2.5 pointer-events-none text-neutral-400">
-          <PhMagnifyingGlass class="w-3.5 h-3.5" />
+  <section class="filter-panel" aria-label="Lead filters">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-3 border-b pb-4 lg:flex-row lg:items-center lg:justify-between" style="border-color: hsl(var(--neutral-100));">
+        <div class="flex items-center gap-1 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
+          <button
+            v-for="view in savedViews"
+            :key="view.id"
+            type="button"
+            class="h-9 shrink-0 rounded-lg px-3.5 text-xs font-semibold transition-colors"
+            :class="activeSavedView === view.id ? 'text-white' : 'hover:bg-neutral-50'"
+            :style="activeSavedView === view.id
+              ? 'background-color: hsl(var(--accent-600)); box-shadow: 0 5px 14px hsl(var(--accent-600) / 0.18);'
+              : 'color: hsl(var(--neutral-500));'"
+            @click="selectSavedView(view)"
+          >
+            {{ view.name }}
+          </button>
         </div>
+
+        <label class="flex shrink-0 items-center gap-2.5 text-xs font-medium" style="color: hsl(var(--neutral-450));">
+          <span>Registered</span>
+          <select v-model="activeDateRange" class="filter-control !w-40" @change="handleFilterChange">
+            <option value="all">All time</option>
+            <option value="today">Today</option>
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+            <option value="ytd">Year to date</option>
+          </select>
+        </label>
       </div>
 
-      <!-- Stage dropdown -->
-      <select 
-        v-model="filtersState.status" 
-        @change="handleFilterChange"
-        class="input-field text-caption text-neutral-900 font-medium"
-      >
-        <option value="">Filter by Stage</option>
-        <option value="new">New</option>
-        <option value="assigned">Assigned</option>
-        <option value="contacted">Contacted</option>
-        <option value="qualified">Qualified</option>
-        <option value="nurturing">Nurturing</option>
-        <option value="site_visit_scheduled">Site Visit Scheduled</option>
-        <option value="site_visit_completed">Site Visit Completed</option>
-        <option value="negotiation">Negotiation</option>
-        <option value="booked">Booked</option>
-        <option value="won">Won</option>
-        <option value="lost">Lost</option>
-      </select>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <label class="relative block sm:col-span-2 xl:col-span-1">
+          <span class="sr-only">Search leads</span>
+          <AppIcon name="search" :size="16" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" style="color: hsl(var(--neutral-350));" />
+          <input
+            v-model="filtersState.search"
+            type="search"
+            placeholder="Search name, phone or city"
+            class="filter-control !pl-9"
+            @input="debounceSearch"
+          />
+        </label>
 
-      <!-- Source dropdown -->
-      <select 
-        v-model="filtersState.source" 
-        @change="handleFilterChange"
-        class="input-field text-caption text-neutral-900 font-medium"
-      >
-        <option value="">Filter by Source</option>
-        <option value="website">Website</option>
-        <option value="magicbricks">MagicBricks</option>
-        <option value="99acres">99acres</option>
-        <option value="housing">Housing.com</option>
-        <option value="whatsapp">WhatsApp</option>
-        <option value="referral">Referral</option>
-        <option value="walk_in">Walk-in</option>
-        <option value="google_ads">Google Ads</option>
-        <option value="facebook_ads">Facebook Ads</option>
-        <option value="manual_entry">Manual Entry</option>
-      </select>
+        <label>
+          <span class="sr-only">Lead stage</span>
+          <select v-model="filtersState.status" class="filter-control" @change="handleFilterChange">
+            <option value="">All stages</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="property_shared">Property shared</option>
+            <option value="site_visit_scheduled">Site visit</option>
+            <option value="negotiation">Negotiation</option>
+            <option value="booked">Booking</option>
+            <option value="won">Closed won</option>
+            <option value="lost">Closed lost</option>
+          </select>
+        </label>
 
-      <!-- Branch dropdown (Managers/Admins only) -->
-      <select 
-        v-if="showBranchSelector"
-        v-model="filtersState.branchId" 
-        @change="handleFilterChange"
-        class="input-field text-caption text-neutral-900 font-medium"
-      >
-        <option value="">All Branches</option>
-        <option v-for="b in branchesList" :key="b.id || b._id" :value="b.id || b._id">
-          {{ b.name }}
-        </option>
-      </select>
+        <label>
+          <span class="sr-only">Lead temperature</span>
+          <select v-model="filtersState.temperature" class="filter-control" @change="handleFilterChange">
+            <option value="">All temperatures</option>
+            <option value="hot">Hot</option>
+            <option value="warm">Warm</option>
+            <option value="cold">Cold</option>
+          </select>
+        </label>
 
-      <!-- Agent/Owner dropdown -->
-      <select 
-        v-model="filtersState.assignedTo" 
-        @change="handleFilterChange"
-        class="input-field text-caption text-neutral-900 font-medium"
-      >
-        <option value="">All Agents</option>
-        <option :value="currentUser.id">Me (My Assigned)</option>
-        <option v-for="u in agentsList" :key="u.id || u._id" :value="u.id || u._id">
-          {{ u.name }}
-        </option>
-      </select>
+        <label>
+          <span class="sr-only">Lead source</span>
+          <select v-model="filtersState.source" class="filter-control" @change="handleFilterChange">
+            <option value="">All sources</option>
+            <option value="website">Website</option>
+            <option value="magicbricks">MagicBricks</option>
+            <option value="99acres">99acres</option>
+            <option value="housing">Housing.com</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="referral">Referral</option>
+            <option value="walk_in">Walk-in</option>
+            <option value="manual_entry">Direct input</option>
+          </select>
+        </label>
+
+        <label>
+          <span class="sr-only">Assigned agent</span>
+          <select v-model="filtersState.assignedTo" class="filter-control" @change="handleFilterChange">
+            <option value="">All assigned agents</option>
+            <option :value="currentUser.id">Me (my assigned)</option>
+            <option v-for="user in agentsList" :key="user.id || user._id" :value="user.id || user._id">
+              {{ user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() }}
+            </option>
+          </select>
+        </label>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onBeforeUnmount } from 'vue';
 import { useStore } from 'vuex';
-import { PhMagnifyingGlass } from '@phosphor-icons/vue';
-import { useBranchesQuery, useUsersQuery } from '@/modules/settings/queries';
+import { useUsersQuery } from '@/modules/settings/queries';
 
-const { data: branchesData } = useBranchesQuery();
 const { data: usersData } = useUsersQuery();
-
-const branchesList = computed(() => {
-  const data = branchesData.value?.data || branchesData.value;
-  return Array.isArray(data) ? data : [];
-});
-
 const agentsList = computed(() => {
   const data = usersData.value?.data || usersData.value;
-  return Array.isArray(data) ? data.filter(u => u.active) : [];
+  return Array.isArray(data) ? data.filter(user => user.active) : [];
 });
 
 const emit = defineEmits(['change']);
-
 const store = useStore();
 const currentUser = computed(() => store.state.auth.user || {});
-const userRole = computed(() => store.getters['auth/userRole'] || 'agent');
-
-const showBranchSelector = computed(() => {
-  return ['super_admin', 'org_admin', 'branch_manager'].includes(userRole.value);
-});
-
-const savedViews = [
-  { id: 'all', name: 'All Leads', filters: { status: '', assignedTo: '', source: '', search: '', branchId: '' } },
-  { id: 'my', name: 'My Leads', filters: { status: '', assignedTo: currentUser.value.id, source: '', search: '', branchId: '' } },
-  { id: 'hot', name: 'Hot Leads', filters: { status: '', assignedTo: '', source: '', search: '', branchId: '' } }, // In table we will sort or highlight
-  { id: 'lost', name: 'Lost Leads', filters: { status: 'lost', assignedTo: '', source: '', search: '', branchId: '' } }
-];
+const savedViews = computed(() => [
+  { id: 'all', name: 'All leads', filters: { status: '', assignedTo: '', source: '', temperature: '', search: '' } },
+  { id: 'my', name: 'My leads', filters: { status: '', assignedTo: currentUser.value.id || '', source: '', temperature: '', search: '' } },
+  { id: 'hot', name: 'Hot', filters: { status: '', assignedTo: '', source: '', temperature: 'hot', search: '' } },
+  { id: 'followup', name: 'Follow-up', filters: { status: 'contacted', assignedTo: '', source: '', temperature: '', search: '' } },
+  { id: 'received', name: 'Received', filters: { status: 'new', assignedTo: '', source: '', temperature: '', search: '' } },
+  { id: 'closed', name: 'Closed', filters: { status: 'won', assignedTo: '', source: '', temperature: '', search: '' } },
+]);
 
 const activeSavedView = ref('all');
 const activeDateRange = ref('all');
+const filtersState = reactive({ search: '', status: '', temperature: '', source: '', assignedTo: '' });
+let searchDebounce;
 
-const filtersState = reactive({
-  search: '',
-  status: '',
-  source: '',
-  branchId: '',
-  assignedTo: ''
-});
-
-let searchDebounce = null;
-
+const handleFilterChange = () => emit('change', { ...filtersState, dateRange: activeDateRange.value });
 const debounceSearch = () => {
-  if (searchDebounce) clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => {
-    handleFilterChange();
-  }, 350);
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(handleFilterChange, 300);
 };
-
 const selectSavedView = (view) => {
   activeSavedView.value = view.id;
-  Object.keys(view.filters).forEach(key => {
-    filtersState[key] = view.filters[key];
-  });
+  Object.assign(filtersState, view.filters);
   handleFilterChange();
 };
 
-const handleFilterChange = () => {
-  const payload = { ...filtersState, dateRange: activeDateRange.value };
-  emit('change', payload);
-};
+onBeforeUnmount(() => clearTimeout(searchDebounce));
 </script>

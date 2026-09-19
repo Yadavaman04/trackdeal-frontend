@@ -372,6 +372,7 @@ import MatchingLeadsDrawer from '../components/MatchingLeadsDrawer.vue';
 
 // Phosphor icons
 import { PhCaretLeft, PhMapPin, PhFile } from '@phosphor-icons/vue';
+import Swal from 'sweetalert2';
 
 const route = useRoute();
 const router = useRouter();
@@ -407,13 +408,13 @@ const mockWaitlist = ref([
   { id: 'w2', leadName: 'Priya Patel', agentName: 'Sneha K.', tokenPaid: false }
 ]);
 
-const handleStatusChangeDropdown = (evt) => {
+const handleStatusChangeDropdown = async (evt) => {
   const nextStatus = evt.target.value;
   if (nextStatus === 'reserved') {
     isReserveOpen.value = true;
   } else if (nextStatus === 'sold') {
     // Lead Conversion close
-    if (confirm('Initiate booking closure deal process?')) {
+    const result = await Swal.fire({ title: 'Confirm', text: 'Initiate booking closure deal process?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' }); if (result.isConfirmed) {
       handleConvertToDeal();
     }
   } else if (nextStatus === 'available') {

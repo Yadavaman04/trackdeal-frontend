@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
+  organization: z.string().max(120, 'Organization name is too long').optional().or(z.literal('')),
   email: z.string()
     .min(1, 'Email is required')
     .email('Please enter a valid email address'),

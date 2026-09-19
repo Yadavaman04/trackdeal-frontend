@@ -6,8 +6,9 @@
     @close="$emit('close')"
   >
     <div class="space-y-5 text-xs">
-      <div class="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 p-3 rounded-lg leading-relaxed text-[11px]">
-        ℹ️ **Conversion Information**: This action confirms the client's booking token payment, releases the reservation SLA lock, and transitions the listing to won deals.
+      <div class="px-4 py-3 bg-blue-50 text-blue-800 text-xs rounded-xl flex items-start gap-2 leading-relaxed">
+        <strong>Info:</strong>
+        <span>This action confirms the client's booking token payment, releases the reservation SLA lock, and transitions the listing to won deals.</span>
       </div>
 
       <!-- Property Details (Read Only) -->

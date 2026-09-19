@@ -87,8 +87,11 @@
           :rows="mappedTasks"
           :isLoading="isLoading"
           :selectedTasks="selectedRows"
+          :pagination="pagination"
           @selectionChange="handleSelectionChange"
           @sort="handleSort"
+          @pageChange="handlePageChange"
+          @pageSizeChange="handlePageSizeChange"
           @select="handleTaskSelect"
           @complete="openCompleteModal"
           @cancelTask="openCancelModal"
@@ -163,6 +166,16 @@
         <div v-if="mappedTasks.length === 0" class="text-center py-12 text-slate-400">
           No outreach tasks found.
         </div>
+
+        <AppPagination
+          class="col-span-full"
+          :page="pagination.page"
+          :page-size="pagination.limit"
+          :total="pagination.total"
+          :total-pages="pagination.totalPages || pagination.pages"
+          @page-change="handlePageChange"
+          @page-size-change="handlePageSizeChange"
+        />
       </div>
     </div>
 
@@ -241,7 +254,9 @@ const activeFilters = ref({
   priority: '',
   type: '',
   assignedTo: '',
-  dateRange: 'all'
+  dateRange: 'all',
+  page: 1,
+  limit: 20
 });
 
 // Load tasks using TanStack Query
@@ -249,6 +264,13 @@ const { data, isLoading, refetch } = useTasksQuery(activeFilters);
 
 const rawTasksList = computed(() => {
   return data.value?.data || [];
+});
+
+const pagination = computed(() => data.value?.pagination || {
+  page: activeFilters.value.page,
+  limit: activeFilters.value.limit,
+  total: rawTasksList.value.length,
+  totalPages: 1,
 });
 
 const mappedTasks = computed(() => {
@@ -298,7 +320,8 @@ const activeTask = ref(null);
 const targetAssignIds = ref([]);
 
 const handleFilterChange = (filters) => {
-  activeFilters.value = { ...activeFilters.value, ...filters };
+  activeFilters.value = { ...activeFilters.value, ...filters, page: 1 };
+  selectedRows.value = [];
 };
 
 const handleSelectionChange = (selection) => {
@@ -311,6 +334,17 @@ const handleSort = ({ field, direction }) => {
   // Since query filters have order / sort keys:
   activeFilters.value.sort = field;
   activeFilters.value.order = direction === 'asc' ? 1 : -1;
+  activeFilters.value.page = 1;
+};
+
+const handlePageChange = (page) => {
+  activeFilters.value.page = page;
+  selectedRows.value = [];
+};
+
+const handlePageSizeChange = (limit) => {
+  activeFilters.value = { ...activeFilters.value, page: 1, limit };
+  selectedRows.value = [];
 };
 
 const handleTaskSelect = (task) => {

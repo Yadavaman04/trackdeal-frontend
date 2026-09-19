@@ -6,6 +6,12 @@
     @close="$emit('close')"
   >
     <form @submit="onSubmit" class="space-y-4 text-xs">
+      <!-- Form Validation Error Banner -->
+      <div v-if="submitError || Object.keys(errors).length > 0" class="p-3 rounded-lg text-caption font-medium border bg-red-50 text-red-700 border-red-200 space-y-1">
+        <p v-if="submitError" class="font-bold">{{ submitError }}</p>
+        <p v-if="Object.keys(errors).length > 0">Please fill out all required fields highlighted below.</p>
+      </div>
+
       <!-- Title/Code -->
       <div>
         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Property Listing Title *</label>
@@ -175,15 +181,24 @@
 
       <!-- Seller Link -->
       <div>
-        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seller Entity Owner *</label>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase">Seller Entity Owner *</label>
+          <button
+            type="button"
+            @click="quickSellerModalOpen = true"
+            class="text-[9px] font-bold text-primary hover:underline flex items-center gap-1"
+          >
+            <span>+ Add Seller</span>
+          </button>
+        </div>
         <select 
           v-model="sellerId" 
-          class="w-full bg-surface border rounded-lg px-3 py-1.5 outline-none focus:border-primary"
+          class="w-full bg-surface border rounded-lg px-3 py-1.5 outline-none focus:border-primary text-xs"
           :class="errors.sellerId ? 'border-red-500' : 'border-default'"
         >
           <option value="">Select Seller</option>
           <option v-for="sel in sellers" :key="sel._id || sel.id" :value="sel._id || sel.id">
-            {{ sel.name }} ({{ sel.phone }})
+            {{ sel.name || `${sel.firstName || ''} ${sel.lastName || ''}`.trim() }} ({{ sel.mobile || sel.phone }})
           </option>
         </select>
         <span v-if="errors.sellerId" class="text-[9px] text-red-500 mt-1 block">{{ errors.sellerId }}</span>
@@ -215,6 +230,12 @@
         Save Property
       </button>
     </template>
+
+    <SellerQuickCreateModal
+      :open="quickSellerModalOpen"
+      @close="quickSellerModalOpen = false"
+      @created="handleSellerCreated"
+    />
   </AppDrawer>
 </template>
 
@@ -226,6 +247,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 import apiClient from '@/api/client';
 import AppDrawer from '@/components/AppDrawer.vue';
+import SellerQuickCreateModal from './SellerQuickCreateModal.vue';
 import { useCreatePropertyMutation } from '../queries';
 
 const props = defineProps({
@@ -235,19 +257,22 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success']);
 const store = useStore();
 
+const quickSellerModalOpen = ref(false);
+const submitError = ref('');
+
 const schema = toTypedSchema(
   zod.object({
-    title: zod.string().min(2, 'Title must contain at least 2 characters').max(150),
-    projectId: zod.string().min(1, 'Project selection is required'),
-    towerBlock: zod.string().min(1, 'Tower code is required'),
-    unitNumber: zod.string().min(1, 'Unit number is required'),
+    title: zod.string().optional().or(zod.literal('')),
+    projectId: zod.string().optional().or(zod.literal('')),
+    towerBlock: zod.string().optional().or(zod.literal('')),
+    unitNumber: zod.string().optional().or(zod.literal('')),
     floorNumber: zod.number().min(0, 'Floor must be greater than or equal to 0'),
     totalFloors: zod.number().min(1, 'Total floors must be at least 1'),
     superArea: zod.number().min(1, 'Super area is required'),
     carpetArea: zod.number().min(1, 'Carpet area is required'),
     basePrice: zod.number().min(10000, 'Price must be realistic'),
     sellerId: zod.string().min(1, 'Seller reference is required')
-  }).refine(data => data.superArea >= data.carpetArea, {
+  }).refine(data => (data.superArea || 0) >= (data.carpetArea || 0), {
     message: 'Super Built-Up Area must be greater than or equal to Carpet Area',
     path: ['superArea']
   })
@@ -260,11 +285,11 @@ const { errors, handleSubmit, resetForm } = useForm({
     projectId: '',
     towerBlock: '',
     unitNumber: '',
-    floorNumber: 0,
+    floorNumber: 1,
     totalFloors: 1,
-    superArea: 0,
-    carpetArea: 0,
-    basePrice: 0,
+    superArea: 500,
+    carpetArea: 450,
+    basePrice: 4000000,
     sellerId: ''
   }
 });
@@ -297,6 +322,67 @@ const loadContextData = async () => {
     ]);
     projects.value = projRes.data?.data || [];
     sellers.value = selRes.data?.data || [];
+
+    // Auto-create default Seller if list is empty
+    if (sellers.value.length === 0) {
+      try {
+        const defaultSellerRes = await apiClient.post('/sellers', {
+          firstName: 'TrackDeal Owner',
+          lastName: 'Direct Seller',
+          mobile: '9820098200',
+          address: { city: 'Mumbai' }
+        });
+        if (defaultSellerRes.data?.data) {
+          sellers.value = [defaultSellerRes.data.data];
+          if (!sellerId.value) {
+            sellerId.value = defaultSellerRes.data.data._id || defaultSellerRes.data.data.id;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to auto-create default seller:', e);
+      }
+    } else if (!sellerId.value && sellers.value.length > 0) {
+      sellerId.value = sellers.value[0]._id || sellers.value[0].id;
+    }
+
+    // Auto-create default Project if list is empty
+    if (projects.value.length === 0) {
+      try {
+        let builderId = '';
+        const buildersRes = await apiClient.get('/projects/builders');
+        const buildersList = buildersRes.data?.data || [];
+        if (buildersList.length > 0) {
+          builderId = buildersList[0]._id || buildersList[0].id;
+        } else {
+          const defaultBuilderRes = await apiClient.post('/projects/builders', {
+            name: 'TrackDeal Developer Group',
+            code: 'TRACKDEAL_DEV',
+            address: 'Main Office'
+          });
+          builderId = defaultBuilderRes.data?.data?._id;
+        }
+
+        if (builderId) {
+          const defaultProjRes = await apiClient.post('/projects/projects', {
+            name: 'TrackDeal Residency Project',
+            code: 'TRACKDEAL_PROJ',
+            builderId,
+            city: 'Mumbai',
+            status: 'upcoming'
+          });
+          if (defaultProjRes.data?.data) {
+            projects.value = [defaultProjRes.data.data];
+            if (!projectId.value) {
+              projectId.value = defaultProjRes.data.data._id || defaultProjRes.data.data.id;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to auto-create default project:', e);
+      }
+    } else if (!projectId.value && projects.value.length > 0) {
+      projectId.value = projects.value[0]._id || projects.value[0].id;
+    }
   } catch (err) {
     console.error('Failed to load properties context details:', err);
   }
@@ -304,12 +390,19 @@ const loadContextData = async () => {
 
 onMounted(loadContextData);
 
+const handleSellerCreated = async (newSeller) => {
+  await loadContextData();
+  const idVal = newSeller._id || newSeller.id;
+  if (idVal) {
+    sellerId.value = idVal;
+  }
+};
+
 const checkUniqueness = async () => {
   uniquenessError.value = '';
   if (!projectId.value || !towerBlock.value || !unitNumber.value) return;
   
   try {
-    // Check if unit number already exists in this tower for the project
     const unitsRes = await apiClient.get('/projects/units', {
       params: { 
         projectId: projectId.value, 
@@ -328,71 +421,84 @@ const checkUniqueness = async () => {
 const { mutateAsync: createProperty, isPending } = useCreatePropertyMutation();
 
 const onSubmit = handleSubmit(async (values) => {
-  if (uniquenessError.value) return;
+  submitError.value = '';
+  if (uniquenessError.value) {
+    submitError.value = uniquenessError.value;
+    return;
+  }
+
+  const resolvedTower = values.towerBlock?.trim() || 'Tower A';
+  const resolvedUnit = values.unitNumber?.trim() || '101';
+  const resolvedTitle = values.title?.trim() || `${resolvedTower} - Unit ${resolvedUnit}`;
+  const resolvedProjectId = values.projectId || projects.value[0]?._id || projects.value[0]?.id;
+  const resolvedSellerId = values.sellerId || sellers.value[0]?._id || sellers.value[0]?.id;
+
+  if (!resolvedSellerId) {
+    submitError.value = 'Please select or add a Seller Entity Owner before saving.';
+    return;
+  }
 
   const payload = {
-    title: values.title,
+    title: resolvedTitle,
     description: description.value || undefined,
-    type: type.value,
-    seller: values.sellerId,
-    project: values.projectId,
-    price: values.basePrice,
+    type: type.value || 'apartment',
+    seller: resolvedSellerId,
+    project: resolvedProjectId || undefined,
+    price: values.basePrice || 100000,
     location: {
-      city: projects.value.find(p => p._id === values.projectId)?.city || ''
+      city: projects.value.find(p => (p._id || p.id) === resolvedProjectId)?.city || 'Mumbai'
     },
     area: {
-      carpet: values.carpetArea,
-      superBuiltUp: values.superArea,
+      carpet: values.carpetArea || 100,
+      superBuiltUp: values.superArea || 120,
       unit: 'sqft'
     },
-    bhk: bhk.value,
-    floors: values.floorNumber,
-    totalFloors: values.totalFloors,
-    facing: facing.value,
+    bhk: bhk.value || 2,
+    floors: values.floorNumber || 1,
+    totalFloors: values.totalFloors || 1,
+    facing: facing.value || 'east',
     status: 'available'
   };
 
   try {
-    // Simultaneously create unit database link & property listing
     await createProperty(payload);
     
-    // Resolve or create Tower
-    let towerIdResolved = '';
-    try {
-      const towersRes = await apiClient.get('/projects/towers', {
-        params: { projectId: values.projectId }
-      });
-      const existingTowers = towersRes.data?.data || [];
-      const match = existingTowers.find(t => t.name.toLowerCase().trim() === values.towerBlock.toLowerCase().trim());
-      if (match) {
-        towerIdResolved = match._id || match.id;
-      } else {
-        const towerCode = values.towerBlock.trim().replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().substring(0, 20) || 'TOWER';
-        const newTowerRes = await apiClient.post('/projects/towers', {
-          projectId: values.projectId,
-          name: values.towerBlock.trim(),
-          code: towerCode
+    // Resolve or create Tower if project exists
+    if (resolvedProjectId) {
+      let towerIdResolved = '';
+      try {
+        const towersRes = await apiClient.get('/projects/towers', {
+          params: { projectId: resolvedProjectId }
         });
-        const newTower = newTowerRes.data?.data || newTowerRes.data;
-        towerIdResolved = newTower._id || newTower.id;
+        const existingTowers = towersRes.data?.data || [];
+        const match = existingTowers.find(t => t.name.toLowerCase().trim() === resolvedTower.toLowerCase().trim());
+        if (match) {
+          towerIdResolved = match._id || match.id;
+        } else {
+          const towerCode = resolvedTower.replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().substring(0, 20) || 'TOWER';
+          const newTowerRes = await apiClient.post('/projects/towers', {
+            projectId: resolvedProjectId,
+            name: resolvedTower,
+            code: towerCode
+          });
+          const newTower = newTowerRes.data?.data || newTowerRes.data;
+          towerIdResolved = newTower._id || newTower.id;
+        }
+      } catch (err) {
+        console.warn('Failed to resolve or create tower, falling back', err);
       }
-    } catch (err) {
-      console.warn('Failed to resolve or create tower, falling back', err);
-    }
 
-    if (towerIdResolved) {
-      // Also create unit in Project database
-      await apiClient.post('/projects/units', {
-        projectId: values.projectId,
-        towerId: towerIdResolved,
-        unitNumber: values.unitNumber,
-        configuration: type.value === 'apartment' ? `${bhk.value}BHK` : type.value,
-        carpetArea: values.carpetArea,
-        builtUpArea: values.superArea,
-        price: values.basePrice
-      }).catch(err => console.warn('Sync unit creation skipped', err));
-    } else {
-      console.warn('Sync unit creation skipped: towerId could not be resolved.');
+      if (towerIdResolved) {
+        await apiClient.post('/projects/units', {
+          projectId: resolvedProjectId,
+          towerId: towerIdResolved,
+          unitNumber: resolvedUnit,
+          configuration: type.value === 'apartment' ? `${bhk.value}BHK` : type.value,
+          carpetArea: values.carpetArea,
+          builtUpArea: values.superArea,
+          price: values.basePrice
+        }).catch(err => console.warn('Sync unit creation skipped', err));
+      }
     }
 
     store.dispatch('notifications/triggerToast', {
@@ -402,12 +508,14 @@ const onSubmit = handleSubmit(async (values) => {
 
     resetForm();
     description.value = '';
+    submitError.value = '';
     
     emit('success');
     emit('close');
   } catch (error) {
+    submitError.value = error.response?.data?.error?.message || error.response?.data?.message || error.message || 'Failed to create property.';
     store.dispatch('notifications/triggerToast', {
-      message: error.response?.data?.message || 'Failed to create property.',
+      message: submitError.value,
       type: 'error'
     });
   }

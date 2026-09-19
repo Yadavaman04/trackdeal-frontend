@@ -12,13 +12,17 @@ const roleToEndpoint = {
 
 export async function fetchDashboardMetrics({ role, startDate, endDate, branchId }) {
   // Resolve the correct analytics sub-route based on the user's dashboard role
-  const endpoint = roleToEndpoint[role] || 'executive';
   const params = { startDate, endDate, branchId };
+  const response = await apiClient.get('/analytics/dashboard', { params });
+  return response.data;
+}
 
-  const response = await apiClient.get(`/analytics/${endpoint}`, { params });
+export async function fetchBrokerDashboard(params = {}) {
+  const response = await apiClient.get('/analytics/dashboard', { params });
   return response.data;
 }
 
 export default {
-  fetchDashboardMetrics
+  fetchDashboardMetrics,
+  fetchBrokerDashboard,
 };

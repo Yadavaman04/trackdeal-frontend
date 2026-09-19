@@ -259,6 +259,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { PhTrash, PhFloppyDisk, PhPlus, PhX } from '@phosphor-icons/vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
   rules: { type: Array, required: true },
@@ -335,7 +336,7 @@ function resetForm() {
 
 function saveRule() {
   if (!ruleForm.value.name.trim()) {
-    alert('Please enter a rule name');
+    Swal.fire({ text: 'Please enter a rule name', icon: 'error' });
     return;
   }
   emit('save', {
@@ -344,8 +345,9 @@ function saveRule() {
   });
 }
 
-function deleteRule() {
-  if (confirm('Are you sure you want to delete this rule?')) {
+async function deleteRule() {
+  const result = await Swal.fire({ title: 'Confirm', text: 'Are you sure you want to delete this rule?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes', cancelButtonText: 'Cancel' });
+  if (result.isConfirmed) {
     emit('delete', selectedRuleId.value);
     selectedRuleId.value = 'new';
     loadRule();

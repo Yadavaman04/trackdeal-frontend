@@ -1,19 +1,23 @@
 <template>
-  <div 
-    v-if="isOpen"
-    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-  >
-    <div class="bg-surface border border-default w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-fade-in text-xs">
-      <!-- Header -->
-      <div class="px-4 py-3 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
-        <div>
-          <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center space-x-2">
-            <span>📋</span> <span>Booking Confirmation Stepper Wizard</span>
-          </h3>
-          <p class="text-[10px] text-slate-450 mt-0.5">Verify deal criteria before confirming to database.</p>
-        </div>
-        <button @click="$emit('close')" class="text-slate-400 hover:text-slate-650 text-sm">✕</button>
-      </div>
+  <Teleport to="body">
+    <Transition name="drawer-slide">
+      <div 
+        v-if="isOpen" 
+        class="fixed inset-0 z-[1000] flex justify-end overflow-hidden"
+        style="background-color: rgba(9, 14, 26, 0.6); backdrop-filter: blur(3px);"
+        @click.self="$emit('close')"
+      >
+        <div class="bg-surface border-l border-default w-full max-w-2xl h-full shadow-2xl flex flex-col overflow-hidden text-xs">
+          <!-- Header -->
+          <div class="px-5 py-4 border-b border-default flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
+            <div>
+              <h3 class="font-heading font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                <AppIcon name="clipboard" :size="15" /> <span>Booking confirmation</span>
+              </h3>
+              <p class="text-[10px] text-slate-450 mt-0.5">Verify deal criteria before confirming to database.</p>
+            </div>
+            <button @click="$emit('close')" class="text-slate-400 hover:text-slate-650 text-sm" aria-label="Close"><AppIcon name="close" :size="14" weight="bold" /></button>
+          </div>
 
       <!-- Stepper Progress Ribbon -->
       <div class="px-6 py-3 bg-slate-55/30 dark:bg-slate-900/50 border-b border-default flex justify-between text-[10px] font-bold uppercase shrink-0">
@@ -24,7 +28,8 @@
           :class="activeStep === step.num ? 'text-primary' : activeStep > step.num ? 'text-emerald-500' : 'text-slate-400'"
         >
           <span class="w-4 h-4 rounded-full border flex items-center justify-center text-[9px] shrink-0" :class="activeStep === step.num ? 'border-primary' : activeStep > step.num ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300'">
-            {{ activeStep > step.num ? '✓' : step.num }}
+            <AppIcon v-if="activeStep > step.num" name="check" :size="10" weight="bold" />
+            <template v-else>{{ step.num }}</template>
           </span>
           <span>{{ step.label }}</span>
         </div>
@@ -96,12 +101,12 @@
             <div class="border border-default rounded-xl divide-y divide-default bg-surface">
               <div class="p-3 flex justify-between items-center">
                 <span>Primary Buyer PAN Card Verification</span>
-                <span class="text-emerald-500 font-bold">✓ Verified</span>
+                <span class="text-emerald-500 font-bold inline-flex items-center gap-1"><AppIcon name="check" :size="12" weight="bold" /> Verified</span>
               </div>
               <div class="p-3 flex justify-between items-center">
                 <span>Co-Applicant Aadhaar Card Verification</span>
                 <div class="flex items-center space-x-2">
-                  <span class="text-amber-500 font-bold">⚠️ Pending</span>
+                  <span class="text-amber-500 font-bold inline-flex items-center gap-1"><AppIcon name="warning" :size="12" /> Pending</span>
                   <button @click="verifyDocSim" class="bg-primary text-white text-[9px] px-2 py-0.5 rounded">Verify now</button>
                 </div>
               </div>
@@ -116,16 +121,16 @@
           <div class="bg-indigo-50/50 border border-indigo-250 p-4 rounded-xl space-y-2">
             <p class="font-semibold text-indigo-700">Builder Booking Deposit Target: ₹5,00,000</p>
             <div class="text-[10px] text-slate-500 space-y-1 pt-1">
-              <p>✔ Earnest Token Receipt: #TX-9842 (₹1,00,000) - <b class="text-emerald-500">CLEARED</b></p>
-              <p>✔ Additional Deposit Draft: #TX-10928 (₹4,00,000) - <b class="text-emerald-500">CLEARED</b></p>
+              <p>Earnest token receipt: #TX-9842 (₹1,00,000) - <b class="text-emerald-500">CLEARED</b></p>
+              <p>Additional deposit draft: #TX-10928 (₹4,00,000) - <b class="text-emerald-500">CLEARED</b></p>
             </div>
-            <p class="font-bold text-emerald-600 pt-1">✓ Deposit Threshold Met (Total: ₹5,00,000)</p>
+            <p class="font-bold text-emerald-600 pt-1 inline-flex items-center gap-1"><AppIcon name="check" :size="12" weight="bold" /> Deposit threshold met (Total: ₹5,00,000)</p>
           </div>
 
           <div class="border border-default rounded-xl p-4 bg-surface space-y-2">
             <label class="block text-[10px] font-bold text-slate-500 uppercase">Attach Deposit Voucher Receipt</label>
             <div class="border-2 border-dashed border-default rounded-lg p-4 text-center cursor-pointer hover:bg-slate-50">
-              <span class="text-lg">📤</span>
+              <AppIcon name="upload" :size="18" class="mx-auto" />
               <p class="text-[10px] text-slate-400 mt-1">Drag & Drop deposit voucher scanned copy (PDF/JPG)...</p>
             </div>
           </div>
@@ -187,6 +192,8 @@
       </div>
     </div>
   </div>
+</Transition>
+</Teleport>
 </template>
 
 <script setup>
@@ -288,3 +295,9 @@ const formatCurrency = (val) => {
   }).format(val);
 };
 </script>
+
+<style scoped>
+.drawer-slide-enter-active { transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1); }
+.drawer-slide-leave-active { transition: transform 180ms cubic-bezier(0.4, 0, 1, 1); }
+.drawer-slide-enter-from, .drawer-slide-leave-to { transform: translateX(100%); }
+</style>

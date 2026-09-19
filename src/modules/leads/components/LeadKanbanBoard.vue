@@ -39,7 +39,7 @@
                 lead.score >= 70 ? 'text-emerald-500' : lead.score >= 35 ? 'text-amber-500' : 'text-red-500'
               ]"
             >
-              ★ {{ lead.score }}
+              <AppIcon name="star" :size="10" weight="fill" /> {{ lead.score }}
             </span>
           </div>
 

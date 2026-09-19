@@ -15,8 +15,8 @@
       <p class="font-bold text-slate-700 dark:text-slate-350">Amit Gupta (Manager SPOC)</p>
       <p class="text-[9px] text-slate-450 uppercase font-bold">Skyway Builders Group</p>
       <div class="flex items-center justify-between pt-1 text-[10px] text-slate-500">
-        <span>📞 +91 99887 76655</span>
-        <span>✉️ amit.gupta@skyway.com</span>
+        <span class="inline-flex items-center gap-1"><AppIcon name="phone" :size="12" /> +91 99887 76655</span>
+        <span class="inline-flex items-center gap-1"><AppIcon name="email" :size="12" /> amit.gupta@skyway.com</span>
       </div>
     </div>
 
@@ -27,7 +27,7 @@
       <div class="space-y-2 text-[10px]">
         <div class="flex justify-between items-center py-1 border-b border-default border-dashed">
           <span class="text-slate-650">Allotment Letter:</span>
-          <span class="text-emerald-500 font-bold">✓ Received (10 Jun)</span>
+          <span class="text-emerald-500 font-bold inline-flex items-center gap-1"><AppIcon name="check" :size="12" weight="bold" /> Received (10 Jun)</span>
         </div>
         <div class="flex justify-between items-center py-1 border-b border-default border-dashed">
           <span class="text-slate-655">Agreement Draft:</span>
@@ -52,13 +52,13 @@
         @click="logContact"
         class="flex items-center justify-center space-x-1 border border-default hover:bg-slate-50 text-[10px] font-bold py-1.5 rounded-lg text-slate-700"
       >
-        <span>⚡</span> <span>Log Contact</span>
+        <AppIcon name="lightning" :size="13" /> <span>Log contact</span>
       </button>
       <button 
         @click="scheduleSync"
         class="flex items-center justify-center space-x-1 border border-default hover:bg-slate-50 text-[10px] font-bold py-1.5 rounded-lg text-slate-700"
       >
-        <span>📅</span> <span>Schedule Sync</span>
+        <AppIcon name="calendar" :size="13" /> <span>Schedule sync</span>
       </button>
     </div>
   </div>

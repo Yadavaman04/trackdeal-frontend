@@ -11,6 +11,12 @@ export default {
   namespaced: true,
   state: () => {
     const tenantId = localStorage.getItem('tenant_id') || null;
+    const tenantSlug = localStorage.getItem('tenant_slug') || null;
+    const tenantVertical =
+      localStorage.getItem('tenant_vertical')
+      || getStoredJson('currentUser', null)?.tenantVertical
+      || getStoredJson('currentUser', null)?.tenantDomain
+      || 'realEstate';
     const featuresFlags = getStoredJson('featuresFlags', {});
     const branding = getStoredJson('branding', {
       primaryHsl: '220 85% 45%', // Default Deep Indigo
@@ -33,20 +39,30 @@ export default {
  
     return {
       tenantId,
+      tenantSlug,
+      tenantVertical,
       organizationType,
       featuresFlags,
       branding
     };
   },
   mutations: {
-    SET_ORGANIZATION(state, { tenantId, organizationType, branding, featuresFlags }) {
+    SET_ORGANIZATION(state, { tenantId, tenantSlug, tenantVertical, organizationType, branding, featuresFlags }) {
       state.tenantId = tenantId;
+      state.tenantSlug = tenantSlug || state.tenantSlug || null;
+      state.tenantVertical = tenantVertical || state.tenantVertical || 'realEstate';
       state.organizationType = organizationType || 'AGENCY';
       state.featuresFlags = featuresFlags || {};
       state.branding = { ...state.branding, ...branding };
       
       if (tenantId) {
         localStorage.setItem('tenant_id', tenantId);
+      }
+      if (tenantSlug) {
+        localStorage.setItem('tenant_slug', tenantSlug);
+      }
+      if (state.tenantVertical) {
+        localStorage.setItem('tenant_vertical', state.tenantVertical);
       }
       localStorage.setItem('org_type', state.organizationType);
       localStorage.setItem('featuresFlags', JSON.stringify(state.featuresFlags));
@@ -62,6 +78,8 @@ export default {
     },
     CLEAR_ORGANIZATION(state) {
       state.tenantId = null;
+      state.tenantSlug = null;
+      state.tenantVertical = 'realEstate';
       state.organizationType = 'AGENCY';
       state.featuresFlags = {};
       state.branding = {
@@ -71,6 +89,8 @@ export default {
         logoDarkUrl: ''
       };
       localStorage.removeItem('tenant_id');
+      localStorage.removeItem('tenant_slug');
+      localStorage.removeItem('tenant_vertical');
       localStorage.removeItem('org_type');
       localStorage.removeItem('featuresFlags');
       localStorage.removeItem('branding');
@@ -85,6 +105,9 @@ export default {
       return !!state.featuresFlags[featureKey];
     },
     organizationType: (state) => state.organizationType,
+    tenantVertical: (state) => state.tenantVertical || 'realEstate',
+    isEducationTenant: (state) => (state.tenantVertical || 'realEstate') === 'education',
+    isRealEstateTenant: (state) => (state.tenantVertical || 'realEstate') !== 'education',
     isEnterpriseAgency: (state) => state.organizationType === 'ENTERPRISE_AGENCY',
     isIndividualAgent: (state) => state.organizationType === 'INDIVIDUAL_AGENT',
     isAgency: (state) => state.organizationType === 'AGENCY',

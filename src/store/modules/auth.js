@@ -56,17 +56,22 @@ export default {
       
       const decoded = parseJwt(accessToken) || {};
       const permissions = decoded.permissions || profile?.permissions || [];
-      const tenantId = decoded.organizationId || profile?.tenantId || profile?.organizationId;
+      const tenantId = decoded.tenantId || profile?.tenantId || decoded.organizationId || profile?.organizationId;
+      const tenantSlug = decoded.tenantSlug || profile?.tenantSlug || null;
+      const tenantVertical = decoded.tenantVertical || decoded.tenantDomain || profile?.tenantVertical || profile?.tenantDomain || 'realEstate';
       const organizationType = decoded.organizationType || profile?.organizationType || 'AGENCY';
+      const featuresFlags = decoded.featuresFlags || profile?.featuresFlags || {};
  
       // Fetch permissions scoping
       commit('permissions/SET_CAPABILITIES', permissions, { root: true });
       // Fetch dynamic tenant values
       commit('organization/SET_ORGANIZATION', {
         tenantId,
+        tenantSlug,
+        tenantVertical,
         organizationType,
         branding: profile?.branding || {},
-        featuresFlags: profile?.featuresFlags || {}
+        featuresFlags,
       }, { root: true });
     },
     logoutSession({ commit }) {
@@ -84,15 +89,20 @@ export default {
         
         const decoded = parseJwt(payload.accessToken) || {};
         const permissions = decoded.permissions || payload.user?.permissions || [];
-        const tenantId = decoded.organizationId || payload.user?.tenantId || payload.user?.organizationId;
+        const tenantId = decoded.tenantId || payload.user?.tenantId || decoded.organizationId || payload.user?.organizationId;
+        const tenantSlug = decoded.tenantSlug || payload.user?.tenantSlug || null;
+        const tenantVertical = decoded.tenantVertical || decoded.tenantDomain || payload.user?.tenantVertical || payload.user?.tenantDomain || 'realEstate';
         const organizationType = decoded.organizationType || payload.user?.organizationType || 'AGENCY';
+        const featuresFlags = decoded.featuresFlags || payload.user?.featuresFlags || {};
  
         commit('permissions/SET_CAPABILITIES', permissions, { root: true });
         commit('organization/SET_ORGANIZATION', {
           tenantId,
+          tenantSlug,
+          tenantVertical,
           organizationType,
           branding: payload.user?.branding || {},
-          featuresFlags: payload.user?.featuresFlags || {}
+          featuresFlags
         }, { root: true });
         
         return payload;
